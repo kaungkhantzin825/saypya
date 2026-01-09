@@ -1,29 +1,29 @@
-@extends('layouts.app')
+@extends('layouts.lecturer')
 
-@section('title', $course->title . ' - အကြောင်းအရာများ')
+@section('title', 'Course Content')
+@section('page-title', 'Manage Course Content')
+
+@section('breadcrumb')
+<li class="breadcrumb-item"><a href="{{ route('instructor.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ route('instructor.courses') }}">Courses</a></li>
+<li class="breadcrumb-item active">Content</li>
+@endsection
 
 @section('content')
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 myanmar-text">{{ $course->title }}</h1>
-                <p class="text-gray-600 mt-2 myanmar-text">သင်ခန်းစာအကြောင်းအရာများကို စီမံခန့်ခွဲပါ</p>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{{ $course->title }}</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addSectionModal">
+                        <i class="fas fa-plus"></i> Add Section
+                    </button>
+                </div>
             </div>
-            <div class="flex space-x-4">
-                <a href="{{ route('courses.show', $course) }}" target="_blank" class="bg-gray-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-700 transition-colors myanmar-text">
-                    <i class="fas fa-eye mr-2"></i>ကြည့်ရှုရန်
-                </a>
-                <button onclick="openSectionModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors myanmar-text">
-                    <i class="fas fa-plus mr-2"></i>အပိုင်းအသစ်ထည့်ရန်
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Course Sections -->
-    <div class="space-y-6">
-        @forelse($course->sections as $section)
+            <div class="card-body">
+                @forelse($course->sections as $section)
+            else($course->sections as $section)
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
             <div class="p-6 border-b border-gray-200">
                 <div class="flex items-center justify-between">

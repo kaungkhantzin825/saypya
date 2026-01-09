@@ -5,16 +5,16 @@
         <img src="{{ $course->thumbnail_url }}" alt="{{ $course->title }}" class="max-h-full max-w-full object-contain">
         
         {{-- Level Badge --}}
-        <div class="absolute top-0 right-0">
+        <div class="absolute top-3 right-3">
             @php
-                $levelColor = match($course->level) {
-                    'beginner' => 'bg-green-600',
-                    'intermediate' => 'bg-orange-500',
-                    'advanced' => 'bg-red-600',
-                    default => 'bg-teal-600'
+                $levelStyles = match($course->level) {
+                    'beginner' => 'background: linear-gradient(180deg, #48bb78 0%, #38a169 50%, #2f855a 100%); box-shadow: 0 3px 0 #276749;',
+                    'intermediate' => 'background: linear-gradient(180deg, #ed8936 0%, #dd6b20 50%, #c05621 100%); box-shadow: 0 3px 0 #9c4221;',
+                    'advanced' => 'background: linear-gradient(180deg, #fc8181 0%, #e53e3e 50%, #c53030 100%); box-shadow: 0 3px 0 #9b2c2c;',
+                    default => 'background: linear-gradient(180deg, #4fd1c5 0%, #319795 50%, #2c7a7b 100%); box-shadow: 0 3px 0 #285e61;'
                 };
             @endphp
-            <span class="{{ $levelColor }} text-white text-xs font-semibold px-3 py-1">
+            <span class="text-white text-xs font-bold px-4 py-2 rounded-md inline-block" style="{{ $levelStyles }}">
                 {{ ucfirst($course->level) }}
             </span>
         </div>
