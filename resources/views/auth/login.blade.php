@@ -7,9 +7,7 @@
     <div class="max-w-md w-full space-y-8">
         <div>
             <div class="flex justify-center">
-                <div class="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                    <i class="fas fa-graduation-cap text-white text-2xl"></i>
-                </div>
+                <img src="{{ asset('images/SanPya-Logo.png') }}" alt="Sanpya Academy" style="width: 80px; height: auto;">
             </div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 {{ app()->getLocale() == 'my' ? 'myanmar-text' : '' }}">
                 {{ __('app.welcome_back') }}

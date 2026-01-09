@@ -123,7 +123,17 @@ class Course extends Model
     // Accessors
     public function getThumbnailUrlAttribute()
     {
-        return $this->thumbnail ? asset('storage/' . $this->thumbnail) : asset('images/default-course.jpg');
+        if ($this->thumbnail && str_starts_with($this->thumbnail, 'http')) {
+            return $this->thumbnail;
+        }
+        if ($this->thumbnail && file_exists(storage_path('app/public/' . $this->thumbnail))) {
+            return asset('storage/' . $this->thumbnail);
+        }
+        // Return placeholder image based on course title
+        $colors = ['3498db', 'e74c3c', '2ecc71', '9b59b6', 'f39c12', '1abc9c', 'e67e22', '34495e'];
+        $colorIndex = crc32($this->title ?? 'course') % count($colors);
+        $color = $colors[$colorIndex];
+        return "https://placehold.co/400x300/{$color}/ffffff?text=" . urlencode(substr($this->title ?? 'Course', 0, 20));
     }
 
     public function getPreviewVideoUrlAttribute()

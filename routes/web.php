@@ -25,13 +25,22 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/search', [HomeController::class, 'search'])->name('search');
 Route::get('/instructors/{user}', [HomeController::class, 'instructorProfile'])->name('instructors.profile');
 
+// Static pages
+Route::get('/about', function () {
+    return view('pages.about');
+})->name('about');
+Route::get('/team', function () {
+    return view('pages.team');
+})->name('team');
+Route::get('/partners', function () {
+    return view('pages.partners');
+})->name('partners');
+Route::get('/contact', function () {
+    return view('pages.contact');
+})->name('contact');
+
 // Language switching
 Route::get('/language/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('language.switch');
-
-// Test route for language debugging
-Route::get('/test-lang', function () {
-    return view('test-lang');
-})->name('test.lang');
 
 // Course routes
 Route::prefix('courses')->name('courses.')->group(function () {
@@ -88,7 +97,7 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-// Instructor routes
+// Instructor routes (Lecturer Dashboard)
 Route::middleware(['auth', 'role:lecturer'])->prefix('instructor')->name('instructor.')->group(function () {
     Route::get('/dashboard', [InstructorController::class, 'dashboard'])->name('dashboard');
     Route::get('/courses', [InstructorController::class, 'courses'])->name('courses');
@@ -99,74 +108,63 @@ Route::middleware(['auth', 'role:lecturer'])->prefix('instructor')->name('instru
     Route::delete('/courses/{course}', [InstructorController::class, 'destroyCourse'])->name('courses.destroy');
     
     // Course content management
-    Route::prefix('courses/{course}')->name('courses.')->group(function () {
-        Route::get('/content', [InstructorController::class, 'courseContent'])->name('content');
-        Route::post('/sections', [InstructorController::class, 'storeSection'])->name('sections.store');
-        Route::put('/sections/{section}', [InstructorController::class, 'updateSection'])->name('sections.update');
-        Route::delete('/sections/{section}', [InstructorController::class, 'destroySection'])->name('sections.destroy');
-        Route::post('/sections/{section}/lessons', [InstructorController::class, 'storeLesson'])->name('sections.lessons.store');
-        Route::put('/lessons/{lesson}', [InstructorController::class, 'updateLesson'])->name('lessons.update');
-        Route::delete('/lessons/{lesson}', [InstructorController::class, 'destroyLesson'])->name('lessons.destroy');
-    });
+    Route::get('/courses/{course}/content', [InstructorController::class, 'courseContent'])->name('courses.content');
+    Route::post('/courses/{course}/sections', [InstructorController::class, 'storeSection'])->name('courses.sections.store');
+    Route::put('/courses/{course}/sections/{section}', [InstructorController::class, 'updateSection'])->name('courses.sections.update');
+    Route::delete('/courses/{course}/sections/{section}', [InstructorController::class, 'destroySection'])->name('courses.sections.destroy');
+    Route::post('/courses/{course}/sections/{section}/lessons', [InstructorController::class, 'storeLesson'])->name('courses.sections.lessons.store');
+    Route::put('/courses/{course}/sections/{section}/lessons/{lesson}', [InstructorController::class, 'updateLesson'])->name('courses.lessons.update');
+    Route::delete('/courses/{course}/sections/{section}/lessons/{lesson}', [InstructorController::class, 'destroyLesson'])->name('courses.lessons.destroy');
     
-    // Analytics and reports
-    Route::get('/analytics', [InstructorController::class, 'analytics'])->name('analytics');
+    // Instructor features
     Route::get('/students', [InstructorController::class, 'students'])->name('students');
-    Route::get('/earnings', [InstructorController::class, 'earnings'])->name('earnings');
     Route::get('/reviews', [InstructorController::class, 'reviews'])->name('reviews');
+    Route::get('/earnings', [InstructorController::class, 'earnings'])->name('earnings');
+    Route::get('/analytics', [InstructorController::class, 'analytics'])->name('analytics');
 });
 
-// Admin routes
+// Admin routes (Admin Dashboard)
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     
     // User management
-    Route::prefix('users')->name('users.')->group(function () {
-        Route::get('/', [AdminController::class, 'users'])->name('index');
-        Route::get('/{user}', [AdminController::class, 'showUser'])->name('show');
-        Route::put('/{user}', [AdminController::class, 'updateUser'])->name('update');
-        Route::delete('/{user}', [AdminController::class, 'destroyUser'])->name('destroy');
-        Route::post('/{user}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('toggle-status');
-    });
-    
-    // Course management
-    Route::prefix('courses')->name('courses.')->group(function () {
-        Route::get('/', [AdminController::class, 'courses'])->name('index');
-        Route::get('/{course}', [AdminController::class, 'showCourse'])->name('show');
-        Route::put('/{course}', [AdminController::class, 'updateCourse'])->name('update');
-        Route::delete('/{course}', [AdminController::class, 'destroyCourse'])->name('destroy');
-        Route::post('/{course}/approve', [AdminController::class, 'approveCourse'])->name('approve');
-        Route::post('/{course}/reject', [AdminController::class, 'rejectCourse'])->name('reject');
-        Route::post('/{course}/feature', [AdminController::class, 'toggleFeature'])->name('toggle-feature');
-    });
+    Route::get('/users', [AdminController::class, 'usersIndex'])->name('users.index');
+    Route::get('/users/create', [AdminController::class, 'usersCreate'])->name('users.create');
+    Route::post('/users', [AdminController::class, 'usersStore'])->name('users.store');
+    Route::get('/users/{user}', [AdminController::class, 'usersShow'])->name('users.show');
+    Route::get('/users/{user}/edit', [AdminController::class, 'usersEdit'])->name('users.edit');
+    Route::put('/users/{user}', [AdminController::class, 'usersUpdate'])->name('users.update');
+    Route::patch('/users/{user}/toggle', [AdminController::class, 'usersToggle'])->name('users.toggle');
+    Route::delete('/users/{user}', [AdminController::class, 'usersDestroy'])->name('users.destroy');
     
     // Category management
-    Route::prefix('categories')->name('categories.')->group(function () {
-        Route::get('/', [AdminController::class, 'categories'])->name('index');
-        Route::post('/', [AdminController::class, 'storeCategory'])->name('store');
-        Route::put('/{category}', [AdminController::class, 'updateCategory'])->name('update');
-        Route::delete('/{category}', [AdminController::class, 'destroyCategory'])->name('destroy');
-    });
+    Route::get('/categories', [AdminController::class, 'categoriesIndex'])->name('categories.index');
+    Route::get('/categories/create', [AdminController::class, 'categoriesCreate'])->name('categories.create');
+    Route::post('/categories', [AdminController::class, 'categoriesStore'])->name('categories.store');
+    Route::get('/categories/{category}/edit', [AdminController::class, 'categoriesEdit'])->name('categories.edit');
+    Route::put('/categories/{category}', [AdminController::class, 'categoriesUpdate'])->name('categories.update');
+    Route::delete('/categories/{category}', [AdminController::class, 'categoriesDestroy'])->name('categories.destroy');
+    
+    // Course management
+    Route::get('/courses', [AdminController::class, 'coursesIndex'])->name('courses.index');
+    Route::get('/courses/{course}', [AdminController::class, 'coursesShow'])->name('courses.show');
+    Route::patch('/courses/{course}/approve', [AdminController::class, 'coursesApprove'])->name('courses.approve');
+    Route::patch('/courses/{course}/archive', [AdminController::class, 'coursesArchive'])->name('courses.archive');
+    Route::patch('/courses/{course}/feature', [AdminController::class, 'coursesFeature'])->name('courses.feature');
+    Route::delete('/courses/{course}', [AdminController::class, 'coursesDestroy'])->name('courses.destroy');
+    
+    // Enrollment management
+    Route::get('/enrollments', [AdminController::class, 'enrollmentsIndex'])->name('enrollments.index');
+    Route::patch('/enrollments/{enrollment}/refund', [AdminController::class, 'enrollmentsRefund'])->name('enrollments.refund');
     
     // Review management
-    Route::prefix('reviews')->name('reviews.')->group(function () {
-        Route::get('/', [AdminController::class, 'reviews'])->name('index');
-        Route::post('/{review}/approve', [AdminController::class, 'approveReview'])->name('approve');
-        Route::post('/{review}/reject', [AdminController::class, 'rejectReview'])->name('reject');
-        Route::delete('/{review}', [AdminController::class, 'destroyReview'])->name('destroy');
-    });
+    Route::get('/reviews', [AdminController::class, 'reviewsIndex'])->name('reviews.index');
+    Route::patch('/reviews/{review}/approve', [AdminController::class, 'reviewsApprove'])->name('reviews.approve');
+    Route::delete('/reviews/{review}', [AdminController::class, 'reviewsDestroy'])->name('reviews.destroy');
     
-    // Analytics and reports
-    Route::get('/analytics', [AdminController::class, 'analytics'])->name('analytics');
+    // Reports & Settings
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
-    Route::post('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
-});
-
-// API routes for AJAX requests
-Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
-    Route::get('/courses/search', [CourseController::class, 'searchApi'])->name('courses.search');
-    Route::get('/categories', [CategoryController::class, 'apiIndex'])->name('categories.index');
-    Route::post('/upload/image', [AdminController::class, 'uploadImage'])->name('upload.image');
-    Route::post('/upload/video', [AdminController::class, 'uploadVideo'])->name('upload.video');
+    Route::put('/settings', [AdminController::class, 'settingsUpdate'])->name('settings.update');
+    Route::post('/cache/clear', [AdminController::class, 'cacheClear'])->name('cache.clear');
 });

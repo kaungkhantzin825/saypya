@@ -142,4 +142,14 @@ return [
     'language_switcher' => 'Language',
     'english' => 'English',
     'myanmar' => 'မြန်မာ',
+
+    // Additional
+    'all_courses' => 'All Courses',
+    'courses_subtitle' => 'Find the best courses for you',
+    'category' => 'Category',
+    'all' => 'All',
+    'filter' => 'Filter',
+    'courses_found' => 'courses found',
+    'no_courses_found' => 'No courses found',
+    'try_different_filters' => 'Try adjusting your search filters',
 ];

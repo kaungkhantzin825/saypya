@@ -127,6 +127,13 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function getAvatarUrlAttribute()
     {
-        return $this->avatar ? asset('storage/' . $this->avatar) : asset('images/default-avatar.png');
+        if ($this->avatar && str_starts_with($this->avatar, 'http')) {
+            return $this->avatar;
+        }
+        if ($this->avatar && file_exists(storage_path('app/public/' . $this->avatar))) {
+            return asset('storage/' . $this->avatar);
+        }
+        // Return UI Avatars placeholder
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name ?? 'User') . '&background=0d9488&color=fff&size=200';
     }
 }

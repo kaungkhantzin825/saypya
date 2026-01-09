@@ -142,4 +142,14 @@ return [
     'language_switcher' => 'ဘာသာစကား',
     'english' => 'English',
     'myanmar' => 'မြန်မာ',
+
+    // Additional
+    'all_courses' => 'သင်ခန်းစာအားလုံး',
+    'courses_subtitle' => 'သင့်အတွက် အကောင်းဆုံးသင်ခန်းစာများကို ရှာဖွေပါ',
+    'category' => 'အမျိုးအစား',
+    'all' => 'အားလုံး',
+    'filter' => 'စစ်ထုတ်ရန်',
+    'courses_found' => 'သင်ခန်းစာ တွေ့ရှိသည်',
+    'no_courses_found' => 'သင်ခန်းစာများ မတွေ့ရှိပါ',
+    'try_different_filters' => 'ရှာဖွေမှုစံနှုန်းများကို ပြောင်းလဲကြည့်ပါ',
 ];

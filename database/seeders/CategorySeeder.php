@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
@@ -12,51 +13,75 @@ class CategorySeeder extends Seeder
         $categories = [
             [
                 'name' => 'ဝဘ်ဖွံ့ဖြိုးတိုးတက်မှု',
-                'description' => 'HTML, CSS, JavaScript နှင့် လူကြိုက်များသော framework များအပါအဝင် ခေတ်မီဝဘ်ဖွံ့ဖြိုးတိုးတက်မှုနည်းပညာများကို သင်ယူပါ။',
+                'slug' => 'web-development',
+                'description' => 'HTML, CSS, JavaScript နှင့် framework များ သင်ယူပါ။',
                 'icon' => 'fas fa-code',
+                'image' => 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=200&h=200&fit=crop',
                 'sort_order' => 1,
+                'is_active' => true,
             ],
             [
                 'name' => 'မိုဘိုင်းအက်ပ်ဖွံ့ဖြိုးတိုးတက်မှု',
-                'description' => 'Native နှင့် cross-platform နည်းပညာများကို အသုံးပြု၍ iOS နှင့် Android အတွက် မိုဘိုင်းအက်ပ်များ တည်ဆောက်ပါ။',
+                'slug' => 'mobile-development',
+                'description' => 'iOS နှင့် Android အတွက် မိုဘိုင်းအက်ပ်များ တည်ဆောက်ပါ။',
                 'icon' => 'fas fa-mobile-alt',
+                'image' => 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=200&h=200&fit=crop',
                 'sort_order' => 2,
+                'is_active' => true,
             ],
             [
                 'name' => 'ဒေတာသိပ္ပံ',
-                'description' => 'ဒေတာခွဲခြမ်းစိတ်ဖြာမှု၊ စက်သင်ယူမှုနှင့် ဉာဏ်ရည်တုနည်းပညာများကို ကျွမ်းကျင်အောင်လုပ်ပါ။',
+                'slug' => 'data-science',
+                'description' => 'ဒေတာခွဲခြမ်းစိတ်ဖြာမှုနှင့် Machine Learning သင်ယူပါ။',
                 'icon' => 'fas fa-chart-bar',
+                'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=200&h=200&fit=crop',
                 'sort_order' => 3,
+                'is_active' => true,
             ],
             [
                 'name' => 'ဒီဇိုင်း',
-                'description' => 'ဂရပ်ဖစ်ဒီဇိုင်း၊ UI/UX ဒီဇိုင်းနှင့် ဒစ်ဂျစ်တယ်အနုပညာဖန်တီးမှုကို သင်ယူပါ။',
+                'slug' => 'design',
+                'description' => 'UI/UX ဒီဇိုင်းနှင့် ဂရပ်ဖစ်ဒီဇိုင်း သင်ယူပါ။',
                 'icon' => 'fas fa-palette',
+                'image' => 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=200&h=200&fit=crop',
                 'sort_order' => 4,
+                'is_active' => true,
             ],
             [
                 'name' => 'စီးပွားရေး',
-                'description' => 'စီမံခန့်ခွဲမှု၊ စျေးကွက်ရှာဖွေမှုနှင့် လုပ်ငန်းစတင်မှုအပါအဝင် စီးပွားရေးကျွမ်းကျင်မှုများကို ဖွံ့ဖြိုးတိုးတက်စေပါ။',
+                'slug' => 'business',
+                'description' => 'စီးပွားရေးနှင့် စီမံခန့်ခွဲမှု ကျွမ်းကျင်မှုများ သင်ယူပါ။',
                 'icon' => 'fas fa-briefcase',
+                'image' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=200&h=200&fit=crop',
                 'sort_order' => 5,
+                'is_active' => true,
             ],
             [
                 'name' => 'ဒစ်ဂျစ်တယ်စျေးကွက်ရှာဖွေမှု',
-                'description' => 'အွန်လိုင်းစျေးကွက်ရှာဖွေမှုဗျူဟာများ၊ SEO၊ လူမှုကွန်ယက်စျေးကွက်ရှာဖွေမှုနှင့် အကြောင်းအရာစျေးကွက်ရှာဖွေမှုကို ကျွမ်းကျင်အောင်လုပ်ပါ။',
+                'slug' => 'digital-marketing',
+                'description' => 'SEO နှင့် Social Media Marketing သင်ယူပါ။',
                 'icon' => 'fas fa-bullhorn',
+                'image' => 'https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=200&h=200&fit=crop',
                 'sort_order' => 6,
+                'is_active' => true,
             ],
             [
                 'name' => 'ဓာတ်ပုံပညာ',
-                'description' => 'ဓာတ်ပုံရိုက်ခြင်းနည်းပညာများ၊ ဓာတ်ပုံတည်းဖြတ်ခြင်းနှင့် အမြင်အာရုံဇာတ်လမ်းပြောခြင်းကို သင်ယူပါ။',
+                'slug' => 'photography',
+                'description' => 'ဓာတ်ပုံရိုက်ခြင်းနှင့် တည်းဖြတ်ခြင်း သင်ယူပါ။',
                 'icon' => 'fas fa-camera',
+                'image' => 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=200&h=200&fit=crop',
                 'sort_order' => 7,
+                'is_active' => true,
             ],
             [
                 'name' => 'ဂီတ',
-                'description' => 'ဂီတသီအိုရီ၊ တူရိယာတီးခြင်းနှင့် ဂီတထုတ်လုပ်ခြင်းကို လေ့လာပါ။',
+                'slug' => 'music',
+                'description' => 'ဂီတသီအိုရီနှင့် တူရိယာတီးခြင်း သင်ယူပါ။',
                 'icon' => 'fas fa-music',
+                'image' => 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=200&h=200&fit=crop',
                 'sort_order' => 8,
+                'is_active' => true,
             ],
         ];
 

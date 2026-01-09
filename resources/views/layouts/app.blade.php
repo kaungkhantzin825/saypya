@@ -4,197 +4,210 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <title>{{ config('app.name', 'Sanpya Online Academy') }} - @yield('title', 'Online Learning Platform')</title>
-
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
-    
-    <!-- Myanmar Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://mmwebfonts.comquas.com/fonts/?font=pyidaungsu" rel="stylesheet" type="text/css">
-
-    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
     <style>
-        body { 
-            font-family: 'Pyidaungsu', 'Noto Sans Myanmar', 'Inter', sans-serif; 
+        body { font-family: 'Noto Sans Myanmar', 'Inter', sans-serif; }
+        .myanmar-text { font-family: 'Noto Sans Myanmar', sans-serif; }
+        
+        /* 3D Glossy Button Style */
+        .btn-3d {
+            display: inline-block;
+            padding: 10px 24px;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
         }
-        .myanmar-text {
-            font-family: 'Pyidaungsu', 'Noto Sans Myanmar', sans-serif;
+        
+        .btn-3d-cyan {
+            background: linear-gradient(180deg, #5dd3e8 0%, #2bb8cc 50%, #1a9aad 100%);
+            box-shadow: 0 4px 0 #158a9c, 0 6px 10px rgba(0,0,0,0.3);
+            color: white;
+        }
+        .btn-3d-cyan:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #158a9c, 0 4px 6px rgba(0,0,0,0.3);
+        }
+        
+        .btn-3d-teal {
+            background: linear-gradient(180deg, #4fd1c5 0%, #319795 50%, #2c7a7b 100%);
+            box-shadow: 0 4px 0 #285e61, 0 6px 10px rgba(0,0,0,0.3);
+            color: white;
+        }
+        .btn-3d-teal:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #285e61, 0 4px 6px rgba(0,0,0,0.3);
+        }
+        
+        .btn-3d-red {
+            background: linear-gradient(180deg, #fc8181 0%, #e53e3e 50%, #c53030 100%);
+            box-shadow: 0 4px 0 #9b2c2c, 0 6px 10px rgba(0,0,0,0.3);
+            color: white;
+        }
+        .btn-3d-red:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #9b2c2c, 0 4px 6px rgba(0,0,0,0.3);
+        }
+        
+        .btn-3d-white {
+            background: linear-gradient(180deg, #ffffff 0%, #f7fafc 50%, #edf2f7 100%);
+            box-shadow: 0 4px 0 #cbd5e0, 0 6px 10px rgba(0,0,0,0.2);
+            color: #2d3748;
+        }
+        .btn-3d-white:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #cbd5e0, 0 4px 6px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body class="bg-gray-50 antialiased">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <nav class="bg-white shadow-md border-b-4 border-purple-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
+            <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
-                <div class="flex items-center">
-                    <a href="{{ route('home') }}" class="flex items-center space-x-2">
-                        <div class="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-graduation-cap text-white text-sm"></i>
-                        </div>
-                        <span class="text-xl font-bold text-gray-900 myanmar-text">Sanpya Online Academy</span>
-                    </a>
-                </div>
+                <a href="{{ route('home') }}" class="flex items-center flex-shrink-0">
+                    <img src="{{ asset('images/SanPya-Logo.png') }}" alt="Sanpya Academy" style="height: 50px; width: auto;">
+                </a>
 
-                <!-- Search Bar -->
-                <div class="flex-1 max-w-lg mx-8">
-                    <form action="{{ route('search') }}" method="GET" class="relative">
-                        <input type="text" name="q" value="{{ request('q') }}" 
-                               placeholder="{{ __('app.search_placeholder') }}" 
-                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent {{ app()->getLocale() == 'my' ? 'myanmar-text' : '' }}">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Navigation Links -->
-                <div class="flex items-center space-x-6">
-                    <a href="{{ route('courses.index') }}" class="text-gray-700 hover:text-blue-600 font-medium">{{ __('app.courses') }}</a>
-                    
-                    <!-- Language Switcher -->
+                <!-- Center Menu -->
+                <div class="flex items-center" style="gap: 3rem;">
+                    <!-- Services Dropdown -->
                     <div class="relative group">
-                        <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium">
-                            <i class="fas fa-globe"></i>
-                            <span>{{ config('app.supported_locales')[app()->getLocale()] }}</span>
-                            <i class="fas fa-chevron-down text-xs"></i>
+                        <button class="text-gray-800 hover:text-teal-600 font-semibold flex items-center text-base py-2">
+                            Services <i class="fas fa-chevron-down ml-2 text-xs"></i>
                         </button>
-                        
-                        <div class="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                            <div class="py-2">
-                                @foreach(config('app.supported_locales') as $locale => $name)
-                                    <a href="{{ route('language.switch', $locale) }}" 
-                                       class="block px-4 py-2 text-gray-700 hover:bg-gray-50 {{ app()->getLocale() == $locale ? 'bg-blue-50 text-blue-600' : '' }}">
-                                        {{ $name }}
-                                    </a>
-                                @endforeach
-                            </div>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                            <a href="{{ route('home') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-t-lg">Home</a>
+                            <a href="{{ route('courses.index') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600">All Courses</a>
+                            <a href="{{ route('categories.index') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600">Categories</a>
+                            <a href="#" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-b-lg">Live Classes</a>
                         </div>
                     </div>
                     
-                    @auth
-                        @if(auth()->user()->isLecturer())
-                            <a href="{{ route('instructor.dashboard') }}" class="text-gray-700 hover:text-blue-600 font-medium">{{ __('app.teach') }}</a>
-                        @endif
-                        
-                        <div class="relative group">
-                            <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600">
-                                <img src="{{ auth()->user()->avatar_url }}" alt="Avatar" class="w-8 h-8 rounded-full">
-                                <span class="font-medium">{{ auth()->user()->name }}</span>
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </button>
-                            
-                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                                <div class="py-2">
-                                    <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
-                                        <i class="fas fa-tachometer-alt mr-2"></i>{{ __('app.dashboard') }}
-                                    </a>
-                                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
-                                        <i class="fas fa-user mr-2"></i>{{ __('app.profile') }}
-                                    </a>
-                                    <a href="{{ route('my.courses') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
-                                        <i class="fas fa-book mr-2"></i>{{ __('app.my_courses') }}
-                                    </a>
-                                    <a href="{{ route('my.wishlist') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
-                                        <i class="fas fa-heart mr-2"></i>{{ __('app.wishlist') }}
-                                    </a>
-                                    <hr class="my-2">
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button type="submit" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50">
-                                            <i class="fas fa-sign-out-alt mr-2"></i>{{ __('app.logout') }}
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+                    <!-- About Us Dropdown -->
+                    <div class="relative group">
+                        <button class="text-gray-800 hover:text-teal-600 font-semibold flex items-center text-base py-2">
+                            About Us <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                            <a href="{{ route('about') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-t-lg">Our Story</a>
+                            <a href="{{ route('team') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600">Our Team</a>
+                            <a href="{{ route('partners') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-b-lg">Partners</a>
                         </div>
+                    </div>
+                    
+                    <!-- Contact Us -->
+                    <a href="{{ route('contact') }}" class="text-gray-800 hover:text-teal-600 font-semibold text-base py-2">Contact Us</a>
+                </div>
+
+                <!-- Right Side - Buttons -->
+                <div class="flex items-center space-x-3 flex-shrink-0">
+                    @auth
+                        @if(auth()->user()->isAdmin())
+                            <a href="{{ route('admin.dashboard') }}" class="btn-3d btn-3d-teal">
+                                Admin Panel
+                            </a>
+                        @elseif(auth()->user()->isLecturer())
+                            <a href="{{ route('instructor.dashboard') }}" class="btn-3d btn-3d-teal">
+                                Instructor Panel
+                            </a>
+                        @else
+                            <a href="{{ route('dashboard') }}" class="btn-3d btn-3d-cyan">
+                                My Dashboard
+                            </a>
+                        @endif
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
+                            @csrf
+                            <button type="submit" class="btn-3d btn-3d-red">Logout</button>
+                        </form>
                     @else
-                        <a href="{{ route('login') }}" class="text-gray-700 hover:text-blue-600 font-medium">{{ __('app.login') }}</a>
-                        <a href="{{ route('register') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">{{ __('app.register') }}</a>
+                        <a href="{{ route('login') }}" class="btn-3d btn-3d-teal">
+                            Instructor Login
+                        </a>
+                        <a href="{{ route('login') }}" class="btn-3d btn-3d-cyan">
+                            Student Login
+                        </a>
                     @endauth
                 </div>
             </div>
         </div>
     </nav>
 
+    <!-- Flash Messages -->
+    @if(session('success'))
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 max-w-7xl mx-auto mt-4">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 max-w-7xl mx-auto mt-4">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <!-- Main Content -->
     <main>
-        @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative max-w-7xl mx-auto mt-4" role="alert">
-                <span class="block sm:inline">{{ session('success') }}</span>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-7xl mx-auto mt-4" role="alert">
-                <span class="block sm:inline">{{ session('error') }}</span>
-            </div>
-        @endif
-
         @yield('content')
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white mt-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer class="bg-slate-800 text-white mt-16" style="
+    background-color: #2d2d30;
+">
+        <div class="max-w-7xl mx-auto px-4 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                        <div class="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-graduation-cap text-white text-sm"></i>
-                        </div>
-                        <span class="text-xl font-bold myanmar-text">Sanpya Online Academy</span>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="{{ asset('images/SanPya-Logo.png') }}" alt="Sanpya Academy" style="height: 50px; width: auto;">
+                        <span class="text-xl font-bold">Sanpya Academy</span>
                     </div>
-                    <p class="text-gray-400 mb-4">Empowering learners worldwide with quality online education.</p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin"></i></a>
+                    <p class="text-gray-400 mb-4">Empowering learners with quality online education.</p>
+                    <div class="flex space-x-3">
+                        <a href="#" class="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center hover:bg-teal-500"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center hover:bg-teal-500"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center hover:bg-teal-500"><i class="fab fa-telegram"></i></a>
+                        <a href="#" class="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center hover:bg-teal-500"><i class="fab fa-tiktok"></i></a>
                     </div>
                 </div>
-                
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Company</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Press</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
+                    <h3 class="font-semibold mb-4 text-teal-400">Company</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="{{ route('about') }}" class="hover:text-white">About Us</a></li>
+                        <li><a href="{{ route('team') }}" class="hover:text-white">Our Team</a></li>
+                        <li><a href="{{ route('partners') }}" class="hover:text-white">Partners</a></li>
                     </ul>
                 </div>
-                
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Support</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Help Center</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Contact Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                    <h3 class="font-semibold mb-4 text-teal-400">Support</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="{{ route('contact') }}" class="hover:text-white">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-white">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white">Terms of Service</a></li>
                     </ul>
                 </div>
-                
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Teaching</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Become an Instructor</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Teaching Guidelines</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Instructor Support</a></li>
+                    <h3 class="font-semibold mb-4 text-teal-400">Teaching</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Become an Instructor</a></li>
+                        <li><a href="#" class="hover:text-white">Teaching Guidelines</a></li>
                     </ul>
                 </div>
             </div>
-            
-            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                <p>&copy; {{ date('Y') }} LearnHub. All rights reserved.</p>
+        </div>
+        <div class="border-t border-slate-700 py-4">
+            <div class="max-w-7xl mx-auto px-4 flex justify-between items-center text-gray-400 text-sm">
+                <p>&copy; {{ date('Y') }} Sanpya Online Academy</p>
+                <p>Developed By Grace Myanmar Software Solutions</p>
             </div>
         </div>
     </footer>
