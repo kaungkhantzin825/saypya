@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Course;
 use App\Models\Category;
+use App\Models\Section;
+use App\Models\Lesson;
 use App\Models\Enrollment;
 use App\Models\Review;
 use Illuminate\Http\Request;
@@ -258,6 +260,230 @@ class AdminController extends Controller
         $categories = Category::active()->ordered()->get();
 
         return view('admin.courses.index', compact('courses', 'categories'));
+    }
+
+    public function coursesCreate()
+    {
+        $categories = Category::active()->ordered()->get();
+        $instructors = User::lecturers()->active()->get();
+        return view('admin.courses.create', compact('categories', 'instructors'));
+    }
+
+    public function coursesStore(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'instructor_id' => 'required|exists:users,id',
+            'description' => 'required|string',
+            'short_description' => 'nullable|string|max:500',
+            'price' => 'required|numeric|min:0',
+            'discount_price' => 'nullable|numeric|min:0|lt:price',
+            'level' => 'required|in:beginner,intermediate,advanced',
+            'language' => 'required|string|max:50',
+            'requirements' => 'nullable|array',
+            'what_you_learn' => 'nullable|array',
+            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'preview_video' => 'nullable|string|url',
+            'status' => 'required|in:draft,published,archived',
+        ]);
+
+        $thumbnailPath = null;
+        if ($request->hasFile('thumbnail')) {
+            $thumbnailPath = $request->file('thumbnail')->store('courses/thumbnails', 'public');
+        }
+
+        $course = Course::create([
+            'title' => $request->title,
+            'slug' => Str::slug($request->title) . '-' . uniqid(),
+            'instructor_id' => $request->instructor_id,
+            'category_id' => $request->category_id,
+            'description' => $request->description,
+            'short_description' => $request->short_description,
+            'thumbnail' => $thumbnailPath,
+            'preview_video' => $request->preview_video,
+            'price' => $request->price,
+            'discount_price' => $request->discount_price,
+            'level' => $request->level,
+            'language' => $request->language,
+            'requirements' => $request->requirements ? array_filter($request->requirements) : null,
+            'what_you_learn' => $request->what_you_learn ? array_filter($request->what_you_learn) : null,
+            'status' => $request->status,
+            'is_featured' => $request->boolean('is_featured'),
+        ]);
+
+        return redirect()->route('admin.courses.content', $course)
+            ->with('success', 'Course created successfully! Now add sections and lessons.');
+    }
+
+    public function coursesEdit(Course $course)
+    {
+        $categories = Category::active()->ordered()->get();
+        $instructors = User::lecturers()->active()->get();
+        return view('admin.courses.edit', compact('course', 'categories', 'instructors'));
+    }
+
+    public function coursesUpdate(Request $request, Course $course)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'instructor_id' => 'required|exists:users,id',
+            'description' => 'required|string',
+            'short_description' => 'nullable|string|max:500',
+            'price' => 'required|numeric|min:0',
+            'discount_price' => 'nullable|numeric|min:0|lt:price',
+            'level' => 'required|in:beginner,intermediate,advanced',
+            'language' => 'required|string|max:50',
+            'requirements' => 'nullable|array',
+            'what_you_learn' => 'nullable|array',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'preview_video' => 'nullable|string|url',
+            'status' => 'required|in:draft,published,archived',
+        ]);
+
+        if ($request->hasFile('thumbnail')) {
+            if ($course->thumbnail) {
+                Storage::disk('public')->delete($course->thumbnail);
+            }
+            $course->thumbnail = $request->file('thumbnail')->store('courses/thumbnails', 'public');
+        }
+
+        $course->update([
+            'title' => $request->title,
+            'instructor_id' => $request->instructor_id,
+            'category_id' => $request->category_id,
+            'description' => $request->description,
+            'short_description' => $request->short_description,
+            'preview_video' => $request->preview_video,
+            'price' => $request->price,
+            'discount_price' => $request->discount_price,
+            'level' => $request->level,
+            'language' => $request->language,
+            'requirements' => $request->requirements ? array_filter($request->requirements) : null,
+            'what_you_learn' => $request->what_you_learn ? array_filter($request->what_you_learn) : null,
+            'status' => $request->status,
+            'is_featured' => $request->boolean('is_featured'),
+        ]);
+
+        return redirect()->route('admin.courses.index')->with('success', 'Course updated successfully!');
+    }
+
+    public function coursesContent(Course $course)
+    {
+        $course->load(['sections.lessons']);
+        return view('admin.courses.content', compact('course'));
+    }
+
+    public function coursesStoreSection(Request $request, Course $course)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $section = $course->sections()->create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'sort_order' => $course->sections()->count() + 1,
+        ]);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'section' => $section]);
+        }
+        return redirect()->back()->with('success', 'Section created!');
+    }
+
+    public function coursesUpdateSection(Request $request, Course $course, Section $section)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $section->update($request->only(['title', 'description']));
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'section' => $section]);
+        }
+        return redirect()->back()->with('success', 'Section updated!');
+    }
+
+    public function coursesDestroySection(Course $course, Section $section)
+    {
+        $section->delete();
+        
+        if (request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
+        return redirect()->back()->with('success', 'Section deleted!');
+    }
+
+    public function coursesStoreLesson(Request $request, Course $course, Section $section)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type' => 'required|in:video,text,quiz,assignment',
+            'video_url' => 'nullable|string',
+            'video_duration' => 'nullable|integer|min:0',
+            'content' => 'nullable|string',
+            'is_preview' => 'boolean',
+        ]);
+
+        $lesson = $section->lessons()->create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'type' => $request->type,
+            'video_url' => $request->video_url,
+            'video_duration' => $request->video_duration,
+            'content' => $request->content,
+            'is_preview' => $request->boolean('is_preview'),
+            'sort_order' => $section->lessons()->count() + 1,
+        ]);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'lesson' => $lesson]);
+        }
+        return redirect()->back()->with('success', 'Lesson created!');
+    }
+
+    public function coursesUpdateLesson(Request $request, Course $course, Section $section, Lesson $lesson)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type' => 'required|in:video,text,quiz,assignment',
+            'video_url' => 'nullable|string',
+            'video_duration' => 'nullable|integer|min:0',
+            'content' => 'nullable|string',
+            'is_preview' => 'boolean',
+        ]);
+
+        $lesson->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'type' => $request->type,
+            'video_url' => $request->video_url,
+            'video_duration' => $request->video_duration,
+            'content' => $request->content,
+            'is_preview' => $request->boolean('is_preview'),
+        ]);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'lesson' => $lesson]);
+        }
+        return redirect()->back()->with('success', 'Lesson updated!');
+    }
+
+    public function coursesDestroyLesson(Course $course, Section $section, Lesson $lesson)
+    {
+        $lesson->delete();
+        
+        if (request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
+        return redirect()->back()->with('success', 'Lesson deleted!');
     }
 
     public function coursesShow(Course $course)

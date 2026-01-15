@@ -31,7 +31,7 @@
 </section>
 
 <!-- Categories -->
-<section class="py-12 bg-gray-50">
+<!-- <section class="py-12 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4">
         <h2 class="text-2xl font-bold text-center mb-8">Explore Categories</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -46,7 +46,7 @@
             @endforeach
         </div>
     </div>
-</section>
+</section> -->
 
 <!-- Featured Courses -->
 <section class="py-12 bg-white">
@@ -76,7 +76,7 @@
 </section>
 
 <!-- Instructors -->
-<section class="py-12 bg-white">
+<!-- <section class="py-12 bg-white">
     <div class="max-w-7xl mx-auto px-4">
         <h2 class="text-2xl font-bold text-center mb-8">Our Top Instructors</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
@@ -89,16 +89,22 @@
             @endforeach
         </div>
     </div>
-</section>
+</section> -->
 
 <!-- CTA with Background Image -->
 <section class="relative bg-cover bg-center bg-no-repeat py-20" style="background-image: linear-gradient(rgba(13, 148, 136, 0.9), rgba(13, 148, 136, 0.9)), url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1920&q=80');">
     <div class="max-w-4xl mx-auto px-4 text-center text-white">
         <h2 class="text-3xl font-bold mb-4">Ready to Start Learning?</h2>
         <p class="text-teal-100 mb-6 text-lg">Join our community and start your learning journey today.</p>
-        <a href="{{ route('register') }}" class="btn-3d btn-3d-white text-lg">
-            Get Started Free
-        </a>
+        @auth
+            <a href="{{ route('courses.index') }}" class="btn-3d btn-3d-white text-lg">
+                Browse Courses
+            </a>
+        @else
+            <a href="{{ route('register') }}" class="btn-3d btn-3d-white text-lg">
+                Get Started Free
+            </a>
+        @endauth
     </div>
 </section>
 @endsection

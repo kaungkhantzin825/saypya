@@ -89,7 +89,7 @@
                             <a href="{{ route('home') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-t-lg">Home</a>
                             <a href="{{ route('courses.index') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600">All Courses</a>
                             <a href="{{ route('categories.index') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600">Categories</a>
-                            <a href="#" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-b-lg">Live Classes</a>
+                            <!-- <a href="#" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-b-lg">Live Classes</a> -->
                         </div>
                     </div>
                     
@@ -100,7 +100,7 @@
                         </button>
                         <div class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                             <a href="{{ route('about') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-t-lg">Our Story</a>
-                            <a href="{{ route('team') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600">Our Team</a>
+                            <!-- <a href="{{ route('team') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600">Our Team</a> -->
                             <a href="{{ route('partners') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-b-lg">Partners</a>
                         </div>
                     </div>
@@ -160,9 +160,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-slate-800 text-white mt-16" style="
-    background-color: #2d2d30;
-">
+    <footer class="bg-slate-800 text-white" style="background-color: #2d2d30;">
         <div class="max-w-7xl mx-auto px-4 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
@@ -174,8 +172,7 @@
                     <div class="flex space-x-3">
                         <a href="#" class="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center hover:bg-teal-500"><i class="fab fa-facebook-f"></i></a>
                         <a href="#" class="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center hover:bg-teal-500"><i class="fab fa-youtube"></i></a>
-                        <a href="#" class="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center hover:bg-teal-500"><i class="fab fa-telegram"></i></a>
-                        <a href="#" class="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center hover:bg-teal-500"><i class="fab fa-tiktok"></i></a>
+
                     </div>
                 </div>
                 <div>

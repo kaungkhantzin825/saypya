@@ -4,8 +4,9 @@
 
 @section('content')
 <!-- Hero -->
-<section class="bg-gradient-to-r from-teal-600 to-teal-700 text-white py-16">
-    <div class="max-w-7xl mx-auto px-4 text-center">
+<section class="bg-gradient-to-r from-teal-600 to-teal-700 text-white py-16" style="background-image: url('https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1920&h=400&fit=crop'); background-size: cover; background-position: center; position: relative;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(13, 148, 136, 0.9) 0%, rgba(6, 182, 212, 0.85) 100%);"></div>
+    <div class="max-w-7xl mx-auto px-4 text-center relative z-10">
         <h1 class="text-4xl font-bold mb-4">Contact Us</h1>
         <p class="text-xl text-teal-100">We'd love to hear from you</p>
     </div>

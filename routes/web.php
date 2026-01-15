@@ -147,11 +147,24 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // Course management
     Route::get('/courses', [AdminController::class, 'coursesIndex'])->name('courses.index');
+    Route::get('/courses/create', [AdminController::class, 'coursesCreate'])->name('courses.create');
+    Route::post('/courses', [AdminController::class, 'coursesStore'])->name('courses.store');
     Route::get('/courses/{course}', [AdminController::class, 'coursesShow'])->name('courses.show');
+    Route::get('/courses/{course}/edit', [AdminController::class, 'coursesEdit'])->name('courses.edit');
+    Route::put('/courses/{course}', [AdminController::class, 'coursesUpdate'])->name('courses.update');
     Route::patch('/courses/{course}/approve', [AdminController::class, 'coursesApprove'])->name('courses.approve');
     Route::patch('/courses/{course}/archive', [AdminController::class, 'coursesArchive'])->name('courses.archive');
     Route::patch('/courses/{course}/feature', [AdminController::class, 'coursesFeature'])->name('courses.feature');
     Route::delete('/courses/{course}', [AdminController::class, 'coursesDestroy'])->name('courses.destroy');
+    
+    // Course content management (sections & lessons)
+    Route::get('/courses/{course}/content', [AdminController::class, 'coursesContent'])->name('courses.content');
+    Route::post('/courses/{course}/sections', [AdminController::class, 'coursesStoreSection'])->name('courses.sections.store');
+    Route::put('/courses/{course}/sections/{section}', [AdminController::class, 'coursesUpdateSection'])->name('courses.sections.update');
+    Route::delete('/courses/{course}/sections/{section}', [AdminController::class, 'coursesDestroySection'])->name('courses.sections.destroy');
+    Route::post('/courses/{course}/sections/{section}/lessons', [AdminController::class, 'coursesStoreLesson'])->name('courses.sections.lessons.store');
+    Route::put('/courses/{course}/sections/{section}/lessons/{lesson}', [AdminController::class, 'coursesUpdateLesson'])->name('courses.lessons.update');
+    Route::delete('/courses/{course}/sections/{section}/lessons/{lesson}', [AdminController::class, 'coursesDestroyLesson'])->name('courses.lessons.destroy');
     
     // Enrollment management
     Route::get('/enrollments', [AdminController::class, 'enrollmentsIndex'])->name('enrollments.index');

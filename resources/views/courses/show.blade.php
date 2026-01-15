@@ -76,6 +76,11 @@
                             <a href="{{ route('courses.learn', $course) }}" class="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors text-center block mb-4 myanmar-text">
                                 <i class="fas fa-play mr-2"></i>ဆက်လက်သင်ယူရန်
                             </a>
+                        @elseif(auth()->check() && (auth()->user()->isLecturer() || auth()->user()->isAdmin()))
+                            {{-- Instructors and Admins don't see enroll button --}}
+                            <div class="w-full bg-gray-100 text-gray-600 py-3 px-6 rounded-lg font-semibold text-center mb-4">
+                                <i class="fas fa-info-circle mr-2"></i>Instructor/Admin View
+                            </div>
                         @else
                             <form action="{{ route('courses.enroll', $course) }}" method="POST" class="mb-4">
                                 @csrf
@@ -85,12 +90,14 @@
                             </form>
                         @endif
                         
+                        @if(!auth()->check() || (!auth()->user()->isLecturer() && !auth()->user()->isAdmin()))
                         <button onclick="toggleWishlist({{ $course->id }})" 
                                 class="w-full border border-gray-300 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                                 data-course-id="{{ $course->id }}">
                             <i class="{{ $isInWishlist ? 'fas fa-heart text-red-500' : 'far fa-heart' }} mr-2"></i>
                             {{ $isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist' }}
                         </button>
+                        @endif
                         
                         <div class="mt-6 space-y-3 text-sm text-gray-600">
                             <div class="flex items-center">

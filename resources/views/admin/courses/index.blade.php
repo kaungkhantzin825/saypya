@@ -12,6 +12,11 @@
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">All Courses</h3>
+        <div class="card-tools">
+            <a href="{{ route('admin.courses.create') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Create Course
+            </a>
+        </div>
     </div>
     <div class="card-body">
         <!-- Filters -->

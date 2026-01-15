@@ -4,8 +4,9 @@
 
 @section('content')
 <!-- Hero -->
-<section class="bg-gradient-to-r from-teal-600 to-teal-700 text-white py-16">
-    <div class="max-w-7xl mx-auto px-4 text-center">
+<section class="bg-gradient-to-r from-teal-600 to-teal-700 text-white py-16" style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&h=400&fit=crop'); background-size: cover; background-position: center; position: relative;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(13, 148, 136, 0.9) 0%, rgba(6, 182, 212, 0.85) 100%);"></div>
+    <div class="max-w-7xl mx-auto px-4 text-center relative z-10">
         <h1 class="text-4xl font-bold mb-4">Our Partners</h1>
         <p class="text-xl text-teal-100">Working together to transform education</p>
     </div>
@@ -19,48 +20,45 @@
             <p class="text-gray-600">We collaborate with leading organizations to bring you the best learning experience.</p>
         </div>
         
-        <div class="grid md:grid-cols-4 gap-8">
-            <!-- Partner 1 -->
-            <div class="bg-white p-8 rounded-lg shadow-lg text-center hover:shadow-xl transition">
-                <div class="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-university text-3xl text-teal-600"></i>
+        <div class="flex flex-wrap justify-center items-stretch gap-8">
+            <!-- Partner 1 - 3 Education -->
+            <div class="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition flex-1 min-w-[280px] max-w-[350px]">
+                <div class="flex items-center justify-center mb-6" style="height: 180px;">
+                    <img src="{{ asset('images/logo-6ZHKaEM-.png') }}" alt="3 Education" style="max-width: 100%; max-height: 180px; object-fit: contain;">
                 </div>
-                <h3 class="font-bold mb-2">Tech University</h3>
-                <p class="text-gray-600 text-sm">Academic Partner</p>
+                <div class="text-center">
+                    <h3 class="font-bold text-xl mb-2">Edu Gamekabar</h3>
+                    <p class="text-gray-600 text-sm">Educational Partner</p>
+                </div>
             </div>
             
-            <!-- Partner 2 -->
-            <div class="bg-white p-8 rounded-lg shadow-lg text-center hover:shadow-xl transition">
-                <div class="w-20 h-20 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-building text-3xl text-cyan-600"></i>
+            <!-- Partner 2 - MM Certify -->
+            <div class="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition flex-1 min-w-[280px] max-w-[350px]">
+                <div class="flex items-center justify-center mb-6" style="height: 180px;">
+                    <img src="{{ asset('images/mmlogo.png') }}" alt="MM Certify" style="max-width: 100%; max-height: 180px; object-fit: contain;">
                 </div>
-                <h3 class="font-bold mb-2">Digital Corp</h3>
-                <p class="text-gray-600 text-sm">Industry Partner</p>
+                <div class="text-center">
+                    <h3 class="font-bold text-xl mb-2">MM Certify</h3>
+                    <p class="text-gray-600 text-sm">Certification Partner</p>
+                </div>
             </div>
             
-            <!-- Partner 3 -->
-            <div class="bg-white p-8 rounded-lg shadow-lg text-center hover:shadow-xl transition">
-                <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-laptop-code text-3xl text-purple-600"></i>
+            <!-- Partner 3 - Edu Gamekabar -->
+            <div class="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition flex-1 min-w-[280px] max-w-[350px]">
+                <div class="flex items-center justify-center mb-6" style="height: 180px;">
+                    <img src="{{ asset('images/images.png') }}" alt="Edu Gamekabar" style="max-width: 100%; max-height: 180px; object-fit: contain;">
                 </div>
-                <h3 class="font-bold mb-2">Code Academy</h3>
-                <p class="text-gray-600 text-sm">Content Partner</p>
-            </div>
-            
-            <!-- Partner 4 -->
-            <div class="bg-white p-8 rounded-lg shadow-lg text-center hover:shadow-xl transition">
-                <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-handshake text-3xl text-orange-600"></i>
+                <div class="text-center">
+                    <h3 class="font-bold text-xl mb-2"> 3 Education</h3>
+                    <p class="text-gray-600 text-sm">Educational Partner</p>
                 </div>
-                <h3 class="font-bold mb-2">Edu Foundation</h3>
-                <p class="text-gray-600 text-sm">NGO Partner</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- Partnership Benefits -->
-<section class="py-16 bg-gray-50">
+<!-- <section class="py-16 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-12">
             <h2 class="text-3xl font-bold mb-4">Partnership Benefits</h2>
@@ -90,7 +88,7 @@
             </div>
         </div>
     </div>
-</section>
+</section> -->
 
 <!-- Become a Partner -->
 <section class="py-16">
