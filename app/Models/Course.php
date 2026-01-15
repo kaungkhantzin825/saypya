@@ -81,6 +81,11 @@ class Course extends Model
         return $this->hasMany(Discussion::class);
     }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class)->parentOnly()->approved()->with(['user', 'replies'])->latest();
+    }
+
     public function wishlists()
     {
         return $this->hasMany(Wishlist::class);
