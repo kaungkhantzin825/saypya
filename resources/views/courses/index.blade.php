@@ -14,9 +14,13 @@
         <!-- Filters -->
         <div class="bg-white rounded-lg shadow p-4 mb-8">
             <form method="GET" action="{{ route('courses.index') }}" class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search courses..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-teal-500 focus:border-teal-500">
+                </div>
                 <div class="flex-1 min-w-[150px]">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select name="category" class="w-full border rounded-lg px-3 py-2">
+                    <select name="category" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-teal-500 focus:border-teal-500">
                         <option value="">All Categories</option>
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
@@ -25,7 +29,7 @@
                 </div>
                 <div class="flex-1 min-w-[150px]">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Level</label>
-                    <select name="level" class="w-full border rounded-lg px-3 py-2">
+                    <select name="level" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-teal-500 focus:border-teal-500">
                         <option value="">All Levels</option>
                         <option value="beginner" {{ request('level') == 'beginner' ? 'selected' : '' }}>Beginner</option>
                         <option value="intermediate" {{ request('level') == 'intermediate' ? 'selected' : '' }}>Intermediate</option>
@@ -34,15 +38,15 @@
                 </div>
                 <div class="flex-1 min-w-[150px]">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                    <select name="sort" class="w-full border rounded-lg px-3 py-2">
+                    <select name="sort" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-teal-500 focus:border-teal-500">
                         <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Newest</option>
                         <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>Most Popular</option>
                         <option value="price_low" {{ request('sort') == 'price_low' ? 'selected' : '' }}>Price: Low to High</option>
                         <option value="price_high" {{ request('sort') == 'price_high' ? 'selected' : '' }}>Price: High to Low</option>
                     </select>
                 </div>
-                <button type="submit" class="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700">
-                    Filter
+                <button type="submit" class="btn-3d btn-3d-teal">
+                    <i class="fas fa-search mr-2"></i>Search
                 </button>
             </form>
         </div>

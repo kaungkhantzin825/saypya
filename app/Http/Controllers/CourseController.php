@@ -15,10 +15,19 @@ class CourseController extends Controller
     {
         $category = $request->get('category');
         $level = $request->get('level');
+        $search = $request->get('search');
         $sort = $request->get('sort', 'newest');
 
         $courses = Course::published()
             ->with(['instructor', 'category', 'reviews']);
+
+        if ($search) {
+            $courses->where(function($query) use ($search) {
+                $query->where('title', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%")
+                      ->orWhere('short_description', 'like', "%{$search}%");
+            });
+        }
 
         if ($category) {
             $courses->byCategory($category);
