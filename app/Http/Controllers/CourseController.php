@@ -107,7 +107,7 @@ class CourseController extends Controller
         ));
     }
 
-    public function enroll(Course $course)
+    public function enroll(Request $request, Course $course)
     {
         if (!Auth::check()) {
             return redirect()->route('login')
@@ -134,7 +134,24 @@ class CourseController extends Controller
                 ->with('success', 'Successfully enrolled in the course!');
         }
 
-        // For paid courses, redirect to payment
+        // For paid courses from checkout page
+        if ($request->has('payment_method')) {
+            $paymentMethod = $request->input('payment_method');
+            
+            // Create enrollment with payment pending
+            $user->enrollments()->create([
+                'course_id' => $course->id,
+                'price_paid' => $course->current_price,
+                'payment_status' => 'completed', // In real app, this would be 'pending' until payment confirmed
+                'payment_method' => $paymentMethod,
+                'enrolled_at' => now(),
+            ]);
+
+            return redirect()->route('courses.learn', $course)
+                ->with('success', 'Payment successful! You are now enrolled in the course.');
+        }
+
+        // For paid courses without payment method, redirect to checkout
         return redirect()->route('courses.checkout', $course);
     }
 
