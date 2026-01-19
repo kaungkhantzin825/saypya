@@ -25,9 +25,9 @@
                     </div>
 
                     <!-- Payment Method -->
-                    <div class="mb-6">
+                    <div class="mb-6" style="display:none">
                         <h3 class="text-lg font-semibold mb-4">Payment Method</h3>
-                        <div class="space-y-3">
+                        <div class="space-y-3" style="display:none">
                             <label class="flex items-center p-4 border-2 border-green-500 rounded-lg cursor-pointer bg-green-50">
                                 <input type="radio" name="payment_method" value="free" checked class="mr-3">
                                 <div class="flex-1">
@@ -35,33 +35,6 @@
                                     <div class="text-sm text-gray-600">Enroll for free</div>
                                 </div>
                                 <i class="fas fa-gift text-2xl text-green-600"></i>
-                            </label>
-                            
-                            <label class="flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-teal-500">
-                                <input type="radio" name="payment_method" value="kbzpay" class="mr-3">
-                                <div class="flex-1">
-                                    <div class="font-semibold">KBZ Pay</div>
-                                    <div class="text-sm text-gray-600">Pay with KBZ Pay mobile wallet</div>
-                                </div>
-                                <i class="fas fa-mobile-alt text-2xl text-teal-600"></i>
-                            </label>
-                            
-                            <label class="flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-teal-500">
-                                <input type="radio" name="payment_method" value="wavepay" class="mr-3">
-                                <div class="flex-1">
-                                    <div class="font-semibold">Wave Pay</div>
-                                    <div class="text-sm text-gray-600">Pay with Wave Pay mobile wallet</div>
-                                </div>
-                                <i class="fas fa-wallet text-2xl text-blue-600"></i>
-                            </label>
-                            
-                            <label class="flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-teal-500">
-                                <input type="radio" name="payment_method" value="cbpay" class="mr-3">
-                                <div class="flex-1">
-                                    <div class="font-semibold">CB Pay</div>
-                                    <div class="text-sm text-gray-600">Pay with CB Pay mobile wallet</div>
-                                </div>
-                                <i class="fas fa-credit-card text-2xl text-purple-600"></i>
                             </label>
                         </div>
                     </div>
