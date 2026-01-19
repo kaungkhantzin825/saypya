@@ -39,6 +39,15 @@ Route::get('/partners', function () {
 Route::get('/contact', function () {
     return view('pages.contact');
 })->name('contact');
+Route::get('/help', function () {
+    return view('pages.help');
+})->name('help');
+Route::get('/privacy', function () {
+    return view('pages.privacy');
+})->name('privacy');
+Route::get('/terms', function () {
+    return view('pages.terms');
+})->name('terms');
 
 // Language switching
 Route::get('/language/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('language.switch');
@@ -141,6 +150,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/users/{user}/edit', [AdminController::class, 'usersEdit'])->name('users.edit');
     Route::put('/users/{user}', [AdminController::class, 'usersUpdate'])->name('users.update');
     Route::patch('/users/{user}/toggle', [AdminController::class, 'usersToggle'])->name('users.toggle');
+    Route::patch('/users/{user}/approve', [AdminController::class, 'usersApprove'])->name('users.approve');
+    Route::patch('/users/{user}/reject', [AdminController::class, 'usersReject'])->name('users.reject');
     Route::delete('/users/{user}', [AdminController::class, 'usersDestroy'])->name('users.destroy');
     
     // Category management

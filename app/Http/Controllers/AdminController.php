@@ -160,6 +160,18 @@ class AdminController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'User deleted successfully!');
     }
 
+    public function usersApprove(User $user)
+    {
+        $user->update(['status' => 'active']);
+        return redirect()->back()->with('success', 'User approved successfully! They can now login.');
+    }
+
+    public function usersReject(User $user)
+    {
+        $user->update(['status' => 'inactive']);
+        return redirect()->back()->with('success', 'User rejected.');
+    }
+
     // ==================== CATEGORY MANAGEMENT ====================
 
     public function categoriesIndex()

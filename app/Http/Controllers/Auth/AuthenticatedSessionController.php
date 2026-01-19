@@ -28,8 +28,25 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Check if user is approved
+        $user = Auth::user();
+        
+        if ($user->status === 'pending') {
+            Auth::logout();
+            return back()->withErrors([
+                'email' => 'Your account is pending admin approval. Please wait for approval before logging in.',
+            ]);
+        }
+        
+        if ($user->status === 'inactive') {
+            Auth::logout();
+            return back()->withErrors([
+                'email' => 'Your account has been deactivated. Please contact support.',
+            ]);
+        }
+
         // Update last login time
-        Auth::user()->update(['last_login_at' => now()]);
+        $user->update(['last_login_at' => now()]);
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

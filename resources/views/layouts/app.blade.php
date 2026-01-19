@@ -186,9 +186,9 @@
                     <h3 class="font-semibold mb-4 text-teal-400">Support</h3>
                     <ul class="space-y-2 text-gray-400">
                         <li><a href="{{ route('contact') }}" class="hover:text-white">Contact Us</a></li>
-                        <li><a href="#" class="hover:text-white">Help Center</a></li>
-                        <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+                        <li><a href="{{ route('help') }}" class="hover:text-white">Help Center</a></li>
+                        <li><a href="{{ route('privacy') }}" class="hover:text-white">Privacy Policy</a></li>
+                        <li><a href="{{ route('terms') }}" class="hover:text-white">Terms of Service</a></li>
                     </ul>
                 </div>
                 <div>

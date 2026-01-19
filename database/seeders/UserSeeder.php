@@ -16,6 +16,7 @@ class UserSeeder extends Seeder
             'email' => 'admin@learnhub.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
+            'status' => 'active',
             'email_verified_at' => now(),
             'bio' => 'System administrator with full access to manage the platform.',
             'is_active' => true,
@@ -61,6 +62,7 @@ class UserSeeder extends Seeder
                 'email' => $lecturer['email'],
                 'password' => Hash::make('password'),
                 'role' => 'lecturer',
+                'status' => 'active',
                 'email_verified_at' => now(),
                 'bio' => $lecturer['bio'],
                 'country' => $lecturer['country'],
@@ -88,6 +90,7 @@ class UserSeeder extends Seeder
                 'email' => strtolower(str_replace(' ', '.', $name)) . '@example.com',
                 'password' => Hash::make('password'),
                 'role' => 'student',
+                'status' => 'active',
                 'email_verified_at' => now(),
                 'is_active' => true,
             ]);

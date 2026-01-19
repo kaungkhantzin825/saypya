@@ -16,6 +16,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'status',
         'avatar',
         'bio',
         'phone',
@@ -117,6 +118,21 @@ class User extends Authenticatable
     public function isAdmin()
     {
         return $this->role === 'admin';
+    }
+
+    public function isActive()
+    {
+        return $this->status === 'active';
+    }
+
+    public function isPending()
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isInactive()
+    {
+        return $this->status === 'inactive';
     }
 
     public function hasEnrolled($courseId)

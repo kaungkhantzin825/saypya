@@ -42,18 +42,13 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
-            'email_verified_at' => now(), // Auto-verify email
+            'status' => 'pending', // Pending admin approval
+            'email_verified_at' => now(),
         ]);
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        // Redirect based on role
-        if ($user->isLecturer()) {
-            return redirect()->route('instructor.dashboard')->with('success', 'Welcome to Sanpya Academy!');
-        }
-
-        return redirect()->route('home')->with('success', 'Welcome to Sanpya Academy!');
+        // Don't auto-login, redirect to login with message
+        return redirect()->route('login')->with('success', 'Registration successful! Please wait for admin approval before logging in.');
     }
 }

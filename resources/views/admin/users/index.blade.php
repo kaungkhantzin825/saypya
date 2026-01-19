@@ -76,9 +76,13 @@
                             </span>
                         </td>
                         <td>
-                            <span class="badge badge-{{ $user->is_active ? 'success' : 'secondary' }}">
-                                {{ $user->is_active ? 'Active' : 'Inactive' }}
-                            </span>
+                            @if($user->status === 'pending')
+                                <span class="badge badge-warning">Pending</span>
+                            @elseif($user->status === 'active')
+                                <span class="badge badge-success">Active</span>
+                            @else
+                                <span class="badge badge-secondary">Inactive</span>
+                            @endif
                         </td>
                         <td>{{ $user->created_at->format('M d, Y') }}</td>
                         <td>
@@ -88,14 +92,24 @@
                             <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning btn-sm">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form action="{{ route('admin.users.toggle', $user) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="btn btn-{{ $user->is_active ? 'secondary' : 'success' }} btn-sm" 
-                                        onclick="return confirm('Are you sure?')">
-                                    <i class="fas fa-{{ $user->is_active ? 'ban' : 'check' }}"></i>
-                                </button>
-                            </form>
+                            
+                            @if($user->status === 'pending')
+                                <form action="{{ route('admin.users.approve', $user) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Approve this user?')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                </form>
+                                <form action="{{ route('admin.users.reject', $user) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this user?')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </form>
+                            @endif
+                            
                             @if($user->id !== auth()->id())
                             <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline">
                                 @csrf
