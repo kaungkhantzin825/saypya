@@ -179,7 +179,6 @@
                     <h3 class="font-semibold mb-4 text-teal-400">Company</h3>
                     <ul class="space-y-2 text-gray-400">
                         <li><a href="{{ route('about') }}" class="hover:text-white">About Us</a></li>
-                        <li><a href="{{ route('team') }}" class="hover:text-white">Our Team</a></li>
                         <li><a href="{{ route('partners') }}" class="hover:text-white">Partners</a></li>
                     </ul>
                 </div>
