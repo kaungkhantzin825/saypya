@@ -681,21 +681,50 @@ class AdminController extends Controller
 
     public function settings()
     {
-        $settings = []; // Load from database or config
+        $settings = [
+            'site_name' => \App\Models\Setting::get('site_name', config('app.name')),
+            'site_description' => \App\Models\Setting::get('site_description'),
+            'contact_email' => \App\Models\Setting::get('contact_email'),
+            'contact_phone' => \App\Models\Setting::get('contact_phone'),
+            'contact_address' => \App\Models\Setting::get('contact_address'),
+            'contact_facebook' => \App\Models\Setting::get('contact_facebook'),
+            'contact_website' => \App\Models\Setting::get('contact_website'),
+            'address' => \App\Models\Setting::get('address'),
+            'facebook_url' => \App\Models\Setting::get('facebook_url'),
+            'twitter_url' => \App\Models\Setting::get('twitter_url'),
+            'youtube_url' => \App\Models\Setting::get('youtube_url'),
+            'linkedin_url' => \App\Models\Setting::get('linkedin_url'),
+            'currency' => \App\Models\Setting::get('currency', 'USD'),
+            'commission_rate' => \App\Models\Setting::get('commission_rate', 20),
+        ];
+        
         return view('admin.settings', compact('settings'));
     }
 
     public function settingsUpdate(Request $request)
     {
-        // Save settings to database or config
+        $fields = [
+            'site_name', 'site_description', 'contact_email', 'contact_phone',
+            'contact_address', 'contact_facebook', 'contact_website',
+            'address', 'facebook_url', 'twitter_url', 'youtube_url', 'linkedin_url',
+            'currency', 'commission_rate'
+        ];
+
+        foreach ($fields as $field) {
+            if ($request->has($field)) {
+                \App\Models\Setting::set($field, $request->input($field));
+            }
+        }
+
         return redirect()->back()->with('success', 'Settings updated successfully!');
     }
 
     public function cacheClear()
     {
-        Artisan::call('cache:clear');
-        Artisan::call('config:clear');
-        Artisan::call('view:clear');
+        \Artisan::call('cache:clear');
+        \Artisan::call('view:clear');
+        \Artisan::call('config:clear');
+        
         return redirect()->back()->with('success', 'Cache cleared successfully!');
     }
 }

@@ -28,7 +28,7 @@
                         </div>
                         <div>
                             <h3 class="font-semibold">Address</h3>
-                            <p class="text-gray-600">Yangon, Myanmar</p>
+                            <p class="text-gray-600">{{ \App\Models\Setting::get('contact_address', 'Yangon, Myanmar') }}</p>
                         </div>
                     </div>
                     
@@ -38,7 +38,7 @@
                         </div>
                         <div>
                             <h3 class="font-semibold">Phone</h3>
-                            <p class="text-gray-600">+95 9 123 456 789</p>
+                            <p class="text-gray-600">{{ \App\Models\Setting::get('contact_phone', '+95 9 69523 8273') }}</p>
                         </div>
                     </div>
                     
@@ -48,7 +48,7 @@
                         </div>
                         <div>
                             <h3 class="font-semibold">Email</h3>
-                            <p class="text-gray-600">info@sanpya.edu.mm</p>
+                            <p class="text-gray-600">{{ \App\Models\Setting::get('contact_email', 'sanpyaeducationcentre@gmail.com') }}</p>
                         </div>
                     </div>
                 </div>
@@ -57,10 +57,18 @@
                 <div class="mt-8">
                     <h3 class="font-semibold mb-4">Follow Us</h3>
                     <div class="flex space-x-4">
-                        <a href="#" class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700"><i class="fab fa-youtube"></i></a>
-                        <a href="#" class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700"><i class="fab fa-telegram"></i></a>
-                        <a href="#" class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700"><i class="fab fa-tiktok"></i></a>
+                        @if(\App\Models\Setting::get('contact_facebook'))
+                        <a href="{{ \App\Models\Setting::get('contact_facebook') }}" target="_blank" class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700"><i class="fab fa-facebook-f"></i></a>
+                        @endif
+                        @if(\App\Models\Setting::get('youtube_url'))
+                        <a href="{{ \App\Models\Setting::get('youtube_url') }}" target="_blank" class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700"><i class="fab fa-youtube"></i></a>
+                        @endif
+                        @if(\App\Models\Setting::get('twitter_url'))
+                        <a href="{{ \App\Models\Setting::get('twitter_url') }}" target="_blank" class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700"><i class="fab fa-twitter"></i></a>
+                        @endif
+                        @if(\App\Models\Setting::get('linkedin_url'))
+                        <a href="{{ \App\Models\Setting::get('linkedin_url') }}" target="_blank" class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700"><i class="fab fa-linkedin"></i></a>
+                        @endif
                     </div>
                 </div>
             </div>
