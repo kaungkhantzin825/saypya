@@ -73,7 +73,7 @@
                     @forelse($courses as $course)
                     <tr>
                         <td>
-                            <img src="{{ $course->thumbnail ? Storage::url($course->thumbnail) : 'https://via.placeholder.com/60x40' }}" 
+                            <img src="{{ $course->thumbnail_url }}" 
                                  class="img-thumbnail" style="max-width: 80px;">
                         </td>
                         <td>
@@ -101,6 +101,9 @@
                         <td>
                             <a href="{{ route('admin.courses.show', $course) }}" class="btn btn-info btn-sm" title="View">
                                 <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ route('admin.courses.edit', $course) }}" class="btn btn-primary btn-sm" title="Edit">
+                                <i class="fas fa-edit"></i>
                             </a>
                             @if($course->status == 'draft')
                             <form action="{{ route('admin.courses.approve', $course) }}" method="POST" class="d-inline">

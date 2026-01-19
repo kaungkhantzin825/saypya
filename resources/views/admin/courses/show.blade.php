@@ -27,7 +27,7 @@
             </div>
             <div class="card-body">
                 @if($course->thumbnail)
-                <img src="{{ Storage::url($course->thumbnail) }}" class="img-fluid mb-3" style="max-height: 300px;">
+                <img src="{{ $course->thumbnail_url }}" class="img-fluid mb-3" style="max-height: 300px;">
                 @endif
                 
                 <h5>Description</h5>

@@ -42,12 +42,18 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'email_verified_at' => now(), // Auto-verify email
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Redirect based on role
+        if ($user->isLecturer()) {
+            return redirect()->route('instructor.dashboard')->with('success', 'Welcome to Sanpya Academy!');
+        }
+
+        return redirect()->route('home')->with('success', 'Welcome to Sanpya Academy!');
     }
 }
