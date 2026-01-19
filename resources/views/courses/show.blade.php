@@ -77,7 +77,9 @@
                                 <i class="fas fa-play mr-2"></i>ဆက်လက်သင်ယူရန်
                             </a>
                         @elseif($enrollment && $enrollment->payment_status === 'pending')
-                            <div class="w-full bg-yellow-100 border-2 border-yellow-500 text-yellow-800 py-3 px-6 rounded-lg font-semibold text-center mb-4">
+                            <div class="w-full bg-yellow-100 border-2 border-yellow-500 text-yellow-800 py-3 px-6 rounded-lg font-semibold text-center mb-4" style="
+    color: rebeccapurple;
+">
                                 <i class="fas fa-clock mr-2"></i>Pending Admin Approval
                             </div>
                             <p class="text-sm text-gray-600 text-center mb-4">Your enrollment is waiting for admin approval. You will be notified once approved.</p>
