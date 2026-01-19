@@ -85,27 +85,7 @@
                 </button>
             </div>
 
-            <!-- <div class="mt-6">
-                <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-300" />
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-gray-50 text-gray-500">Demo Accounts</span>
-                    </div>
-                </div>
-
-                <div class="mt-6 grid grid-cols-1 gap-3">
-                    <div class="text-center">
-                        <p class="text-xs text-gray-600 mb-2">Quick login for testing:</p>
-                        <div class="space-y-1 text-xs text-gray-500">
-                            <div>Admin: admin@learnhub.com / password</div>
-                            <div>Instructor: sarah@learnhub.com / password</div>
-                            <div>Student: john.doe@example.com / password</div>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
+         
         </form>
     </div>
 </div>
