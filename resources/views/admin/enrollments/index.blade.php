@@ -118,7 +118,22 @@
                         </td>
                         <td>{{ $enrollment->enrolled_at->format('M d, Y H:i') }}</td>
                         <td>
-                            @if($enrollment->payment_status == 'completed')
+                            @if($enrollment->payment_status == 'pending')
+                            <form action="{{ route('admin.enrollments.approve', $enrollment) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Approve this enrollment?')">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                            </form>
+                            <form action="{{ route('admin.enrollments.reject', $enrollment) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this enrollment?')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </form>
+                            @elseif($enrollment->payment_status == 'completed')
                             <form action="{{ route('admin.enrollments.refund', $enrollment) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('PATCH')
@@ -126,6 +141,8 @@
                                     <i class="fas fa-undo"></i> Refund
                                 </button>
                             </form>
+                            @else
+                            <span class="text-muted">No actions</span>
                             @endif
                         </td>
                     </tr>

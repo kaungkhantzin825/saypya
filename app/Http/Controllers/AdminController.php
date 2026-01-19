@@ -555,6 +555,18 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Enrollment refunded successfully!');
     }
 
+    public function enrollmentsApprove(Enrollment $enrollment)
+    {
+        $enrollment->update(['payment_status' => 'completed']);
+        return redirect()->back()->with('success', 'Enrollment approved successfully! Student can now access the course.');
+    }
+
+    public function enrollmentsReject(Enrollment $enrollment)
+    {
+        $enrollment->update(['payment_status' => 'failed']);
+        return redirect()->back()->with('success', 'Enrollment rejected.');
+    }
+
     // ==================== REVIEW MANAGEMENT ====================
 
     public function reviewsIndex(Request $request)

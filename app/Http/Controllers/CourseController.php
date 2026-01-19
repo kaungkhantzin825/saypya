@@ -84,6 +84,12 @@ class CourseController extends Controller
         $isEnrolled = Auth::check() && $course->isEnrolledBy(Auth::id());
         $isInWishlist = Auth::check() && $course->isInWishlistOf(Auth::id());
         $userReview = Auth::check() ? $course->reviews()->where('user_id', Auth::id())->first() : null;
+        
+        // Get enrollment status
+        $enrollment = null;
+        if (Auth::check()) {
+            $enrollment = Auth::user()->enrollments()->where('course_id', $course->id)->first();
+        }
 
         $relatedCourses = Course::published()
             ->where('category_id', $course->category_id)
@@ -103,7 +109,8 @@ class CourseController extends Controller
             'isInWishlist',
             'userReview',
             'relatedCourses',
-            'previewLessons'
+            'previewLessons',
+            'enrollment'
         ));
     }
 
@@ -138,17 +145,17 @@ class CourseController extends Controller
         if ($request->has('payment_method')) {
             $paymentMethod = $request->input('payment_method');
             
-            // Create enrollment with payment pending
+            // Create enrollment with pending status - needs admin approval
             $user->enrollments()->create([
                 'course_id' => $course->id,
                 'price_paid' => $course->current_price,
-                'payment_status' => 'completed', // In real app, this would be 'pending' until payment confirmed
+                'payment_status' => 'pending', // Pending admin approval
                 'payment_method' => $paymentMethod,
                 'enrolled_at' => now(),
             ]);
 
-            return redirect()->route('courses.learn', $course)
-                ->with('success', 'Payment successful! You are now enrolled in the course.');
+            return redirect()->route('courses.show', $course)
+                ->with('success', 'Enrollment request submitted! Please wait for admin approval to access the course.');
         }
 
         // For paid courses without payment method, redirect to checkout
@@ -183,12 +190,17 @@ class CourseController extends Controller
         $user = Auth::user();
         $enrollment = $user->enrollments()
             ->where('course_id', $course->id)
-            ->where('payment_status', 'completed')
             ->first();
 
         if (!$enrollment) {
             return redirect()->route('courses.show', $course)
                 ->with('error', 'You need to enroll in this course first.');
+        }
+
+        // Check if enrollment is approved
+        if ($enrollment->payment_status !== 'completed') {
+            return redirect()->route('courses.show', $course)
+                ->with('error', 'Your enrollment is pending admin approval. Please wait for approval to access the course.');
         }
 
         $course->load([

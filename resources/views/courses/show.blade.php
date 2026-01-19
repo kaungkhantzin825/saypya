@@ -76,6 +76,11 @@
                             <a href="{{ route('courses.learn', $course) }}" class="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors text-center block mb-4 myanmar-text">
                                 <i class="fas fa-play mr-2"></i>ဆက်လက်သင်ယူရန်
                             </a>
+                        @elseif($enrollment && $enrollment->payment_status === 'pending')
+                            <div class="w-full bg-yellow-100 border-2 border-yellow-500 text-yellow-800 py-3 px-6 rounded-lg font-semibold text-center mb-4">
+                                <i class="fas fa-clock mr-2"></i>Pending Admin Approval
+                            </div>
+                            <p class="text-sm text-gray-600 text-center mb-4">Your enrollment is waiting for admin approval. You will be notified once approved.</p>
                         @elseif(auth()->check() && (auth()->user()->isLecturer() || auth()->user()->isAdmin()))
                             {{-- Instructors and Admins don't see enroll button --}}
                             <div class="w-full bg-gray-100 text-gray-600 py-3 px-6 rounded-lg font-semibold text-center mb-4">

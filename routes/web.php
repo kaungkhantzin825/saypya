@@ -175,6 +175,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Enrollment management
     Route::get('/enrollments', [AdminController::class, 'enrollmentsIndex'])->name('enrollments.index');
     Route::patch('/enrollments/{enrollment}/refund', [AdminController::class, 'enrollmentsRefund'])->name('enrollments.refund');
+    Route::patch('/enrollments/{enrollment}/approve', [AdminController::class, 'enrollmentsApprove'])->name('enrollments.approve');
+    Route::patch('/enrollments/{enrollment}/reject', [AdminController::class, 'enrollmentsReject'])->name('enrollments.reject');
     
     // Review management
     Route::get('/reviews', [AdminController::class, 'reviewsIndex'])->name('reviews.index');
