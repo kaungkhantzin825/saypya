@@ -58,16 +58,24 @@
                     <h3 class="font-semibold mb-4">Follow Us</h3>
                     <div class="flex space-x-4">
                         @if(\App\Models\Setting::get('contact_facebook'))
-                        <a href="{{ \App\Models\Setting::get('contact_facebook') }}" target="_blank" class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700"><i class="fab fa-facebook-f"></i></a>
+                        <a href="{{ \App\Models\Setting::get('contact_facebook') }}" target="_blank" class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
+                            <i class="fab fa-facebook-f text-xl"></i>
+                        </a>
                         @endif
                         @if(\App\Models\Setting::get('youtube_url'))
-                        <a href="{{ \App\Models\Setting::get('youtube_url') }}" target="_blank" class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700"><i class="fab fa-youtube"></i></a>
+                        <a href="{{ \App\Models\Setting::get('youtube_url') }}" target="_blank" class="w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700 transition-colors">
+                            <i class="fab fa-youtube text-xl"></i>
+                        </a>
                         @endif
                         @if(\App\Models\Setting::get('twitter_url'))
-                        <a href="{{ \App\Models\Setting::get('twitter_url') }}" target="_blank" class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700"><i class="fab fa-twitter"></i></a>
+                        <a href="{{ \App\Models\Setting::get('twitter_url') }}" target="_blank" class="w-12 h-12 bg-sky-500 text-white rounded-full flex items-center justify-center hover:bg-sky-600 transition-colors">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
                         @endif
                         @if(\App\Models\Setting::get('linkedin_url'))
-                        <a href="{{ \App\Models\Setting::get('linkedin_url') }}" target="_blank" class="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700"><i class="fab fa-linkedin"></i></a>
+                        <a href="{{ \App\Models\Setting::get('linkedin_url') }}" target="_blank" class="w-12 h-12 bg-blue-700 text-white rounded-full flex items-center justify-center hover:bg-blue-800 transition-colors">
+                            <i class="fab fa-linkedin text-xl"></i>
+                        </a>
                         @endif
                     </div>
                 </div>
