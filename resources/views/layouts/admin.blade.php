@@ -102,6 +102,28 @@
         </a>
     </li>
 
+    <!-- Exams -->
+    <li class="nav-item {{ request()->routeIs('admin.exams*') ? 'menu-open' : '' }}">
+        <a href="#" class="nav-link {{ request()->routeIs('admin.exams*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-file-alt"></i>
+            <p>Exams <i class="right fas fa-angle-left"></i></p>
+        </a>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{{ route('admin.exams.index') }}" class="nav-link {{ request()->routeIs('admin.exams.index') ? 'active' : '' }}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>All Exams</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.exams.create') }}" class="nav-link {{ request()->routeIs('admin.exams.create') ? 'active' : '' }}">
+                    <i class="far fa-plus-square nav-icon"></i>
+                    <p>Create Exam</p>
+                </a>
+            </li>
+        </ul>
+    </li>
+
     <!-- Reviews -->
     <li class="nav-item">
         <a href="{{ route('admin.reviews.index') }}" class="nav-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}">

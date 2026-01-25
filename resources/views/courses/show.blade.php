@@ -140,6 +140,11 @@
                     <button class="tab-button border-b-2 border-transparent py-2 px-1 text-gray-500 hover:text-gray-700" data-tab="curriculum">
                         Curriculum
                     </button>
+                    @if($isEnrolled)
+                    <button class="tab-button border-b-2 border-transparent py-2 px-1 text-gray-500 hover:text-gray-700" data-tab="exams">
+                        Exams ({{ $course->exams()->where('is_published', true)->count() }})
+                    </button>
+                    @endif
                     <button class="tab-button border-b-2 border-transparent py-2 px-1 text-gray-500 hover:text-gray-700" data-tab="reviews">
                         Reviews
                     </button>
@@ -220,6 +225,84 @@
                     @endforeach
                 </div>
             </div>
+            
+            <!-- Exams Tab -->
+            @if($isEnrolled)
+            <div id="exams" class="tab-content hidden">
+                <h3 class="text-2xl font-bold mb-6">Course Exams</h3>
+                
+                @php
+                    $exams = $course->exams()->where('is_published', true)->get();
+                @endphp
+                
+                @if($exams->count() > 0)
+                    <div class="space-y-4">
+                        @foreach($exams as $exam)
+                            <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-grow">
+                                        <h4 class="text-xl font-semibold mb-2">{{ $exam->title }}</h4>
+                                        @if($exam->description)
+                                            <p class="text-gray-600 mb-4">{{ $exam->description }}</p>
+                                        @endif
+                                        
+                                        <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
+                                            <div><i class="fas fa-question-circle mr-1"></i> {{ $exam->questions->count() }} questions</div>
+                                            <div><i class="fas fa-clock mr-1"></i> {{ $exam->duration_minutes ? $exam->duration_minutes . ' minutes' : 'Unlimited' }}</div>
+                                            <div><i class="fas fa-check-circle mr-1"></i> Passing: {{ $exam->passing_score }}%</div>
+                                            <div><i class="fas fa-redo mr-1"></i> {{ $exam->max_attempts }} {{ Str::plural('attempt', $exam->max_attempts) }}</div>
+                                        </div>
+                                        
+                                        @php
+                                            $userAttempts = $exam->attempts()->where('user_id', auth()->id())->get();
+                                            $attemptsLeft = $exam->max_attempts - $userAttempts->count();
+                                            $lastAttempt = $userAttempts->sortByDesc('created_at')->first();
+                                        @endphp
+                                        
+                                        @if($userAttempts->count() > 0)
+                                            <div class="bg-gray-50 rounded p-3 mb-3">
+                                                <div class="text-sm font-semibold mb-1">Your Best Score:</div>
+                                                <div class="flex items-center gap-4">
+                                                    <span class="text-2xl font-bold {{ $lastAttempt->passed ? 'text-green-600' : 'text-red-600' }}">
+                                                        {{ $lastAttempt->percentage }}%
+                                                    </span>
+                                                    <span class="text-sm text-gray-600">
+                                                        Attempts: {{ $userAttempts->count() }}/{{ $exam->max_attempts }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    
+                                    <div class="ml-4">
+                                        @if($exam->canUserAttempt(auth()->id()))
+                                            <a href="{{ route('exams.start', $exam) }}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block">
+                                                <i class="fas fa-play mr-2"></i>{{ $userAttempts->count() > 0 ? 'Retake' : 'Start' }} Exam
+                                            </a>
+                                            @if($attemptsLeft > 0)
+                                                <div class="text-xs text-gray-500 mt-1 text-center">{{ $attemptsLeft }} {{ Str::plural('attempt', $attemptsLeft) }} left</div>
+                                            @endif
+                                        @else
+                                            <div class="text-gray-500 text-sm">
+                                                <i class="fas fa-ban mr-1"></i>No attempts left
+                                            </div>
+                                        @endif
+                                        
+                                        @if($lastAttempt)
+                                            <a href="{{ route('exams.result', $lastAttempt) }}" class="text-blue-600 hover:text-blue-700 text-sm block mt-2">
+                                                <i class="fas fa-chart-bar mr-1"></i>View Results
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-gray-600 text-center py-8">No exams available for this course yet.</p>
+                @endif
+            </div>
+            @endif
             
             <div id="reviews" class="tab-content hidden">
                 <h3 class="text-2xl font-bold mb-6">Student Reviews</h3>

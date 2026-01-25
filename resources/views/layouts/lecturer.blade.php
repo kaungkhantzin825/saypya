@@ -40,6 +40,28 @@
         </a>
     </li>
 
+    <!-- Exams -->
+    <li class="nav-item {{ request()->routeIs('instructor.exams*') ? 'menu-open' : '' }}">
+        <a href="#" class="nav-link {{ request()->routeIs('instructor.exams*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-file-alt"></i>
+            <p>Exams <i class="right fas fa-angle-left"></i></p>
+        </a>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{{ route('instructor.exams.index') }}" class="nav-link {{ request()->routeIs('instructor.exams.index') ? 'active' : '' }}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>All Exams</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('instructor.exams.create') }}" class="nav-link {{ request()->routeIs('instructor.exams.create') ? 'active' : '' }}">
+                    <i class="far fa-plus-square nav-icon"></i>
+                    <p>Create Exam</p>
+                </a>
+            </li>
+        </ul>
+    </li>
+
     <!-- Reviews -->
     <li class="nav-item">
         <a href="{{ route('instructor.reviews') }}" class="nav-link {{ request()->routeIs('instructor.reviews*') ? 'active' : '' }}">

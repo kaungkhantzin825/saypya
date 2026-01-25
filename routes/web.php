@@ -102,6 +102,15 @@ Route::middleware('auth')->group(function () {
     Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
     
+    // Exams (Student)
+    Route::prefix('courses/{course}/exams')->name('exams.')->group(function () {
+        Route::get('/', [App\Http\Controllers\ExamController::class, 'index'])->name('index');
+    });
+    Route::get('/exams/{exam}/start', [App\Http\Controllers\ExamController::class, 'start'])->name('exams.start');
+    Route::post('/exam-attempts/{attempt}/submit', [App\Http\Controllers\ExamController::class, 'submit'])->name('exams.submit');
+    Route::get('/exam-attempts/{attempt}/result', [App\Http\Controllers\ExamController::class, 'result'])->name('exams.result');
+    Route::get('/my/exams', [App\Http\Controllers\ExamController::class, 'myExams'])->name('my.exams');
+    
     // Discussions
     Route::prefix('courses/{course}/discussions')->name('discussions.')->group(function () {
         Route::get('/', [DiscussionController::class, 'index'])->name('index');
@@ -136,6 +145,19 @@ Route::middleware(['auth', 'role:lecturer'])->prefix('instructor')->name('instru
     Route::get('/reviews', [InstructorController::class, 'reviews'])->name('reviews');
     Route::get('/earnings', [InstructorController::class, 'earnings'])->name('earnings');
     Route::get('/analytics', [InstructorController::class, 'analytics'])->name('analytics');
+    
+    // Instructor Exam Management (same as admin but only for their courses)
+    Route::get('/exams', [InstructorController::class, 'examsIndex'])->name('exams.index');
+    Route::get('/exams/create', [InstructorController::class, 'examsCreate'])->name('exams.create');
+    Route::post('/exams', [InstructorController::class, 'examsStore'])->name('exams.store');
+    Route::get('/exams/{exam}/edit', [InstructorController::class, 'examsEdit'])->name('exams.edit');
+    Route::put('/exams/{exam}', [InstructorController::class, 'examsUpdate'])->name('exams.update');
+    Route::post('/exams/{exam}/questions', [InstructorController::class, 'examsAddQuestion'])->name('exams.questions.add');
+    Route::delete('/exams/{exam}/questions/{question}', [InstructorController::class, 'examsDeleteQuestion'])->name('exams.questions.delete');
+    Route::get('/exams/{exam}/results', [InstructorController::class, 'examsResults'])->name('exams.results');
+    Route::get('/exam-attempts/{attempt}/grade', [InstructorController::class, 'examsGrade'])->name('exams.grade');
+    Route::post('/exam-attempts/{attempt}/grade', [InstructorController::class, 'examsSubmitGrade'])->name('exams.submit-grade');
+    Route::delete('/exams/{exam}', [InstructorController::class, 'examsDestroy'])->name('exams.destroy');
 });
 
 // Admin routes (Admin Dashboard)
@@ -193,6 +215,20 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/reviews', [AdminController::class, 'reviewsIndex'])->name('reviews.index');
     Route::patch('/reviews/{review}/approve', [AdminController::class, 'reviewsApprove'])->name('reviews.approve');
     Route::delete('/reviews/{review}', [AdminController::class, 'reviewsDestroy'])->name('reviews.destroy');
+    
+    // Exam management
+    Route::get('/exams', [AdminController::class, 'examsIndex'])->name('exams.index');
+    Route::get('/exams/create', [AdminController::class, 'examsCreate'])->name('exams.create');
+    Route::post('/exams', [AdminController::class, 'examsStore'])->name('exams.store');
+    Route::get('/exams/{exam}/edit', [AdminController::class, 'examsEdit'])->name('exams.edit');
+    Route::put('/exams/{exam}', [AdminController::class, 'examsUpdate'])->name('exams.update');
+    Route::post('/exams/{exam}/questions', [AdminController::class, 'examsAddQuestion'])->name('exams.questions.add');
+    Route::put('/exams/{exam}/questions/{question}', [AdminController::class, 'examsUpdateQuestion'])->name('exams.questions.update');
+    Route::delete('/exams/{exam}/questions/{question}', [AdminController::class, 'examsDeleteQuestion'])->name('exams.questions.delete');
+    Route::get('/exams/{exam}/results', [AdminController::class, 'examsResults'])->name('exams.results');
+    Route::get('/exam-attempts/{attempt}/grade', [AdminController::class, 'examsGrade'])->name('exams.grade');
+    Route::post('/exam-attempts/{attempt}/grade', [AdminController::class, 'examsSubmitGrade'])->name('exams.submit-grade');
+    Route::delete('/exams/{exam}', [AdminController::class, 'examsDestroy'])->name('exams.destroy');
     
     // Reports & Settings
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');

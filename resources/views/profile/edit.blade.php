@@ -91,6 +91,28 @@
                 @enderror
             </div>
 
+            <!-- Avatar -->
+            <div class="mt-6">
+                <label for="avatar" class="block text-sm font-medium text-gray-700 mb-2 myanmar-text">ပရိုဖိုင်းပုံ</label>
+                <div class="flex items-center space-x-4">
+                    @if($user->avatar)
+                        <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="w-20 h-20 rounded-full object-cover">
+                    @else
+                        <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-user text-gray-400 text-2xl"></i>
+                        </div>
+                    @endif
+                    <div class="flex-1">
+                        <input type="file" name="avatar" id="avatar" accept="image/*"
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+                        <p class="mt-1 text-sm text-gray-500 myanmar-text">JPG, PNG သို့မဟုတ် GIF (အများဆုံး 2MB)</p>
+                        @error('avatar')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
             <!-- Submit Button -->
             <div class="mt-8 flex justify-end">
                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors myanmar-text">

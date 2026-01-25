@@ -91,6 +91,11 @@ class Course extends Model
         return $this->hasMany(Wishlist::class);
     }
 
+    public function exams()
+    {
+        return $this->hasMany(Exam::class);
+    }
+
     // Scopes
     public function scopePublished($query)
     {
