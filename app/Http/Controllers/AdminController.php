@@ -929,4 +929,59 @@ class AdminController extends Controller
         $exam->delete();
         return redirect()->route('admin.exams.index')->with('success', 'Exam deleted successfully!');
     }
+
+    // ==================== CONTACT MESSAGES ====================
+
+    public function contactMessages(Request $request)
+    {
+        $query = \App\Models\ContactMessage::query();
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        $messages = $query->latest()->paginate(20);
+
+        $stats = [
+            'new' => \App\Models\ContactMessage::where('status', 'new')->count(),
+            'read' => \App\Models\ContactMessage::where('status', 'read')->count(),
+            'replied' => \App\Models\ContactMessage::where('status', 'replied')->count(),
+        ];
+
+        return view('admin.contact-messages.index', compact('messages', 'stats'));
+    }
+
+    public function contactMessageShow(\App\Models\ContactMessage $message)
+    {
+        // Mark as read if it's new
+        if ($message->status === 'new') {
+            $message->update(['status' => 'read']);
+        }
+
+        return view('admin.contact-messages.show', compact('message'));
+    }
+
+    public function contactMessageReply(Request $request, \App\Models\ContactMessage $message)
+    {
+        $request->validate([
+            'reply' => 'required|string',
+        ]);
+
+        $message->update([
+            'admin_reply' => $request->reply,
+            'status' => 'replied',
+            'replied_at' => now(),
+        ]);
+
+        // Here you could also send an email to the user
+        // Mail::to($message->email)->send(new ContactReplyMail($message));
+
+        return redirect()->back()->with('success', 'Reply sent successfully!');
+    }
+
+    public function contactMessageDestroy(\App\Models\ContactMessage $message)
+    {
+        $message->delete();
+        return redirect()->route('admin.contact-messages.index')->with('success', 'Message deleted successfully!');
+    }
 }

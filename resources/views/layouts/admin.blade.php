@@ -132,6 +132,14 @@
         </a>
     </li>
 
+    <!-- Contact Messages -->
+    <li class="nav-item">
+        <a href="{{ route('admin.contact-messages.index') }}" class="nav-link {{ request()->routeIs('admin.contact-messages*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-envelope"></i>
+            <p>Contact Messages</p>
+        </a>
+    </li>
+
     <!-- Reports -->
     <li class="nav-item">
         <a href="{{ route('admin.reports') }}" class="nav-link {{ request()->routeIs('admin.reports') ? 'active' : '' }}">

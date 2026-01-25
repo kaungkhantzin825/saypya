@@ -84,26 +84,52 @@
             <!-- Contact Form -->
             <div class="bg-white p-8 rounded-lg shadow-lg">
                 <h2 class="text-2xl font-bold mb-6">Send us a Message</h2>
-                <form action="#" method="POST" class="space-y-6">
+                
+                @if(session('success'))
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                
+                <form action="{{ route('contact.submit') }}" method="POST" class="space-y-6">
                     @csrf
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-                        <input type="text" name="name" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Your Name *</label>
+                        <input type="text" name="name" value="{{ old('name') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500" required>
+                        @error('name')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                        <input type="email" name="email" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                        <input type="email" name="email" value="{{ old('email') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500" required>
+                        @error('email')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                        <input type="text" name="subject" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone (Optional)</label>
+                        <input type="text" name="phone" value="{{ old('phone') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500">
+                        @error('phone')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                        <textarea name="message" rows="5" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500" required></textarea>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
+                        <input type="text" name="subject" value="{{ old('subject') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500" required>
+                        @error('subject')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Message *</label>
+                        <textarea name="message" rows="5" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500" required>{{ old('message') }}</textarea>
+                        @error('message')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                     <button type="submit" class="btn-3d btn-3d-cyan w-full">
-                        Send Message
+                        <i class="fas fa-paper-plane mr-2"></i>Send Message
                     </button>
                 </form>
             </div>

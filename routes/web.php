@@ -39,6 +39,7 @@ Route::get('/partners', function () {
 Route::get('/contact', function () {
     return view('pages.contact');
 })->name('contact');
+Route::post('/contact', [App\Http\Controllers\ContactController::class, 'submit'])->name('contact.submit');
 Route::get('/help', function () {
     return view('pages.help');
 })->name('help');
@@ -229,6 +230,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/exam-attempts/{attempt}/grade', [AdminController::class, 'examsGrade'])->name('exams.grade');
     Route::post('/exam-attempts/{attempt}/grade', [AdminController::class, 'examsSubmitGrade'])->name('exams.submit-grade');
     Route::delete('/exams/{exam}', [AdminController::class, 'examsDestroy'])->name('exams.destroy');
+    
+    // Contact Messages
+    Route::get('/contact-messages', [AdminController::class, 'contactMessages'])->name('contact-messages.index');
+    Route::get('/contact-messages/{message}', [AdminController::class, 'contactMessageShow'])->name('contact-messages.show');
+    Route::post('/contact-messages/{message}/reply', [AdminController::class, 'contactMessageReply'])->name('contact-messages.reply');
+    Route::delete('/contact-messages/{message}', [AdminController::class, 'contactMessageDestroy'])->name('contact-messages.destroy');
     
     // Reports & Settings
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
