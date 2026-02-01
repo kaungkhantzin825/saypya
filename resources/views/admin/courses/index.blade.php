@@ -86,10 +86,10 @@
                         <td>{{ $course->category->name ?? 'N/A' }}</td>
                         <td>
                             @if($course->discount_price)
-                            <del class="text-muted">${{ number_format($course->price, 2) }}</del>
-                            <span class="text-success">${{ number_format($course->discount_price, 2) }}</span>
+                            <del class="text-muted">{{ number_format($course->price) }} Ks</del>
+                            <span class="text-success">{{ number_format($course->discount_price) }} Ks</span>
                             @else
-                            ${{ number_format($course->price, 2) }}
+                            {{ number_format($course->price) }} Ks
                             @endif
                         </td>
                         <td>{{ $course->enrollments_count ?? $course->enrollments->count() }}</td>

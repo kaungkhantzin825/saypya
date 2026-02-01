@@ -13,10 +13,8 @@ class CurrencyHelper
             return 'အခမဲ့';
         }
         
-        // Convert USD to MMK (approximate rate: 1 USD = 2100 MMK)
-        $mmkAmount = $amount * 2100;
-        
-        return number_format($mmkAmount) . ' MMK';
+        // Display the amount as-is (already in MMK)
+        return number_format($amount) . ' Ks';
     }
     
     /**
@@ -28,8 +26,7 @@ class CurrencyHelper
             return 'အခမဲ့';
         }
         
-        $mmkAmount = $amount * 2100;
-        $formatted = number_format($mmkAmount);
+        $formatted = number_format($amount);
         
         // Convert to Myanmar numerals
         $myanmarNumerals = [
