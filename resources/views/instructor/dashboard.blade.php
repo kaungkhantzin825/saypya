@@ -33,7 +33,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-warning">
             <div class="inner">
-                <h3>${{ number_format($stats['total_revenue'] ?? 0, 2) }}</h3>
+                <h3>{{ number_format($stats['total_revenue'] ?? 0) }} Ks</h3>
                 <p>Total Earnings</p>
             </div>
             <div class="icon"><i class="fas fa-dollar-sign"></i></div>
@@ -91,7 +91,7 @@
                                 <i class="fas fa-star text-warning"></i>
                                 {{ number_format($course->reviews_avg_rating ?? 0, 1) }}
                             </td>
-                            <td>${{ number_format($course->enrollments->where('payment_status', 'completed')->sum('price_paid') ?? 0, 2) }}</td>
+                            <td>{{ number_format($course->enrollments->where('payment_status', 'completed')->sum('price_paid') ?? 0) }} Ks</td>
                         </tr>
                         @empty
                         <tr>

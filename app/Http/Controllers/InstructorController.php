@@ -186,23 +186,37 @@ class InstructorController extends Controller
 
     public function storeSection(Request $request, Course $course)
     {
-        $this->authorize('update', $course);
-        
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        try {
+            $this->authorize('update', $course);
+            
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+            ]);
 
-        $section = $course->sections()->create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'sort_order' => $course->sections()->count() + 1,
-        ]);
+            $section = $course->sections()->create([
+                'course_id' => $course->id,  // Explicitly set course_id
+                'title' => $request->title,
+                'description' => $request->description,
+                'sort_order' => $course->sections()->count() + 1,
+            ]);
 
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'section' => $section]);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'section' => $section, 'message' => 'Section created successfully']);
+            }
+            return redirect()->back()->with('success', 'Section created!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->validator->errors()->first()], 422);
+            }
+            return redirect()->back()->withErrors($e->validator)->withInput();
+        } catch (\Exception $e) {
+            \Log::error('Error creating section: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Server error: ' . $e->getMessage()], 500);
+            }
+            return redirect()->back()->with('error', 'Error creating section: ' . $e->getMessage());
         }
-        return redirect()->back()->with('success', 'Section created!');
     }
 
     public function updateSection(Request $request, Course $course, Section $section)
@@ -224,44 +238,74 @@ class InstructorController extends Controller
 
     public function destroySection(Course $course, Section $section)
     {
-        $this->authorize('update', $course);
-        $section->delete();
-        
-        if (request()->ajax()) {
-            return response()->json(['success' => true]);
+        try {
+            $this->authorize('update', $course);
+            
+            // Verify section belongs to course
+            if ($section->course_id !== $course->id) {
+                if (request()->ajax()) {
+                    return response()->json(['success' => false, 'message' => 'Section does not belong to this course'], 403);
+                }
+                return redirect()->back()->with('error', 'Section does not belong to this course');
+            }
+            
+            $section->delete();
+            
+            if (request()->ajax()) {
+                return response()->json(['success' => true, 'message' => 'Section deleted successfully']);
+            }
+            return redirect()->back()->with('success', 'Section deleted!');
+        } catch (\Exception $e) {
+            \Log::error('Error deleting section: ' . $e->getMessage());
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            }
+            return redirect()->back()->with('error', 'Error deleting section: ' . $e->getMessage());
         }
-        return redirect()->back()->with('success', 'Section deleted!');
     }
 
     public function storeLesson(Request $request, Course $course, Section $section)
     {
-        $this->authorize('update', $course);
-        
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'type' => 'required|in:video,text,quiz,assignment',
-            'video_url' => 'nullable|string',
-            'video_duration' => 'nullable|integer|min:0',
-            'content' => 'nullable|string',
-            'is_preview' => 'boolean',
-        ]);
+        try {
+            $this->authorize('update', $course);
+            
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'type' => 'required|in:video,text,quiz,assignment',
+                'video_url' => 'nullable|string',
+                'video_duration' => 'nullable|integer|min:0',
+                'content' => 'nullable|string',
+                'is_preview' => 'boolean',
+            ]);
 
-        $lesson = $section->lessons()->create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'type' => $request->type,
-            'video_url' => $request->video_url,
-            'video_duration' => $request->video_duration,
-            'content' => $request->content,
-            'is_preview' => $request->boolean('is_preview'),
-            'sort_order' => $section->lessons()->count() + 1,
-        ]);
+            $lesson = $section->lessons()->create([
+                'title' => $request->title,
+                'description' => $request->description,
+                'type' => $request->type,
+                'video_url' => $request->video_url,
+                'video_duration' => $request->video_duration,
+                'content' => $request->content,
+                'is_preview' => $request->boolean('is_preview'),
+                'sort_order' => $section->lessons()->count() + 1,
+            ]);
 
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'lesson' => $lesson]);
+            if ($request->ajax()) {
+                return response()->json(['success' => true, 'lesson' => $lesson, 'message' => 'Lesson created successfully']);
+            }
+            return redirect()->back()->with('success', 'Lesson created!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => $e->validator->errors()->first()], 422);
+            }
+            return redirect()->back()->withErrors($e->validator)->withInput();
+        } catch (\Exception $e) {
+            \Log::error('Error creating lesson: ' . $e->getMessage());
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            }
+            return redirect()->back()->with('error', 'Error creating lesson: ' . $e->getMessage());
         }
-        return redirect()->back()->with('success', 'Lesson created!');
     }
 
     public function updateLesson(Request $request, Course $course, Section $section, Lesson $lesson)
@@ -296,13 +340,30 @@ class InstructorController extends Controller
 
     public function destroyLesson(Course $course, Section $section, Lesson $lesson)
     {
-        $this->authorize('update', $course);
-        $lesson->delete();
-        
-        if (request()->ajax()) {
-            return response()->json(['success' => true]);
+        try {
+            $this->authorize('update', $course);
+            
+            // Verify lesson belongs to section
+            if ($lesson->section_id !== $section->id) {
+                if (request()->ajax()) {
+                    return response()->json(['success' => false, 'message' => 'Lesson does not belong to this section'], 403);
+                }
+                return redirect()->back()->with('error', 'Lesson does not belong to this section');
+            }
+            
+            $lesson->delete();
+            
+            if (request()->ajax()) {
+                return response()->json(['success' => true, 'message' => 'Lesson deleted successfully']);
+            }
+            return redirect()->back()->with('success', 'Lesson deleted!');
+        } catch (\Exception $e) {
+            \Log::error('Error deleting lesson: ' . $e->getMessage());
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            }
+            return redirect()->back()->with('error', 'Error deleting lesson: ' . $e->getMessage());
         }
-        return redirect()->back()->with('success', 'Lesson deleted!');
     }
 
     // ==================== STUDENTS ====================

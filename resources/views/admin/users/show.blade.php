@@ -94,7 +94,7 @@
                                 </span>
                             </td>
                             <td>{{ $course->enrollments->count() }}</td>
-                            <td>${{ number_format($course->enrollments->where('payment_status', 'completed')->sum('price_paid'), 2) }}</td>
+                            <td>{{ number_format($course->enrollments->where('payment_status', 'completed')->sum('price_paid')) }} Ks</td>
                         </tr>
                         @empty
                         <tr>
@@ -134,7 +134,7 @@
                                 <small>{{ $enrollment->progress_percentage }}%</small>
                             </td>
                             <td>{{ $enrollment->enrolled_at->format('M d, Y') }}</td>
-                            <td>${{ number_format($enrollment->price_paid, 2) }}</td>
+                            <td>{{ number_format($enrollment->price_paid) }} Ks</td>
                         </tr>
                         @empty
                         <tr>

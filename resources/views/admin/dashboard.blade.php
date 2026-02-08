@@ -43,7 +43,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-danger">
             <div class="inner">
-                <h3>${{ number_format($stats['total_revenue'] ?? 0, 2) }}</h3>
+                <h3>{{ number_format($stats['total_revenue'] ?? 0) }} Ks</h3>
                 <p>Total Revenue</p>
             </div>
             <div class="icon"><i class="fas fa-dollar-sign"></i></div>
@@ -115,7 +115,7 @@
                         <tr>
                             <td>{{ $enrollment->user->name ?? 'N/A' }}</td>
                             <td>{{ Str::limit($enrollment->course->title ?? 'N/A', 30) }}</td>
-                            <td>${{ number_format($enrollment->price_paid, 2) }}</td>
+                            <td>{{ number_format($enrollment->price_paid) }} Ks</td>
                             <td>
                                 <span class="badge badge-{{ $enrollment->payment_status == 'completed' ? 'success' : ($enrollment->payment_status == 'pending' ? 'warning' : 'danger') }}">
                                     {{ ucfirst($enrollment->payment_status) }}

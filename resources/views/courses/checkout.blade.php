@@ -49,20 +49,20 @@
                     <div class="space-y-3 mb-4 pb-4 border-b">
                         <div class="flex justify-between">
                             <span class="text-gray-600">Original Price</span>
-                            <span class="font-semibold">${{ number_format($course->price, 2) }}</span>
+                            <span class="font-semibold">{{ number_format($course->price) }} Ks</span>
                         </div>
                         
                         @if($course->discount_price)
                         <div class="flex justify-between text-green-600">
                             <span>Discount</span>
-                            <span class="font-semibold">-${{ number_format($course->price - $course->discount_price, 2) }}</span>
+                            <span class="font-semibold">-{{ number_format($course->price - $course->discount_price) }} Ks</span>
                         </div>
                         @endif
                     </div>
                     
                     <div class="flex justify-between text-xl font-bold mb-6">
                         <span>Total</span>
-                        <span class="text-teal-600">${{ number_format($course->current_price, 2) }}</span>
+                        <span class="text-teal-600">{{ number_format($course->current_price) }} Ks</span>
                     </div>
                     
                     <form action="{{ route('courses.enroll', $course) }}" method="POST">

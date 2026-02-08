@@ -73,7 +73,7 @@
                     <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Total Revenue</span>
-                        <span class="info-box-number">${{ number_format($stats['revenue'] ?? 0, 2) }}</span>
+                        <span class="info-box-number">{{ number_format($stats['revenue'] ?? 0) }} Ks</span>
                     </div>
                 </div>
             </div>
@@ -104,7 +104,7 @@
                         <td>
                             <a href="{{ route('admin.courses.show', $enrollment->course) }}">{{ Str::limit($enrollment->course->title ?? 'N/A', 30) }}</a>
                         </td>
-                        <td>${{ number_format($enrollment->price_paid, 2) }}</td>
+                        <td>{{ number_format($enrollment->price_paid) }} Ks</td>
                         <td>
                             <span class="badge badge-{{ $enrollment->payment_status == 'completed' ? 'success' : ($enrollment->payment_status == 'pending' ? 'warning' : 'danger') }}">
                                 {{ ucfirst($enrollment->payment_status) }}

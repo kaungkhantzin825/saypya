@@ -40,10 +40,10 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-success font-weight-bold">
                                 @if($course->discount_price)
-                                <del class="text-muted">${{ number_format($course->price, 2) }}</del>
-                                ${{ number_format($course->discount_price, 2) }}
+                                <del class="text-muted">{{ number_format($course->price) }} Ks</del>
+                                {{ number_format($course->discount_price) }} Ks
                                 @else
-                                ${{ number_format($course->price, 2) }}
+                                {{ number_format($course->price) }} Ks
                                 @endif
                             </span>
                             <span class="text-warning">

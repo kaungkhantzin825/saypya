@@ -41,7 +41,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-danger">
             <div class="inner">
-                <h3>${{ number_format($stats['total_revenue'] ?? 0, 2) }}</h3>
+                <h3>{{ number_format($stats['total_revenue'] ?? 0) }} Ks</h3>
                 <p>Total Revenue</p>
             </div>
             <div class="icon"><i class="fas fa-dollar-sign"></i></div>
@@ -100,7 +100,7 @@
                             <td>{{ Str::limit($course->title, 25) }}</td>
                             <td>{{ $course->instructor->name ?? 'N/A' }}</td>
                             <td>{{ $course->enrollments_count }}</td>
-                            <td>${{ number_format($course->revenue ?? 0, 2) }}</td>
+                            <td>{{ number_format($course->revenue ?? 0) }} Ks</td>
                         </tr>
                         @empty
                         <tr>
@@ -137,7 +137,7 @@
                             <td>{{ $instructor->name }}</td>
                             <td>{{ $instructor->courses_count }}</td>
                             <td>{{ $instructor->students_count ?? 0 }}</td>
-                            <td>${{ number_format($instructor->revenue ?? 0, 2) }}</td>
+                            <td>{{ number_format($instructor->revenue ?? 0) }} Ks</td>
                         </tr>
                         @empty
                         <tr>
@@ -173,7 +173,7 @@
                     <td>{{ $category->name }}</td>
                     <td>{{ $category->courses_count }}</td>
                     <td>{{ $category->students_count ?? 0 }}</td>
-                    <td>${{ number_format($category->revenue ?? 0, 2) }}</td>
+                    <td>{{ number_format($category->revenue ?? 0) }} Ks</td>
                     <td>
                         <i class="fas fa-star text-warning"></i>
                         {{ number_format($category->avg_rating ?? 0, 1) }}
@@ -200,7 +200,7 @@ new Chart(revenueCtx, {
     data: {
         labels: {!! json_encode($monthlyRevenue['labels'] ?? []) !!},
         datasets: [{
-            label: 'Revenue ($)',
+            label: 'Revenue (Ks)',
             data: {!! json_encode($monthlyRevenue['data'] ?? []) !!},
             borderColor: 'rgb(75, 192, 192)',
             backgroundColor: 'rgba(75, 192, 192, 0.2)',

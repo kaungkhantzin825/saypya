@@ -10,99 +10,103 @@
 @endsection
 
 @section('content')
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-book mr-2"></i>{{ $course->title }}</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-primary" onclick="openSectionModal()">
+                <i class="fas fa-plus"></i> Add Section
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        @forelse($course->sections as $section)
+        <div class="card card-outline card-primary mb-3">
             <div class="card-header">
-                <h3 class="card-title">{{ $course->title }}</h3>
+                <h3 class="card-title">
+                    <i class="fas fa-folder mr-2"></i>{{ $section->title }}
+                </h3>
                 <div class="card-tools">
-                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addSectionModal">
-                        <i class="fas fa-plus"></i> Add Section
+                    <button type="button" class="btn btn-success btn-sm" onclick="openLessonModal({{ $section->id }})">
+                        <i class="fas fa-plus"></i> Add Lesson
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm" onclick="editSection({{ $section->id }}, '{{ addslashes($section->title) }}', '{{ addslashes($section->description ?? '') }}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteSection({{ $course->id }}, {{ $section->id }})">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
-            <div class="card-body">
-                @forelse($course->sections as $section)
-            else($course->sections as $section)
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900 myanmar-text">{{ $section->title }}</h3>
-                        @if($section->description)
-                        <p class="text-gray-600 mt-1 myanmar-text">{{ $section->description }}</p>
-                        @endif
+            <div class="card-body p-0">
+                @if($section->description)
+                <div class="px-3 pt-3 pb-2 text-muted">
+                    <small>{{ $section->description }}</small>
+                </div>
+                @endif
+                
+                @forelse($section->lessons as $lesson)
+                <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+                    <div class="d-flex align-items-center">
+                        <div class="mr-3">
+                            @if($lesson->type === 'video')
+                                <div class="btn btn-sm btn-primary rounded-circle" style="width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                            @elseif($lesson->type === 'text')
+                                <div class="btn btn-sm btn-success rounded-circle" style="width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                            @elseif($lesson->type === 'quiz')
+                                <div class="btn btn-sm btn-warning rounded-circle" style="width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                            @else
+                                <div class="btn btn-sm btn-secondary rounded-circle" style="width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-file"></i>
+                                </div>
+                            @endif
+                        </div>
+                        <div>
+                            <h6 class="mb-0">{{ $lesson->title }}</h6>
+                            <small class="text-muted">
+                                <span class="badge badge-secondary">{{ ucfirst($lesson->type) }}</span>
+                                @if($lesson->video_duration)
+                                <span class="ml-2"><i class="far fa-clock"></i> {{ $lesson->formatted_duration }}</span>
+                                @endif
+                                @if($lesson->is_preview)
+                                <span class="badge badge-info ml-2">Preview</span>
+                                @endif
+                            </small>
+                        </div>
                     </div>
-                    <div class="flex space-x-2">
-                        <button onclick="openLessonModal({{ $section->id }})" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 myanmar-text">
-                            <i class="fas fa-plus mr-1"></i>သင်ခန်းစာထည့်ရန်
-                        </button>
-                        <button class="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700">
+                    <div>
+                        <button type="button" class="btn btn-sm btn-info" onclick="editLesson({{ $lesson->id }}, {{ $section->id }}, '{{ addslashes($lesson->title) }}', '{{ addslashes($lesson->description ?? '') }}', '{{ $lesson->type }}', '{{ $lesson->video_url ?? '' }}', {{ $lesson->video_duration ?? 0 }}, {{ $lesson->is_preview ? 'true' : 'false' }}, '{{ addslashes($lesson->content ?? '') }}')">
                             <i class="fas fa-edit"></i>
                         </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lessons -->
-            <div class="divide-y divide-gray-200">
-                @forelse($section->lessons as $lesson)
-                <div class="p-4 hover:bg-gray-50">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-4">
-                            <div class="flex-shrink-0">
-                                @if($lesson->type === 'video')
-                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-play text-blue-600"></i>
-                                    </div>
-                                @elseif($lesson->type === 'text')
-                                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-file-text text-green-600"></i>
-                                    </div>
-                                @elseif($lesson->type === 'quiz')
-                                    <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-question-circle text-yellow-600"></i>
-                                    </div>
-                                @endif
-                            </div>
-                            <div>
-                                <h4 class="font-medium text-gray-900 myanmar-text">{{ $lesson->title }}</h4>
-                                <div class="flex items-center space-x-4 text-sm text-gray-600">
-                                    <span class="myanmar-text">{{ ucfirst($lesson->type) }}</span>
-                                    @if($lesson->video_duration)
-                                    <span>{{ $lesson->formatted_duration }}</span>
-                                    @endif
-                                    @if($lesson->is_preview)
-                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs myanmar-text">နမူနာ</span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button class="text-blue-600 hover:text-blue-800">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="text-red-600 hover:text-red-800">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteLesson({{ $course->id }}, {{ $section->id }}, {{ $lesson->id }})">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
                 @empty
-                <div class="p-8 text-center text-gray-500">
-                    <i class="fas fa-video text-3xl mb-2"></i>
-                    <p class="myanmar-text">ဤအပိုင်းတွင် သင်ခန်းစာများ မရှိသေးပါ</p>
+                <div class="p-5 text-center text-muted">
+                    <i class="fas fa-video fa-3x mb-3"></i>
+                    <p>No lessons in this section yet</p>
+                    <button type="button" class="btn btn-success btn-sm" onclick="openLessonModal({{ $section->id }})">
+                        <i class="fas fa-plus"></i> Add First Lesson
+                    </button>
                 </div>
                 @endforelse
             </div>
         </div>
         @empty
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-            <i class="fas fa-folder-open text-4xl text-gray-400 mb-4"></i>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2 myanmar-text">အပိုင်းများ မရှိသေးပါ</h3>
-            <p class="text-gray-600 mb-4 myanmar-text">သင်ခန်းစာအကြောင်းအရာများကို စတင်ထည့်ရန် ပထမအပိုင်းကို ဖန်တီးပါ</p>
-            <button onclick="openSectionModal()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors myanmar-text">
-                <i class="fas fa-plus mr-2"></i>ပထမအပိုင်းထည့်ရန်
+        <div class="text-center py-5">
+            <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+            <h4>No Sections Yet</h4>
+            <p class="text-muted">Create your first section to start adding course content</p>
+            <button type="button" class="btn btn-primary" onclick="openSectionModal()">
+                <i class="fas fa-plus mr-2"></i>Add First Section
             </button>
         </div>
         @endforelse
@@ -110,164 +114,347 @@
 </div>
 
 <!-- Section Modal -->
-<div id="sectionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4 myanmar-text">အပိုင်းအသစ်ထည့်ရန်</h3>
-                <form id="sectionForm">
-                    @csrf
-                    <div class="mb-4">
-                        <label for="section_title" class="block text-sm font-medium text-gray-700 mb-2 myanmar-text">အပိုင်းခေါင်းစဉ်</label>
-                        <input type="text" id="section_title" name="title" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                    <div class="mb-4">
-                        <label for="section_description" class="block text-sm font-medium text-gray-700 mb-2 myanmar-text">ဖော်ပြချက်</label>
-                        <textarea id="section_description" name="description" rows="3"
-                                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
-                    </div>
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="closeSectionModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 myanmar-text">
-                            မလုပ်တော့ပါ
-                        </button>
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 myanmar-text">
-                            ထည့်ရန်
-                        </button>
-                    </div>
-                </form>
+<div class="modal fade" id="sectionModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Section</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
+            <form id="sectionForm">
+                @csrf
+                <input type="hidden" id="section_id" name="section_id">
+                <input type="hidden" id="section_method" name="_method" value="POST">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="section_title">Section Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="section_title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="section_description">Description</label>
+                        <textarea class="form-control" id="section_description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i>Add Section
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <!-- Lesson Modal -->
-<div id="lessonModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
-            <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4 myanmar-text">သင်ခန်းစာအသစ်ထည့်ရန်</h3>
-                <form id="lessonForm" enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" id="lesson_section_id" name="section_id">
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label for="lesson_title" class="block text-sm font-medium text-gray-700 mb-2 myanmar-text">သင်ခန်းစာခေါင်းစဉ်</label>
-                            <input type="text" id="lesson_title" name="title" required
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+<div class="modal fade" id="lessonModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Lesson</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="lessonForm" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" id="lesson_section_id" name="section_id">
+                <input type="hidden" id="lesson_id" name="lesson_id">
+                <input type="hidden" id="lesson_method" name="_method" value="POST">
+                
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label for="lesson_title">Lesson Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="lesson_title" name="title" required>
+                            </div>
                         </div>
-                        <div>
-                            <label for="lesson_type" class="block text-sm font-medium text-gray-700 mb-2 myanmar-text">အမျိုးအစား</label>
-                            <select id="lesson_type" name="type" required onchange="toggleVideoFields()"
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="video" class="myanmar-text">ဗီဒီယို</option>
-                                <option value="text" class="myanmar-text">စာသား</option>
-                                <option value="quiz" class="myanmar-text">မေးခွန်း</option>
-                                <option value="assignment" class="myanmar-text">အလုပ်ရုံ</option>
-                            </select>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="lesson_type">Type <span class="text-danger">*</span></label>
+                                <select class="form-control" id="lesson_type" name="type" required onchange="toggleVideoFields()">
+                                    <option value="video">Video</option>
+                                    <option value="text">Text</option>
+                                    <option value="quiz">Quiz</option>
+                                    <option value="assignment">Assignment</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="lesson_description" class="block text-sm font-medium text-gray-700 mb-2 myanmar-text">ဖော်ပြချက်</label>
-                        <textarea id="lesson_description" name="description" rows="3"
-                                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    <div class="form-group">
+                        <label for="lesson_description">Description</label>
+                        <textarea class="form-control" id="lesson_description" name="description" rows="2"></textarea>
                     </div>
 
                     <!-- Video Fields -->
-                    <div id="videoFields" class="space-y-4 mb-4">
-                        <div class="border-t pt-4">
-                            <h4 class="font-medium text-gray-900 mb-3 myanmar-text">ဗီဒီယိုအပ်လုဒ်</h4>
-                            
-                            <!-- Video Upload Options -->
-                            <div class="mb-4">
-                                <div class="flex items-center space-x-4 mb-3">
-                                    <label class="flex items-center">
-                                        <input type="radio" name="video_option" value="url" checked onchange="toggleVideoOption()">
-                                        <span class="ml-2 myanmar-text">CDN/YouTube လင့်ခ်</span>
-                                    </label>
-                                    <label class="flex items-center">
-                                        <input type="radio" name="video_option" value="file" onchange="toggleVideoOption()">
-                                        <span class="ml-2 myanmar-text">ဖိုင်အပ်လုဒ်</span>
-                                    </label>
-                                </div>
-
-                                <!-- URL Input -->
-                                <div id="urlInput">
-                                    <label for="video_url" class="block text-sm font-medium text-gray-700 mb-2 myanmar-text">ဗီဒီယို URL</label>
-                                    <input type="url" id="video_url" name="video_url"
-                                           class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="https://example.com/video.mp4">
-                                    <p class="mt-1 text-sm text-gray-500 myanmar-text">YouTube, Vimeo, CDN လင့်ခ် သို့မဟုတ် တိုက်ရိုက်ဗီဒီယိုလင့်ခ်</p>
-                                </div>
-
-                                <!-- File Input -->
-                                <div id="fileInput" class="hidden">
-                                    <label for="video_file" class="block text-sm font-medium text-gray-700 mb-2 myanmar-text">ဗီဒီယိုဖိုင်</label>
-                                    <input type="file" id="video_file" name="video_file" accept="video/*"
-                                           class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <p class="mt-1 text-sm text-gray-500 myanmar-text">MP4, AVI, MOV, WMV (အများဆုံး 100MB)</p>
-                                </div>
+                    <div id="videoFields">
+                        <div class="card card-outline card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-video mr-2"></i>Video Settings</h3>
                             </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="video_duration" class="block text-sm font-medium text-gray-700 mb-2 myanmar-text">ကြာချိန် (စက္ကန့်)</label>
-                                    <input type="number" id="video_duration" name="video_duration" min="0"
-                                           class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="video_url">Video CDN URL <span class="text-danger">*</span></label>
+                                    <input type="url" class="form-control" id="video_url" name="video_url"
+                                           placeholder="https://cdn.example.com/video.mp4">
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-info-circle"></i> Enter YouTube, Vimeo, CDN link or direct video URL
+                                    </small>
                                 </div>
-                                <div class="flex items-center">
-                                    <label class="flex items-center">
-                                        <input type="checkbox" id="is_preview" name="is_preview" value="1">
-                                        <span class="ml-2 myanmar-text">နမူနာသင်ခန်းစာ</span>
-                                    </label>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="video_duration">Duration (seconds)</label>
+                                            <input type="number" class="form-control" id="video_duration" name="video_duration" min="0" placeholder="e.g., 300">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>&nbsp;</label>
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="is_preview" name="is_preview" value="1">
+                                                <label class="custom-control-label" for="is_preview">
+                                                    <i class="fas fa-eye mr-1"></i>Preview Lesson (Free to watch)
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Text Content -->
-                    <div id="textFields" class="mb-4 hidden">
-                        <label for="lesson_content" class="block text-sm font-medium text-gray-700 mb-2 myanmar-text">အကြောင်းအရာ</label>
-                        <textarea id="lesson_content" name="content" rows="6"
-                                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    <div id="textFields" class="d-none">
+                        <div class="form-group">
+                            <label for="lesson_content">Content</label>
+                            <textarea class="form-control" id="lesson_content" name="content" rows="6"></textarea>
+                        </div>
                     </div>
-
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="closeLessonModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 myanmar-text">
-                            မလုပ်တော့ပါ
-                        </button>
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 myanmar-text">
-                            ထည့်ရန်
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i>Add Lesson
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @push('scripts')
 <script>
+// Show session messages with SweetAlert2
+@if(session('success'))
+    Swal.fire({
+        title: 'Success!',
+        text: '{{ session('success') }}',
+        icon: 'success',
+        timer: 3000,
+        showConfirmButton: false
+    });
+@endif
+
+@if(session('error'))
+    Swal.fire({
+        title: 'Error!',
+        text: '{{ session('error') }}',
+        icon: 'error',
+        confirmButtonText: 'OK'
+    });
+@endif
+
 // Section Modal Functions
 function openSectionModal() {
-    document.getElementById('sectionModal').classList.remove('hidden');
+    document.getElementById('section_id').value = '';
+    document.getElementById('section_method').value = 'POST';
+    document.getElementById('sectionForm').reset();
+    document.querySelector('#sectionModal .modal-title').textContent = 'Add New Section';
+    $('#sectionModal').modal('show');
+}
+
+function editSection(sectionId, title, description) {
+    document.getElementById('section_id').value = sectionId;
+    document.getElementById('section_method').value = 'PUT';
+    document.getElementById('section_title').value = title;
+    document.getElementById('section_description').value = description;
+    document.querySelector('#sectionModal .modal-title').textContent = 'Edit Section';
+    $('#sectionModal').modal('show');
+}
+
+function deleteSection(courseId, sectionId) {
+    Swal.fire({
+        title: 'Delete Section?',
+        text: 'All lessons in this section will also be deleted. This action cannot be undone!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/instructor/courses/${courseId}/sections/${sectionId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        try {
+                            const data = JSON.parse(text);
+                            throw new Error(data.message || 'Error deleting section');
+                        } catch (e) {
+                            if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                                throw new Error('Server error occurred. Please check the logs.');
+                            }
+                            throw new Error('Error deleting section');
+                        }
+                    });
+                }
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Invalid response from server');
+                    }
+                });
+            })
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: data.message || 'Section has been deleted successfully.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = window.location.href.split('?')[0];
+                    });
+                } else {
+                    Swal.fire('Error!', data.message || 'Error deleting section', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error!', error.message || 'An unexpected error occurred while deleting the section', 'error');
+            });
+        }
+    });
 }
 
 function closeSectionModal() {
-    document.getElementById('sectionModal').classList.add('hidden');
+    $('#sectionModal').modal('hide');
     document.getElementById('sectionForm').reset();
 }
 
 // Lesson Modal Functions
 function openLessonModal(sectionId) {
     document.getElementById('lesson_section_id').value = sectionId;
-    document.getElementById('lessonModal').classList.remove('hidden');
+    document.getElementById('lesson_id').value = '';
+    document.getElementById('lesson_method').value = 'POST';
+    document.getElementById('lessonForm').reset();
+    document.querySelector('#lessonModal .modal-title').textContent = 'Add New Lesson';
+    toggleVideoFields();
+    $('#lessonModal').modal('show');
+}
+
+function editLesson(lessonId, sectionId, title, description, type, videoUrl, videoDuration, isPreview, content) {
+    document.getElementById('lesson_id').value = lessonId;
+    document.getElementById('lesson_section_id').value = sectionId;
+    document.getElementById('lesson_method').value = 'PUT';
+    document.getElementById('lesson_title').value = title;
+    document.getElementById('lesson_description').value = description;
+    document.getElementById('lesson_type').value = type;
+    document.getElementById('video_url').value = videoUrl;
+    document.getElementById('video_duration').value = videoDuration;
+    document.getElementById('is_preview').checked = isPreview;
+    document.getElementById('lesson_content').value = content;
+    document.querySelector('#lessonModal .modal-title').textContent = 'Edit Lesson';
+    toggleVideoFields();
+    $('#lessonModal').modal('show');
+}
+
+function deleteLesson(courseId, sectionId, lessonId) {
+    Swal.fire({
+        title: 'Delete Lesson?',
+        text: 'This action cannot be undone!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/instructor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        try {
+                            const data = JSON.parse(text);
+                            throw new Error(data.message || 'Error deleting lesson');
+                        } catch (e) {
+                            if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                                throw new Error('Server error occurred. Please check the logs.');
+                            }
+                            throw new Error('Error deleting lesson');
+                        }
+                    });
+                }
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Invalid response from server');
+                    }
+                });
+            })
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: data.message || 'Lesson has been deleted successfully.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = window.location.href.split('?')[0];
+                    });
+                } else {
+                    Swal.fire('Error!', data.message || 'Error deleting lesson', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error!', error.message || 'An unexpected error occurred while deleting the lesson', 'error');
+            });
+        }
+    });
 }
 
 function closeLessonModal() {
-    document.getElementById('lessonModal').classList.add('hidden');
+    $('#lessonModal').modal('hide');
     document.getElementById('lessonForm').reset();
 }
 
@@ -277,30 +464,14 @@ function toggleVideoFields() {
     const textFields = document.getElementById('textFields');
     
     if (type === 'video') {
-        videoFields.classList.remove('hidden');
-        textFields.classList.add('hidden');
+        videoFields.classList.remove('d-none');
+        textFields.classList.add('d-none');
     } else if (type === 'text') {
-        videoFields.classList.add('hidden');
-        textFields.classList.remove('hidden');
+        videoFields.classList.add('d-none');
+        textFields.classList.remove('d-none');
     } else {
-        videoFields.classList.add('hidden');
-        textFields.classList.add('hidden');
-    }
-}
-
-function toggleVideoOption() {
-    const option = document.querySelector('input[name="video_option"]:checked').value;
-    const urlInput = document.getElementById('urlInput');
-    const fileInput = document.getElementById('fileInput');
-    
-    if (option === 'url') {
-        urlInput.classList.remove('hidden');
-        fileInput.classList.add('hidden');
-        document.getElementById('video_file').value = '';
-    } else {
-        urlInput.classList.add('hidden');
-        fileInput.classList.remove('hidden');
-        document.getElementById('video_url').value = '';
+        videoFields.classList.add('d-none');
+        textFields.classList.add('d-none');
     }
 }
 
@@ -309,25 +480,74 @@ document.getElementById('sectionForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const sectionId = document.getElementById('section_id').value;
+    const method = document.getElementById('section_method').value;
     
-    fetch(`{{ route('instructor.courses.sections.store', $course) }}`, {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Saving...';
+    
+    let url = `{{ route('instructor.courses.sections.store', $course) }}`;
+    if (sectionId && method === 'PUT') {
+        url = `/instructor/courses/{{ $course->id }}/sections/${sectionId}`;
+        formData.append('_method', 'PUT');
+    }
+    
+    fetch(url, {
         method: 'POST',
         body: formData,
         headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                try {
+                    const data = JSON.parse(text);
+                    throw new Error(data.message || 'Error saving section');
+                } catch (e) {
+                    // If response is HTML (Laravel error page), show generic error
+                    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                        throw new Error('Server error occurred. Please check the logs.');
+                    }
+                    throw new Error('Error saving section');
+                }
+            });
+        }
+        return response.text().then(text => {
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                throw new Error('Invalid response from server');
+            }
+        });
+    })
     .then(data => {
         if (data.success) {
-            showNotification(data.message, 'success');
             closeSectionModal();
-            location.reload();
+            Swal.fire({
+                title: 'Success!',
+                text: sectionId ? 'Section updated successfully!' : 'Section created successfully!',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.href = window.location.href.split('?')[0];
+            });
+        } else {
+            Swal.fire('Error!', data.message || 'Error saving section', 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save mr-1"></i>' + (sectionId ? 'Update Section' : 'Add Section');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('Error creating section', 'error');
+        Swal.fire('Error!', error.message || 'Error saving section', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-save mr-1"></i>' + (sectionId ? 'Update Section' : 'Add Section');
     });
 });
 
@@ -336,25 +556,74 @@ document.getElementById('lessonForm').addEventListener('submit', function(e) {
     
     const formData = new FormData(this);
     const sectionId = document.getElementById('lesson_section_id').value;
+    const lessonId = document.getElementById('lesson_id').value;
+    const method = document.getElementById('lesson_method').value;
+    const submitBtn = this.querySelector('button[type="submit"]');
     
-    fetch(`{{ route('instructor.courses.sections.lessons.store', [$course, '__SECTION__']) }}`.replace('__SECTION__', sectionId), {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Saving...';
+    
+    let url = `/instructor/courses/{{ $course->id }}/sections/${sectionId}/lessons`;
+    if (lessonId && method === 'PUT') {
+        url = `/instructor/courses/{{ $course->id }}/sections/${sectionId}/lessons/${lessonId}`;
+        formData.append('_method', 'PUT');
+    }
+    
+    fetch(url, {
         method: 'POST',
         body: formData,
         headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                try {
+                    const data = JSON.parse(text);
+                    throw new Error(data.message || 'Error saving lesson');
+                } catch (e) {
+                    // If response is HTML (Laravel error page), show generic error
+                    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                        throw new Error('Server error occurred. Please check the logs.');
+                    }
+                    throw new Error('Error saving lesson');
+                }
+            });
+        }
+        return response.text().then(text => {
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                throw new Error('Invalid response from server');
+            }
+        });
+    })
     .then(data => {
         if (data.success) {
-            showNotification(data.message, 'success');
             closeLessonModal();
-            location.reload();
+            Swal.fire({
+                title: 'Success!',
+                text: lessonId ? 'Lesson updated successfully!' : 'Lesson created successfully!',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.href = window.location.href.split('?')[0];
+            });
+        } else {
+            Swal.fire('Error!', data.message || 'Error saving lesson', 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save mr-1"></i>' + (lessonId ? 'Update Lesson' : 'Add Lesson');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('Error creating lesson', 'error');
+        Swal.fire('Error!', error.message || 'Error saving lesson', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-save mr-1"></i>' + (lessonId ? 'Update Lesson' : 'Add Lesson');
     });
 });
 </script>

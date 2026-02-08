@@ -180,10 +180,10 @@
                         <span>Price</span>
                         <span>
                             @if($course->discount_price)
-                            <del class="text-muted">${{ number_format($course->price, 2) }}</del>
-                            ${{ number_format($course->discount_price, 2) }}
+                            <del class="text-muted">{{ number_format($course->price) }} Ks</del>
+                            {{ number_format($course->discount_price) }} Ks
                             @else
-                            ${{ number_format($course->price, 2) }}
+                            {{ number_format($course->price) }} Ks
                             @endif
                         </span>
                     </li>
@@ -205,7 +205,7 @@
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
                         <span>Revenue</span>
-                        <span class="text-success">${{ number_format($course->enrollments->where('payment_status', 'completed')->sum('price_paid'), 2) }}</span>
+                        <span class="text-success">{{ number_format($course->enrollments->where('payment_status', 'completed')->sum('price_paid')) }} Ks</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
                         <span>Avg Rating</span>

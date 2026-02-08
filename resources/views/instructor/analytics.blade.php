@@ -123,7 +123,7 @@
                         {{ number_format($course->avg_rating ?? 0, 1) }}
                         <small class="text-muted">({{ $course->reviews_count ?? 0 }})</small>
                     </td>
-                    <td class="text-success">${{ number_format($course->revenue ?? 0, 2) }}</td>
+                    <td class="text-success">{{ number_format($course->revenue ?? 0) }} Ks</td>
                 </tr>
                 @empty
                 <tr>

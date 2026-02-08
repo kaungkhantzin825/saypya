@@ -14,7 +14,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-success">
             <div class="inner">
-                <h3>${{ number_format($totalEarnings ?? 0, 2) }}</h3>
+                <h3>{{ number_format($totalEarnings ?? 0) }} Ks</h3>
                 <p>Total Earnings</p>
             </div>
             <div class="icon"><i class="fas fa-dollar-sign"></i></div>
@@ -23,7 +23,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-info">
             <div class="inner">
-                <h3>${{ number_format($thisMonthEarnings ?? 0, 2) }}</h3>
+                <h3>{{ number_format($thisMonthEarnings ?? 0) }} Ks</h3>
                 <p>This Month</p>
             </div>
             <div class="icon"><i class="fas fa-calendar"></i></div>
@@ -41,7 +41,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-primary">
             <div class="inner">
-                <h3>${{ number_format($avgOrderValue ?? 0, 2) }}</h3>
+                <h3>{{ number_format($avgOrderValue ?? 0) }} Ks</h3>
                 <p>Avg Order Value</p>
             </div>
             <div class="icon"><i class="fas fa-chart-line"></i></div>
@@ -73,7 +73,7 @@
                     @forelse($courseEarnings ?? [] as $course)
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>{{ Str::limit($course->title, 20) }}</span>
-                        <span class="badge badge-success badge-pill">${{ number_format($course->earnings ?? 0, 2) }}</span>
+                        <span class="badge badge-success badge-pill">{{ number_format($course->earnings ?? 0) }} Ks</span>
                     </li>
                     @empty
                     <li class="list-group-item text-center text-muted">No earnings yet</li>
@@ -106,7 +106,7 @@
                     <td>{{ $transaction->enrolled_at->format('M d, Y H:i') }}</td>
                     <td>{{ $transaction->user->name ?? 'N/A' }}</td>
                     <td>{{ Str::limit($transaction->course->title ?? 'N/A', 30) }}</td>
-                    <td class="text-success">${{ number_format($transaction->price_paid, 2) }}</td>
+                    <td class="text-success">{{ number_format($transaction->price_paid) }} Ks</td>
                     <td>
                         <span class="badge badge-{{ $transaction->payment_status == 'completed' ? 'success' : ($transaction->payment_status == 'refunded' ? 'danger' : 'warning') }}">
                             {{ ucfirst($transaction->payment_status) }}
@@ -133,7 +133,7 @@ new Chart(ctx, {
     data: {
         labels: {!! json_encode($monthlyData['labels'] ?? []) !!},
         datasets: [{
-            label: 'Earnings ($)',
+            label: 'Earnings (Ks)',
             data: {!! json_encode($monthlyData['data'] ?? []) !!},
             backgroundColor: 'rgba(40, 167, 69, 0.8)',
             borderColor: 'rgb(40, 167, 69)',
