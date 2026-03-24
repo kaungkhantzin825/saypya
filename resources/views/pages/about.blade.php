@@ -29,19 +29,19 @@
     <div class="max-w-7xl mx-auto px-4">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-                <div class="text-4xl font-bold text-teal-600">1000+</div>
+                <div class="text-4xl font-bold text-teal-600">{{ \App\Models\SiteSetting::get('about_students_count', '1000') }}+</div>
                 <div class="text-gray-600">Students</div>
             </div>
             <div>
-                <div class="text-4xl font-bold text-teal-600">50+</div>
+                <div class="text-4xl font-bold text-teal-600">{{ \App\Models\SiteSetting::get('about_courses_count', '50') }}+</div>
                 <div class="text-gray-600">Courses</div>
             </div>
             <div>
-                <div class="text-4xl font-bold text-teal-600">20+</div>
+                <div class="text-4xl font-bold text-teal-600">{{ \App\Models\SiteSetting::get('about_instructors_count', '20') }}+</div>
                 <div class="text-gray-600">Instructors</div>
             </div>
             <div>
-                <div class="text-4xl font-bold text-teal-600">5+</div>
+                <div class="text-4xl font-bold text-teal-600">{{ \App\Models\SiteSetting::get('about_partners_count', '5') }}+</div>
                 <div class="text-gray-600">Partners</div>
             </div>
         </div>

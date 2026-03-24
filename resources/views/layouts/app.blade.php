@@ -93,6 +93,9 @@
                         </div>
                     </div>
                     
+                    <!-- Blog -->
+                    <a href="{{ route('blog.index') }}" class="text-gray-800 hover:text-teal-600 font-semibold text-base py-2">Blog</a>
+                    
                     <!-- About Us Dropdown -->
                     <div class="relative group">
                         <button class="text-gray-800 hover:text-teal-600 font-semibold flex items-center text-base py-2">
@@ -131,10 +134,7 @@
                         </form>
                     @else
                         <a href="{{ route('login') }}" class="btn-3d btn-3d-teal">
-                            Instructor Login
-                        </a>
-                        <a href="{{ route('login') }}" class="btn-3d btn-3d-cyan">
-                            Student Login
+                            {{ __('app.login') }}
                         </a>
                     @endauth
                 </div>

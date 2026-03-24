@@ -9,21 +9,6 @@
         <h1 class="text-4xl md:text-5xl font-bold mb-4">Learn Anytime, Anywhere</h1>
         <p class="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">Join thousands of learners and start building your skills today with our expert-led courses.</p>
         
-        <div class="flex justify-center gap-8 mb-8">
-            <div class="text-center">
-                <div class="text-4xl font-bold text-yellow-400">{{ number_format($stats['total_students']) }}+</div>
-                <div class="text-gray-300 text-sm">Students</div>
-            </div>
-            <div class="text-center">
-                <div class="text-4xl font-bold text-yellow-400">{{ number_format($stats['total_courses']) }}+</div>
-                <div class="text-gray-300 text-sm">Courses</div>
-            </div>
-            <div class="text-center">
-                <div class="text-4xl font-bold text-yellow-400">{{ number_format($stats['total_instructors']) }}+</div>
-                <div class="text-gray-300 text-sm">Instructors</div>
-            </div>
-        </div>
-        
         <a href="{{ route('courses.index') }}" class="btn-3d btn-3d-cyan text-lg">
             Browse Courses
         </a>
@@ -64,7 +49,7 @@
 </section>
 
 <!-- Popular Courses -->
-<section class="py-12 bg-gray-50">
+<!-- <section class="py-12 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4">
         <h2 class="text-2xl font-bold text-center mb-8">Most Popular Courses</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -73,7 +58,7 @@
             @endforeach
         </div>
     </div>
-</section>
+</section> -->
 
 <!-- Instructors -->
 <!-- <section class="py-12 bg-white">

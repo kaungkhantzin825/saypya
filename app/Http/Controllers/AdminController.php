@@ -678,46 +678,7 @@ class AdminController extends Controller
     }
 
     // ==================== SETTINGS ====================
-
-    public function settings()
-    {
-        $settings = [
-            'site_name' => \App\Models\Setting::get('site_name', config('app.name')),
-            'site_description' => \App\Models\Setting::get('site_description'),
-            'contact_email' => \App\Models\Setting::get('contact_email'),
-            'contact_phone' => \App\Models\Setting::get('contact_phone'),
-            'contact_address' => \App\Models\Setting::get('contact_address'),
-            'contact_facebook' => \App\Models\Setting::get('contact_facebook'),
-            'contact_website' => \App\Models\Setting::get('contact_website'),
-            'address' => \App\Models\Setting::get('address'),
-            'facebook_url' => \App\Models\Setting::get('facebook_url'),
-            'twitter_url' => \App\Models\Setting::get('twitter_url'),
-            'youtube_url' => \App\Models\Setting::get('youtube_url'),
-            'linkedin_url' => \App\Models\Setting::get('linkedin_url'),
-            'currency' => \App\Models\Setting::get('currency', 'USD'),
-            'commission_rate' => \App\Models\Setting::get('commission_rate', 20),
-        ];
-        
-        return view('admin.settings', compact('settings'));
-    }
-
-    public function settingsUpdate(Request $request)
-    {
-        $fields = [
-            'site_name', 'site_description', 'contact_email', 'contact_phone',
-            'contact_address', 'contact_facebook', 'contact_website',
-            'address', 'facebook_url', 'twitter_url', 'youtube_url', 'linkedin_url',
-            'currency', 'commission_rate'
-        ];
-
-        foreach ($fields as $field) {
-            if ($request->has($field)) {
-                \App\Models\Setting::set($field, $request->input($field));
-            }
-        }
-
-        return redirect()->back()->with('success', 'Settings updated successfully!');
-    }
+    // Settings methods moved to Site Settings section below
 
     public function cacheClear()
     {
@@ -983,5 +944,116 @@ class AdminController extends Controller
     {
         $message->delete();
         return redirect()->route('admin.contact-messages.index')->with('success', 'Message deleted successfully!');
+    }
+
+    // ==================== SITE SETTINGS ====================
+
+    public function settings()
+    {
+        $settings = \App\Models\SiteSetting::orderBy('group')->orderBy('label')->get()->groupBy('group');
+        return view('admin.settings', compact('settings'));
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'settings' => 'required|array',
+            'settings.*' => 'nullable',
+        ]);
+
+        foreach ($request->settings as $key => $value) {
+            $setting = \App\Models\SiteSetting::where('key', $key)->first();
+            if ($setting) {
+                $setting->update(['value' => $value]);
+            }
+        }
+
+        \App\Models\SiteSetting::clearCache();
+
+        return redirect()->route('admin.settings')->with('success', 'Settings updated successfully!');
+    }
+
+    // ==================== BLOG POSTS ====================
+
+    public function blogPosts()
+    {
+        $posts = \App\Models\BlogPost::with('author')->latest()->paginate(20);
+        return view('admin.blog.index', compact('posts'));
+    }
+
+    public function createBlogPost()
+    {
+        return view('admin.blog.create');
+    }
+
+    public function storeBlogPost(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'excerpt' => 'nullable|string',
+            'content' => 'required|string',
+            'featured_image' => 'nullable|image|max:2048',
+            'status' => 'required|in:draft,published',
+        ]);
+
+        $validated['author_id'] = auth()->id();
+        $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']);
+
+        if ($request->hasFile('featured_image')) {
+            $validated['featured_image'] = $request->file('featured_image')->store('blog', 'public');
+        }
+
+        if ($validated['status'] === 'published' && !$request->published_at) {
+            $validated['published_at'] = now();
+        }
+
+        \App\Models\BlogPost::create($validated);
+
+        return redirect()->route('admin.blog.index')->with('success', 'Blog post created successfully!');
+    }
+
+    public function editBlogPost(\App\Models\BlogPost $post)
+    {
+        return view('admin.blog.edit', compact('post'));
+    }
+
+    public function updateBlogPost(Request $request, \App\Models\BlogPost $post)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'excerpt' => 'nullable|string',
+            'content' => 'required|string',
+            'featured_image' => 'nullable|image|max:2048',
+            'status' => 'required|in:draft,published',
+        ]);
+
+        $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']);
+
+        if ($request->hasFile('featured_image')) {
+            // Delete old image
+            if ($post->featured_image) {
+                \Storage::disk('public')->delete($post->featured_image);
+            }
+            $validated['featured_image'] = $request->file('featured_image')->store('blog', 'public');
+        }
+
+        if ($validated['status'] === 'published' && !$post->published_at) {
+            $validated['published_at'] = now();
+        }
+
+        $post->update($validated);
+
+        return redirect()->route('admin.blog.index')->with('success', 'Blog post updated successfully!');
+    }
+
+    public function destroyBlogPost(\App\Models\BlogPost $post)
+    {
+        if ($post->featured_image) {
+            \Storage::disk('public')->delete($post->featured_image);
+        }
+
+        $post->delete();
+
+        return redirect()->route('admin.blog.index')->with('success', 'Blog post deleted successfully!');
     }
 }

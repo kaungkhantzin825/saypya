@@ -132,6 +132,28 @@
         </a>
     </li>
 
+    <!-- Blog Posts -->
+    <li class="nav-item {{ request()->routeIs('admin.blog*') ? 'menu-open' : '' }}">
+        <a href="#" class="nav-link {{ request()->routeIs('admin.blog*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-blog"></i>
+            <p>Blog Posts <i class="right fas fa-angle-left"></i></p>
+        </a>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{{ route('admin.blog.index') }}" class="nav-link {{ request()->routeIs('admin.blog.index') ? 'active' : '' }}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>All Posts</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.blog.create') }}" class="nav-link {{ request()->routeIs('admin.blog.create') ? 'active' : '' }}">
+                    <i class="far fa-plus-square nav-icon"></i>
+                    <p>Add New Post</p>
+                </a>
+            </li>
+        </ul>
+    </li>
+
     <!-- Contact Messages -->
     <li class="nav-item">
         <a href="{{ route('admin.contact-messages.index') }}" class="nav-link {{ request()->routeIs('admin.contact-messages*') ? 'active' : '' }}">

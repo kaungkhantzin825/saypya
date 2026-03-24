@@ -26,6 +26,10 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/search', [HomeController::class, 'search'])->name('search');
 Route::get('/instructors/{user}', [HomeController::class, 'instructorProfile'])->name('instructors.profile');
 
+// Blog routes
+Route::get('/blog', [App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{slug}', [App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
+
 // Static pages
 Route::get('/about', function () {
     return view('pages.about');
@@ -240,6 +244,16 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Reports & Settings
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
-    Route::put('/settings', [AdminController::class, 'settingsUpdate'])->name('settings.update');
+    Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
+    
+    // Blog Management
+    Route::prefix('blog')->name('blog.')->group(function () {
+        Route::get('/', [AdminController::class, 'blogPosts'])->name('index');
+        Route::get('/create', [AdminController::class, 'createBlogPost'])->name('create');
+        Route::post('/', [AdminController::class, 'storeBlogPost'])->name('store');
+        Route::get('/{post}/edit', [AdminController::class, 'editBlogPost'])->name('edit');
+        Route::put('/{post}', [AdminController::class, 'updateBlogPost'])->name('update');
+        Route::delete('/{post}', [AdminController::class, 'destroyBlogPost'])->name('destroy');
+    });
     Route::post('/cache/clear', [AdminController::class, 'cacheClear'])->name('cache.clear');
 });
