@@ -9,13 +9,13 @@
             <div class="flex justify-center">
                 <img src="{{ asset('images/SanPya-Logo.png') }}" alt="Sanpya Academy" style="width: 80px; height: auto;">
             </div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 myanmar-text">
-                သင့်အကောင့်ဖွင့်ပါ
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                Create Your Account
             </h2>
-            <p class="mt-2 text-center text-sm text-gray-600 myanmar-text">
-                သို့မဟုတ်
+            <p class="mt-2 text-center text-sm text-gray-600">
+                Or
                 <a href="{{ route('login') }}" class="font-medium text-blue-600 hover:text-blue-500">
-                    ရှိပြီးသားအကောင့်သို့ ဝင်ရောက်ပါ
+                    sign in to your existing account
                 </a>
             </p>
         </div>
@@ -24,10 +24,10 @@
             @csrf
             <div class="space-y-4">
                 <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700 myanmar-text">အမည်အပြည့်အစုံ</label>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
                     <input id="name" name="name" type="text" autocomplete="name" required 
                            class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
-                           placeholder="သင့်အမည်အပြည့်အစုံကို ရိုက်ထည့်ပါ" value="{{ old('name') }}">
+                           placeholder="Enter your full name" value="{{ old('name') }}">
                     @error('name')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -44,11 +44,11 @@
                 </div>
 
                 <div>
-                    <label for="role" class="block text-sm font-medium text-gray-700 myanmar-text">ကျွန်ုပ်လုပ်ချင်သည်မှာ</label>
+                    <label for="role" class="block text-sm font-medium text-gray-700">I want to</label>
                     <select id="role" name="role" required 
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        <option value="student" {{ old('role') == 'student' ? 'selected' : '' }} class="myanmar-text">သင်ယူခြင်း (ကျောင်းသား)</option>
-                        <option value="lecturer" {{ old('role') == 'lecturer' ? 'selected' : '' }} class="myanmar-text">သင်ကြားခြင်း (ဆရာ)</option>
+                        <option value="student" {{ old('role') == 'student' ? 'selected' : '' }}>Learn (Student)</option>
+                        <option value="lecturer" {{ old('role') == 'lecturer' ? 'selected' : '' }}>Teach (Instructor)</option>
                     </select>
                     @error('role')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -86,11 +86,11 @@
 
             <div>
                 <button type="submit" 
-                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 myanmar-text">
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                         <i class="fas fa-user-plus text-blue-500 group-hover:text-blue-400"></i>
                     </span>
-                    အကောင့်ဖွင့်ရန်
+                    Create Account
                 </button>
             </div>
 
