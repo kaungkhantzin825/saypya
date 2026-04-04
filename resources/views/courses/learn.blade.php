@@ -73,7 +73,7 @@
                         <div class="space-y-2">
                             @foreach($section->lessons as $lesson)
                             <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer {{ $currentLesson && $currentLesson->id === $lesson->id ? 'bg-blue-50 border border-blue-200' : '' }}"
-                                 onclick="window.location.href='{{ route('courses.lesson', [$course, $lesson->id]) }}'">
+                                 onclick="window.location.href='{{ route('courses.lesson', [$course->slug, $lesson->id]) }}'">
                                 <div class="flex-shrink-0">
                                     @if($lesson->progress && $lesson->progress->first() && $lesson->progress->first()->is_completed)
                                         <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
