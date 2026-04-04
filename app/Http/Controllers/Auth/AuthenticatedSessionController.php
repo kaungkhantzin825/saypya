@@ -34,15 +34,15 @@ class AuthenticatedSessionController extends Controller
         if ($user->status === 'pending') {
             Auth::logout();
             return back()->withErrors([
-                'email' => 'Your account is pending admin approval. Please wait for approval before logging in.',
-            ]);
+                'email' => 'သင့်အကောင့်သည် အက်ဒမင်၏ အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါသည်။ အတည်ပြုပြီးမှ ဝင်ရောက်နိုင်ပါမည်။',
+            ])->withInput($request->only('email'));
         }
         
         if ($user->status === 'inactive') {
             Auth::logout();
             return back()->withErrors([
-                'email' => 'Your account has been deactivated. Please contact support.',
-            ]);
+                'email' => 'သင့်အကောင့်ကို ပိတ်ထားပါသည်။ ကျေးဇူးပြု၍ အကူအညီဌာနသို့ ဆက်သွယ်ပါ။',
+            ])->withInput($request->only('email'));
         }
 
         // Update last login time

@@ -8,6 +8,19 @@
 @endsection
 
 @section('content')
+<!-- Pending Users Alert -->
+@php
+    $pendingUsers = \App\Models\User::where('status', 'pending')->count();
+@endphp
+@if($pendingUsers > 0)
+<div class="alert alert-warning alert-dismissible">
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+    <h5><i class="icon fas fa-exclamation-triangle"></i> Pending User Approvals!</h5>
+    You have <strong>{{ $pendingUsers }}</strong> user(s) waiting for approval. 
+    <a href="{{ route('admin.users.index', ['status' => 'pending']) }}" class="alert-link">Review now</a>
+</div>
+@endif
+
 <!-- Stats Cards -->
 <div class="row">
     <div class="col-lg-3 col-6">

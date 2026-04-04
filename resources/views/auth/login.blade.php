@@ -19,6 +19,19 @@
                 </a>
             </p>
         </div>
+
+        @if (session('success'))
+            <div class="rounded-md bg-green-50 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-green-800 {{ app()->getLocale() == 'my' ? 'myanmar-text' : '' }}">{{ session('success') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
         
         <form class="mt-8 space-y-6" action="{{ route('login') }}" method="POST">
             @csrf

@@ -14,13 +14,33 @@
     <li class="nav-item {{ request()->routeIs('admin.users*') ? 'menu-open' : '' }}">
         <a href="#" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
             <i class="nav-icon fas fa-users"></i>
-            <p>Users <i class="right fas fa-angle-left"></i></p>
+            <p>
+                Users 
+                @php
+                    $pendingCount = \App\Models\User::where('status', 'pending')->count();
+                @endphp
+                @if($pendingCount > 0)
+                    <span class="badge badge-warning right">{{ $pendingCount }}</span>
+                @endif
+                <i class="right fas fa-angle-left"></i>
+            </p>
         </a>
         <ul class="nav nav-treeview">
             <li class="nav-item">
                 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.index') ? 'active' : '' }}">
                     <i class="far fa-circle nav-icon"></i>
                     <p>All Users</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.users.index', ['status' => 'pending']) }}" class="nav-link">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>
+                        Pending Approval
+                        @if($pendingCount > 0)
+                            <span class="badge badge-warning right">{{ $pendingCount }}</span>
+                        @endif
+                    </p>
                 </a>
             </li>
             <li class="nav-item">

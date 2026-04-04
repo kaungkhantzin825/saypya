@@ -62,7 +62,52 @@ class Lesson extends Model
     // Accessors
     public function getVideoUrlFullAttribute()
     {
-        return $this->video_url ? asset('storage/' . $this->video_url) : null;
+        if (!$this->video_url) return null;
+        
+        // Check if it's a YouTube URL
+        if ($this->isYoutubeUrl($this->video_url)) {
+            return $this->video_url;
+        }
+        
+        // Check if it's already a full URL (starts with http:// or https://)
+        if (preg_match('/^https?:\/\//', $this->video_url)) {
+            return $this->video_url;
+        }
+        
+        // Otherwise, treat as local storage file
+        return asset('storage/' . $this->video_url);
+    }
+    
+    public function getYoutubeEmbedUrlAttribute()
+    {
+        if (!$this->video_url) return null;
+        
+        // Extract YouTube video ID and convert to embed URL
+        $videoId = $this->extractYoutubeId($this->video_url);
+        return $videoId ? "https://www.youtube.com/embed/{$videoId}" : null;
+    }
+    
+    public function isYoutubeUrl($url)
+    {
+        return preg_match('/(?:youtube\.com|youtu\.be)/', $url);
+    }
+    
+    private function extractYoutubeId($url)
+    {
+        // Handle various YouTube URL formats
+        $patterns = [
+            '/youtube\.com\/watch\?v=([^&]+)/',
+            '/youtube\.com\/embed\/([^?]+)/',
+            '/youtu\.be\/([^?]+)/',
+        ];
+        
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $url, $matches)) {
+                return $matches[1];
+            }
+        }
+        
+        return null;
     }
 
     public function getFormattedDurationAttribute()

@@ -80,18 +80,11 @@
 
                 <!-- Center Menu -->
                 <div class="flex items-center" style="gap: 3rem;">
-                    <!-- Services Dropdown -->
-                    <div class="relative group">
-                        <button class="text-gray-800 hover:text-teal-600 font-semibold flex items-center text-base py-2">
-                            Services <i class="fas fa-chevron-down ml-2 text-xs"></i>
-                        </button>
-                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                            <a href="{{ route('home') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-t-lg">Home</a>
-                            <a href="{{ route('courses.index') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600">All Courses</a>
-                            <a href="{{ route('categories.index') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600">Categories</a>
-                            <!-- <a href="#" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-b-lg">Live Classes</a> -->
-                        </div>
-                    </div>
+                    <!-- Home -->
+                    <a href="{{ route('home') }}" class="text-gray-800 hover:text-teal-600 font-semibold text-base py-2">Home</a>
+                    
+                    <!-- All Courses -->
+                    <a href="{{ route('courses.index') }}" class="text-gray-800 hover:text-teal-600 font-semibold text-base py-2">All Courses</a>
                     
                     <!-- Blog -->
                     <a href="{{ route('blog.index') }}" class="text-gray-800 hover:text-teal-600 font-semibold text-base py-2">Blog</a>
