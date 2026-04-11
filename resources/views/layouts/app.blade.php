@@ -66,11 +66,132 @@
             transform: translateY(2px);
             box-shadow: 0 2px 0 #cbd5e0, 0 4px 6px rgba(0,0,0,0.2);
         }
+
+        /* =============================================
+           RESPONSIVE NAVIGATION — no Tailwind purge needed
+        ============================================= */
+
+        /* Hamburger button — always hidden on large screens */
+        #mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        #mobile-menu-btn:hover { background-color: #f3f4f6; }
+        #mobile-menu-btn .bar {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background-color: #374151;
+            margin: 3px 0;
+            border-radius: 2px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        #mobile-menu-btn.open .bar:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+        #mobile-menu-btn.open .bar:nth-child(2) { opacity: 0; }
+        #mobile-menu-btn.open .bar:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+
+        /* Mobile drawer — hidden by default */
+        #mobile-menu {
+            display: none;
+            border-top: 1px solid #e5e7eb;
+            background: #fff;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            padding: 12px 16px 20px;
+        }
+        #mobile-menu.open { display: block; }
+
+        /* Mobile menu links */
+        .mobile-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            border-radius: 10px;
+            margin-bottom: 2px;
+            transition: background 0.15s;
+        }
+        .mobile-nav-link:hover { background-color: #f0fdfa; color: #0d9488; }
+        .mobile-nav-link i { color: #0d9488; margin-right: 12px; width: 16px; text-align: center; }
+
+        /* Mobile About accordion */
+        #mobile-about-btn {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 2px;
+            transition: background 0.15s;
+        }
+        #mobile-about-btn:hover { background-color: #f0fdfa; color: #0d9488; }
+        #mobile-about-sub {
+            display: none;
+            margin-left: 28px;
+            border-left: 2px solid #99f6e4;
+            padding-left: 12px;
+            margin-bottom: 4px;
+        }
+        #mobile-about-sub.open { display: block; }
+        .mobile-sub-link {
+            display: block;
+            padding: 9px 12px;
+            color: #374151;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: background 0.15s;
+        }
+        .mobile-sub-link:hover { background-color: #f0fdfa; color: #0d9488; }
+
+        /* Mobile auth section */
+        #mobile-auth {
+            margin-top: 12px;
+            padding-top: 14px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #mobile-auth .btn-3d { text-align: center; width: 100%; }
+
+        /* Desktop nav — visible by default, hidden on mobile (<1024px) */
+        #desktop-nav-links,
+        #desktop-nav-actions {
+            display: flex;
+            align-items: center;
+        }
+        #desktop-nav-links { gap: 3rem; }
+        #desktop-nav-actions { gap: 12px; }
+
+        @media (max-width: 1023px) {
+            #desktop-nav-links  { display: none !important; }
+            #desktop-nav-actions { display: none !important; }
+            #mobile-menu-btn    { display: flex !important; }
+        }
     </style>
 </head>
 <body class="bg-gray-50 antialiased">
     <!-- Navigation -->
-    <nav class="bg-white shadow-md border-b-4 border-purple-800">
+    <nav class="bg-white shadow-md border-b-4 border-purple-800" id="main-nav">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
@@ -78,17 +199,11 @@
                     <img src="{{ asset('images/SanPya-Logo.png') }}" alt="Sanpya Academy" style="height: 50px; width: auto;">
                 </a>
 
-                <!-- Center Menu -->
-                <div class="flex items-center" style="gap: 3rem;">
-                    <!-- Home -->
+                <!-- Desktop Center Menu -->
+                <div id="desktop-nav-links">
                     <a href="{{ route('home') }}" class="text-gray-800 hover:text-teal-600 font-semibold text-base py-2">Home</a>
-                    
-                    <!-- All Courses -->
                     <a href="{{ route('courses.index') }}" class="text-gray-800 hover:text-teal-600 font-semibold text-base py-2">All Courses</a>
-                    
-                    <!-- Blog -->
                     <a href="{{ route('blog.index') }}" class="text-gray-800 hover:text-teal-600 font-semibold text-base py-2">Blog</a>
-                    
                     <!-- About Us Dropdown -->
                     <div class="relative group">
                         <button class="text-gray-800 hover:text-teal-600 font-semibold flex items-center text-base py-2">
@@ -96,39 +211,85 @@
                         </button>
                         <div class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                             <a href="{{ route('about') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-t-lg">Our Story</a>
-                            <!-- <a href="{{ route('team') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600">Our Team</a> -->
                             <a href="{{ route('partners') }}" class="block px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-600 rounded-b-lg">Partners</a>
                         </div>
                     </div>
-                    
-                    <!-- Contact Us -->
                     <a href="{{ route('contact') }}" class="text-gray-800 hover:text-teal-600 font-semibold text-base py-2">Contact Us</a>
                 </div>
 
-                <!-- Right Side - Buttons -->
-                <div class="flex items-center space-x-3 flex-shrink-0">
+                <!-- Desktop Right Side Buttons -->
+                <div id="desktop-nav-actions">
                     @auth
                         @if(auth()->user()->isAdmin())
-                            <a href="{{ route('admin.dashboard') }}" class="btn-3d btn-3d-teal">
-                                Admin Panel
-                            </a>
+                            <a href="{{ route('admin.dashboard') }}" class="btn-3d btn-3d-teal">Admin Panel</a>
                         @elseif(auth()->user()->isLecturer())
-                            <a href="{{ route('instructor.dashboard') }}" class="btn-3d btn-3d-teal">
-                                Instructor Panel
-                            </a>
+                            <a href="{{ route('instructor.dashboard') }}" class="btn-3d btn-3d-teal">Instructor Panel</a>
                         @else
-                            <a href="{{ route('dashboard') }}" class="btn-3d btn-3d-cyan">
-                                My Dashboard
-                            </a>
+                            <a href="{{ route('dashboard') }}" class="btn-3d btn-3d-cyan">My Dashboard</a>
                         @endif
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
                             <button type="submit" class="btn-3d btn-3d-red">Logout</button>
                         </form>
                     @else
-                        <a href="{{ route('login') }}" class="btn-3d btn-3d-teal">
-                            {{ __('app.login') }}
-                        </a>
+                        <a href="{{ route('login') }}" class="btn-3d btn-3d-teal">{{ __('app.login') }}</a>
+                    @endauth
+                </div>
+
+                <!-- Mobile Hamburger Button -->
+                <button id="mobile-menu-btn" aria-label="Open menu">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Menu -->
+        <div id="mobile-menu">
+            <div>
+                <a href="{{ route('home') }}" class="mobile-nav-link">
+                    <i class="fas fa-home"></i>Home
+                </a>
+                <a href="{{ route('courses.index') }}" class="mobile-nav-link">
+                    <i class="fas fa-book-open"></i>All Courses
+                </a>
+                <a href="{{ route('blog.index') }}" class="mobile-nav-link">
+                    <i class="fas fa-blog"></i>Blog
+                </a>
+
+                <!-- About Us accordion -->
+                <div>
+                    <button id="mobile-about-btn">
+                        <span><i class="fas fa-info-circle"></i>About Us</span>
+                        <i id="mobile-about-icon" class="fas fa-chevron-down"></i>
+                    </button>
+                    <div id="mobile-about-sub">
+                        <a href="{{ route('about') }}" class="mobile-sub-link">Our Story</a>
+                        <a href="{{ route('partners') }}" class="mobile-sub-link">Partners</a>
+                    </div>
+                </div>
+
+                <a href="{{ route('contact') }}" class="mobile-nav-link">
+                    <i class="fas fa-envelope"></i>Contact Us
+                </a>
+
+                <!-- Mobile Auth Buttons -->
+                <div id="mobile-auth">
+                    @auth
+                        @if(auth()->user()->isAdmin())
+                            <a href="{{ route('admin.dashboard') }}" class="btn-3d btn-3d-teal">Admin Panel</a>
+                        @elseif(auth()->user()->isLecturer())
+                            <a href="{{ route('instructor.dashboard') }}" class="btn-3d btn-3d-teal">Instructor Panel</a>
+                        @else
+                            <a href="{{ route('dashboard') }}" class="btn-3d btn-3d-cyan">My Dashboard</a>
+                        @endif
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="btn-3d btn-3d-red">Logout</button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="btn-3d btn-3d-teal">{{ __('app.login') }}</a>
                     @endauth
                 </div>
             </div>
@@ -200,6 +361,52 @@
             </div>
         </div>
     </footer>
+
+    <!-- Mobile Menu JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const btn  = document.getElementById('mobile-menu-btn');
+            const menu = document.getElementById('mobile-menu');
+            const bars = btn ? btn.querySelectorAll('.bar') : [];
+
+            function openMenu() {
+                menu.classList.add('open');
+                btn.classList.add('open');
+            }
+            function closeMenu() {
+                menu.classList.remove('open');
+                btn.classList.remove('open');
+            }
+
+            if (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    menu.classList.contains('open') ? closeMenu() : openMenu();
+                });
+            }
+
+            // About Us accordion
+            const aboutBtn  = document.getElementById('mobile-about-btn');
+            const aboutSub  = document.getElementById('mobile-about-sub');
+            const aboutIcon = document.getElementById('mobile-about-icon');
+            if (aboutBtn && aboutSub) {
+                aboutBtn.addEventListener('click', function () {
+                    const isOpen = aboutSub.classList.toggle('open');
+                    if (aboutIcon) {
+                        aboutIcon.style.transform = isOpen ? 'rotate(180deg)' : '';
+                    }
+                });
+            }
+
+            // Close on outside click
+            document.addEventListener('click', function (e) {
+                const nav = document.getElementById('main-nav');
+                if (nav && !nav.contains(e.target)) {
+                    closeMenu();
+                }
+            });
+        });
+    </script>
 
     @stack('scripts')
 </body>

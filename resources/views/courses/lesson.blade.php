@@ -10,10 +10,22 @@
             <div class="lg:col-span-3 bg-black">
                 <div class="aspect-video bg-gray-900 flex items-center justify-center">
                     @if($lesson->video_url)
-                        <video id="lesson-video" class="w-full h-full" controls>
-                            <source src="{{ $lesson->video_url_full }}" type="video/mp4">
-                            သင့်ဘရောက်ဆာသည် ဗီဒီယိုကို ပံ့ပိုးမပေးပါ။
-                        </video>
+                        @if($lesson->isYoutubeUrl($lesson->video_url))
+                            {{-- YouTube Video - use iframe embed --}}
+                            <iframe id="lesson-video"
+                                    class="w-full h-full"
+                                    src="{{ $lesson->youtube_embed_url }}"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen>
+                            </iframe>
+                        @else
+                            {{-- Local/Direct Video --}}
+                            <video id="lesson-video" class="w-full h-full" controls>
+                                <source src="{{ $lesson->video_url_full }}" type="video/mp4">
+                                သင့်ဘရောက်ဆာသည် ဗီဒီယိုကို ပံ့ပိုးမပေးပါ။
+                            </video>
+                        @endif
                     @else
                         <div class="text-center text-white">
                             <i class="fas fa-play-circle text-6xl mb-4 opacity-50"></i>

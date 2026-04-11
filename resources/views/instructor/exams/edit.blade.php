@@ -19,7 +19,7 @@
             <h5 class="mb-0">Exam Settings</h5>
         </div>
         <div class="card-body">
-            <form action="{{ route('admin.exams.update', $exam) }}" method="POST">
+            <form action="{{ route('instructor.exams.update', $exam) }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -125,7 +125,7 @@
                             @endif
                         </div>
                         <div>
-                            <form action="{{ route('admin.exams.questions.delete', [$exam, $question]) }}" method="POST" 
+                            <form action="{{ route('instructor.exams.questions.delete', [$exam, $question]) }}" method="POST" 
                                   onsubmit="return confirm('Delete this question?')">
                                 @csrf
                                 @method('DELETE')

@@ -8,7 +8,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('admin.exams.store') }}" method="POST">
+            <form action="{{ route('instructor.exams.store') }}" method="POST">
                 @csrf
 
                 <div class="mb-3">
@@ -106,7 +106,7 @@
 
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">Create Exam</button>
-                    <a href="{{ route('admin.exams.index') }}" class="btn btn-secondary">Cancel</a>
+                    <a href="{{ route('instructor.exams.index') }}" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
         </div>
