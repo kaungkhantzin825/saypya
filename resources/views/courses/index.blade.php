@@ -12,42 +12,127 @@
         </div>
 
         <!-- Filters -->
-        <div class="bg-white rounded-lg shadow p-4 mb-8">
-            <form method="GET" action="{{ route('courses.index') }}" class="flex flex-wrap gap-4 items-end">
-                <div class="flex-1 min-w-[200px]">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search courses..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-teal-500 focus:border-teal-500">
+        <style>
+            .unified-search-bar {
+                display: flex;
+                flex-direction: column;
+                background-color: transparent;
+                gap: 1rem;
+            }
+            .search-segment {
+                flex: 1;
+                min-width: 150px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                padding: 0 1rem;
+                border-left: 1px solid transparent;
+            }
+            .search-input {
+                width: 100%;
+                background: transparent;
+                border: none;
+                outline: none;
+                color: #1f2937;
+                font-size: 0.95rem;
+                padding: 0;
+            }
+            .search-label {
+                font-size: 0.75rem;
+                font-weight: 700;
+                color: #374151;
+                margin-bottom: 0.1rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+            @media (min-width: 1024px) {
+                .unified-search-bar {
+                    flex-direction: row;
+                    background-color: white;
+                    border-radius: 9999px;
+                    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+                    border: 1px solid #f3f4f6;
+                    padding: 0.5rem;
+                    align-items: center;
+                    gap: 0;
+                }
+                .search-segment:not(:first-child) {
+                    border-left-color: #e5e7eb;
+                }
+                .mobile-bg {
+                    background: transparent;
+                    border: none;
+                    box-shadow: none;
+                }
+            }
+            @media (max-width: 1023px) {
+                .search-segment {
+                    background: white;
+                    padding: 0.75rem 1.25rem;
+                    border-radius: 1rem;
+                    border: 1px solid #e5e7eb;
+                    min-height: 60px;
+                }
+                .submit-segment {
+                    width: 100%;
+                }
+            }
+            select.search-input {
+                appearance: none;
+                cursor: pointer;
+            }
+        </style>
+        
+        <div class="mb-10">
+            <form method="GET" action="{{ route('courses.index') }}" class="unified-search-bar">
+                
+                {{-- Search --}}
+                <div class="search-segment" style="flex: 1.5;">
+                    <label class="search-label">Course</label>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="What do you want to learn?" class="search-input">
                 </div>
-                <div class="flex-1 min-w-[150px]">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select name="category" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-teal-500 focus:border-teal-500">
-                        <option value="">All Categories</option>
+
+                {{-- Category --}}
+                <div class="search-segment">
+                    <label class="search-label">Category</label>
+                    <select name="category" class="search-input text-gray-500">
+                        <option value="">Any Category</option>
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="flex-1 min-w-[150px]">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Level</label>
-                    <select name="level" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-teal-500 focus:border-teal-500">
-                        <option value="">All Levels</option>
+
+                {{-- Level --}}
+                <div class="search-segment">
+                    <label class="search-label">Level</label>
+                    <select name="level" class="search-input text-gray-500">
+                        <option value="">Any Level</option>
                         <option value="beginner" {{ request('level') == 'beginner' ? 'selected' : '' }}>Beginner</option>
                         <option value="intermediate" {{ request('level') == 'intermediate' ? 'selected' : '' }}>Intermediate</option>
                         <option value="advanced" {{ request('level') == 'advanced' ? 'selected' : '' }}>Advanced</option>
                     </select>
                 </div>
-                <div class="flex-1 min-w-[150px]">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                    <select name="sort" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-teal-500 focus:border-teal-500">
+
+                {{-- Sort --}}
+                <div class="search-segment">
+                    <label class="search-label">Sort</label>
+                    <select name="sort" class="search-input text-gray-500">
                         <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Newest</option>
                         <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>Most Popular</option>
-                        <option value="price_low" {{ request('sort') == 'price_low' ? 'selected' : '' }}>Price: Low to High</option>
-                        <option value="price_high" {{ request('sort') == 'price_high' ? 'selected' : '' }}>Price: High to Low</option>
+                        <option value="price_low" {{ request('sort') == 'price_low' ? 'selected' : '' }}>Lowest Price</option>
+                        <option value="price_high" {{ request('sort') == 'price_high' ? 'selected' : '' }}>Highest Price</option>
                     </select>
                 </div>
-                <button type="submit" class="btn-3d btn-3d-teal">
-                    <i class="fas fa-search mr-2"></i>Search
-                </button>
+
+                {{-- Button --}}
+                <div class="submit-segment lg:ml-2">
+                    <button type="submit" class="btn-3d btn-3d-teal w-full lg:w-auto h-[50px] lg:h-12 px-8 rounded-full flex items-center justify-center font-bold text-base tracking-wide" style="border-radius: 9999px;">
+                        <i class="fas fa-search lg:mr-0 xl:mr-2"></i>
+                        <span class="inline lg:hidden xl:inline">Search</span>
+                    </button>
+                </div>
+                
             </form>
         </div>
 
