@@ -306,11 +306,18 @@
                 
                 @auth
                 @php
-                    $isEnrolled = $course->enrollments()->where('user_id', Auth::id())->where('payment_status', 'completed')->exists();
                     $hasReviewed = $course->reviews()->where('user_id', Auth::id())->exists();
                 @endphp
                 
-                @if($isEnrolled && !$hasReviewed)
+                @if($hasReviewed)
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-8">
+                    <p class="text-green-800">You have already reviewed this course. Thank you for your feedback!</p>
+                </div>
+                @elseif(!$isEnrolled)
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
+                    <p class="text-yellow-800">You need to enroll in this course before you can leave a review.</p>
+                </div>
+                @else
                 <!-- Review Form -->
                 <div class="bg-gray-50 rounded-lg p-6 mb-8">
                     <h4 class="text-lg font-semibold mb-4">Write a Review</h4>
@@ -347,10 +354,6 @@
                             <button type="submit" class="btn-3d btn-3d-teal">Submit Review</button>
                         </div>
                     </form>
-                </div>
-                @elseif($hasReviewed)
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-8">
-                    <p class="text-green-800">You have already reviewed this course. Thank you for your feedback!</p>
                 </div>
                 @endif
                 @else
