@@ -36,16 +36,48 @@
                 
                 <!-- Lesson Info -->
                 <div class="bg-white p-6 border-b">
-                    <h1 class="text-2xl font-bold text-gray-900 mb-2 myanmar-text">{{ $lesson->title }}</h1>
-                    <div class="flex items-center space-x-4 text-sm text-gray-600">
-                        <span class="myanmar-text">{{ $course->title }}</span>
-                        <span>•</span>
-                        <span class="myanmar-text">{{ $lesson->section->title }}</span>
-                        @if($lesson->video_duration)
-                        <span>•</span>
-                        <span>{{ $lesson->formatted_duration }}</span>
-                        @endif
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900 mb-2 myanmar-text">{{ $lesson->title }}</h1>
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+                                <span class="myanmar-text">{{ $course->title }}</span>
+                                <span>•</span>
+                                <span class="myanmar-text">{{ $lesson->section->title }}</span>
+                                @if($lesson->video_duration)
+                                <span>•</span>
+                                <span>{{ $lesson->formatted_duration }}</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Mark as Done Button --}}
+                        @php $alreadyDone = $lesson->isCompletedBy(auth()->id()); @endphp
+                        <div class="flex-shrink-0">
+                            @if($alreadyDone)
+                                <span id="done-badge"
+                                      class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm
+                                             bg-green-100 text-green-700 border border-green-300">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Completed!
+                                </span>
+                            @else
+                                <button id="mark-done-btn"
+                                        onclick="markLessonComplete({{ $lesson->id }})"
+                                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm
+                                               bg-teal-600 hover:bg-teal-700 text-white shadow-md hover:shadow-lg
+                                               transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0
+                                               disabled:opacity-60 disabled:cursor-not-allowed">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Mark as Done
+                                </button>
+                            @endif
+                        </div>
                     </div>
+
                     @if($lesson->description)
                     <p class="mt-4 text-gray-700 myanmar-text">{{ $lesson->description }}</p>
                     @endif
@@ -112,43 +144,84 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const video = document.getElementById('lesson-video');
-    if (video) {
-        let lastUpdateTime = 0;
-        
-        video.addEventListener('timeupdate', function() {
-            const currentTime = Math.floor(video.currentTime);
-            const duration = Math.floor(video.duration);
-            
-            // Update progress every 5 seconds
-            if (currentTime - lastUpdateTime >= 5) {
-                lastUpdateTime = currentTime;
-                trackVideoProgress({{ $lesson->id }}, currentTime, duration);
+// ─── Mark lesson as done (called by button OR when video ends) ───────────────
+function markLessonComplete(lessonId) {
+    const btn = document.getElementById('mark-done-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            Saving…`;
+    }
+
+    fetch(`/lessons/${lessonId}/complete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Swap button → green badge
+            if (btn) {
+                btn.outerHTML = `
+                    <span id="done-badge"
+                          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm
+                                 bg-green-100 text-green-700 border border-green-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Completed!
+                    </span>`;
             }
-        });
-        
-        video.addEventListener('ended', function() {
-            // Mark lesson as completed when video ends
-            fetch(`/lessons/{{ $lesson->id }}/complete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('သင်ခန်းစာ ပြီးစီးပါပြီ!', 'success');
-                    // Reload page to update progress
-                    setTimeout(() => location.reload(), 1000);
-                }
-            })
-            .catch(error => console.error('Error:', error));
+
+            // Show toast notification
+            showToast('✅ သင်ခန်းစာ ပြီးစီးပါပြီ! Lesson marked as done.');
+
+            // Reload after short delay to refresh sidebar + progress bar
+            setTimeout(() => location.reload(), 1200);
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        if (btn) { btn.disabled = false; btn.textContent = 'Mark as Done'; }
+    });
+}
+
+// ─── Toast notification ──────────────────────────────────────────────────────
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+        background: #065f46; color: #fff; padding: 12px 24px; border-radius: 12px;
+        font-weight: 600; font-size: 14px; z-index: 9999;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+        animation: slideUp 0.3s ease;`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// ─── HTML5 video auto-complete when video finishes ───────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+    const video = document.getElementById('lesson-video');
+    if (video && video.tagName === 'VIDEO') {
+        video.addEventListener('ended', function () {
+            markLessonComplete({{ $lesson->id }});
         });
     }
 });
 </script>
+<style>
+@keyframes slideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+</style>
 @endpush
 @endsection
