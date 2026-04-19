@@ -37,7 +37,7 @@
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">Rating</label>
-                                <select name="rating" class="form-select">
+                                <select name="rating" class="form-control">
                                     <option value="">All Ratings</option>
                                     @for($i = 5; $i >= 1; $i--)
                                     <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>{{ $i }} Stars</option>
@@ -46,7 +46,7 @@
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">Status</label>
-                                <select name="approved" class="form-select">
+                                <select name="approved" class="form-control">
                                     <option value="">All</option>
                                     <option value="1" {{ request('approved') === '1' ? 'selected' : '' }}>Approved</option>
                                     <option value="0" {{ request('approved') === '0' ? 'selected' : '' }}>Pending</option>
