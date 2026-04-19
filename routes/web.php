@@ -220,6 +220,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // Review management
     Route::get('/reviews', [AdminController::class, 'reviewsIndex'])->name('reviews.index');
+    Route::get('/reviews/{review}/edit', [AdminController::class, 'reviewsEdit'])->name('reviews.edit');
+    Route::put('/reviews/{review}', [AdminController::class, 'reviewsUpdate'])->name('reviews.update');
     Route::patch('/reviews/{review}/approve', [AdminController::class, 'reviewsApprove'])->name('reviews.approve');
     Route::delete('/reviews/{review}', [AdminController::class, 'reviewsDestroy'])->name('reviews.destroy');
     

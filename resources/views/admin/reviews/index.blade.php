@@ -1,148 +1,136 @@
 @extends('layouts.admin')
 
-@section('title', 'Reviews')
-@section('page-title', 'Reviews Management')
-
-@section('breadcrumb')
-<li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-<li class="breadcrumb-item active">Reviews</li>
-@endsection
-
 @section('content')
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">All Reviews</h3>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Reviews Management</h2>
     </div>
-    <div class="card-body">
-        <!-- Filters -->
-        <form method="GET" class="mb-4">
-            <div class="row">
+
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.reviews.index') }}" class="row g-3">
                 <div class="col-md-3">
-                    <select name="rating" class="form-control">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Student or Course name" value="{{ request('search') }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Rating</label>
+                    <select name="rating" class="form-select">
                         <option value="">All Ratings</option>
                         @for($i = 5; $i >= 1; $i--)
                         <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>{{ $i }} Stars</option>
                         @endfor
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <select name="approved" class="form-control">
-                        <option value="">All Status</option>
-                        <option value="1" {{ request('approved') == '1' ? 'selected' : '' }}>Approved</option>
-                        <option value="0" {{ request('approved') == '0' ? 'selected' : '' }}>Pending</option>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select name="approved" class="form-select">
+                        <option value="">All</option>
+                        <option value="1" {{ request('approved') === '1' ? 'selected' : '' }}>Approved</option>
+                        <option value="0" {{ request('approved') === '0' ? 'selected' : '' }}>Pending</option>
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <input type="text" name="search" class="form-control" placeholder="Search by course or user..." value="{{ request('search') }}">
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Filter</button>
+                    <a href="{{ route('admin.reviews.index') }}" class="btn btn-secondary">Reset</a>
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-info btn-block">Filter</button>
-                </div>
-            </div>
-        </form>
-
-        <!-- Reviews Table -->
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Student</th>
-                        <th>Course</th>
-                        <th>Rating</th>
-                        <th>Comment</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($reviews as $review)
-                    <tr>
-                        <td>{{ $review->id }}</td>
-                        <td>
-                            <a href="{{ route('admin.users.show', $review->user) }}">{{ $review->user->name ?? 'N/A' }}</a>
-                        </td>
-                        <td>
-                            <a href="{{ route('admin.courses.show', $review->course) }}">{{ Str::limit($review->course->title ?? 'N/A', 25) }}</a>
-                        </td>
-                        <td>
-                            <div class="text-warning">
-                                @for($i = 1; $i <= 5; $i++)
-                                    <i class="fas fa-star{{ $i <= $review->rating ? '' : '-o' }}"></i>
-                                @endfor
-                            </div>
-                        </td>
-                        <td>{{ Str::limit($review->comment, 50) }}</td>
-                        <td>
-                            <span class="badge badge-{{ $review->is_approved ? 'success' : 'warning' }}">
-                                {{ $review->is_approved ? 'Approved' : 'Pending' }}
-                            </span>
-                        </td>
-                        <td>{{ $review->created_at->format('M d, Y') }}</td>
-                        <td>
-                            @if(!$review->is_approved)
-                            <form action="{{ route('admin.reviews.approve', $review) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="btn btn-success btn-sm" title="Approve">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                            </form>
-                            @endif
-                            <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#reviewModal{{ $review->id }}" title="View">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <form action="{{ route('admin.reviews.destroy', $review) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-
-                    <!-- Review Modal -->
-                    <div class="modal fade" id="reviewModal{{ $review->id }}" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Review Details</h5>
-                                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                                </div>
-                                <div class="modal-body">
-                                    <p><strong>Student:</strong> {{ $review->user->name ?? 'N/A' }}</p>
-                                    <p><strong>Course:</strong> {{ $review->course->title ?? 'N/A' }}</p>
-                                    <p><strong>Rating:</strong>
-                                        <span class="text-warning">
-                                            @for($i = 1; $i <= 5; $i++)
-                                                <i class="fas fa-star{{ $i <= $review->rating ? '' : '-o' }}"></i>
-                                            @endfor
-                                        </span>
-                                    </p>
-                                    <p><strong>Comment:</strong></p>
-                                    <p>{{ $review->comment }}</p>
-                                    <p><strong>Date:</strong> {{ $review->created_at->format('M d, Y H:i') }}</p>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @empty
-                    <tr>
-                        <td colspan="8" class="text-center">No reviews found</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+            </form>
         </div>
+    </div>
 
-        <!-- Pagination -->
-        <div class="mt-3">
-            {{ $reviews->withQueryString()->links() }}
+    <!-- Reviews Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Student</th>
+                            <th>Course</th>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($reviews as $review)
+                        <tr>
+                            <td>{{ $review->id }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ $review->user->avatar_url }}" alt="{{ $review->user->name }}" class="rounded-circle me-2" width="32" height="32">
+                                    <span>{{ $review->user->name }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{{ route('courses.show', $review->course) }}" target="_blank" class="text-decoration-none">
+                                    {{ Str::limit($review->course->title, 40) }}
+                                </a>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="fas fa-star {{ $i <= $review->rating ? 'text-warning' : 'text-muted' }}"></i>
+                                    @endfor
+                                    <span class="ms-2">{{ $review->rating }}</span>
+                                </div>
+                            </td>
+                            <td>{{ Str::limit($review->comment ?? 'No comment', 50) }}</td>
+                            <td>
+                                @if($review->is_approved)
+                                <span class="badge bg-success">Approved</span>
+                                @else
+                                <span class="badge bg-warning">Pending</span>
+                                @endif
+                            </td>
+                            <td>{{ $review->created_at->format('M d, Y') }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    @if(!$review->is_approved)
+                                    <form action="{{ route('admin.reviews.approve', $review) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-sm btn-success" title="Approve">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+                                    <a href="{{ route('admin.reviews.edit', $review) }}" class="btn btn-sm btn-primary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ route('admin.reviews.destroy', $review) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this review?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="text-center py-4">No reviews found</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4">
+                {{ $reviews->links() }}
+            </div>
         </div>
     </div>
 </div>

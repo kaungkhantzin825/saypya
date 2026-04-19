@@ -609,6 +609,30 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Review approved!');
     }
 
+    public function reviewsEdit(Review $review)
+    {
+        $review->load(['user', 'course']);
+        return view('admin.reviews.edit', compact('review'));
+    }
+
+    public function reviewsUpdate(Request $request, Review $review)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000',
+            'is_approved' => 'boolean',
+        ]);
+
+        $review->update([
+            'rating' => $request->rating,
+            'comment' => $request->comment,
+            'is_approved' => $request->has('is_approved'),
+        ]);
+
+        return redirect()->route('admin.reviews.index')->with('success', 'Review updated successfully!');
+    }
+
+
     public function reviewsDestroy(Review $review)
     {
         $review->delete();
