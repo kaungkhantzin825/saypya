@@ -107,17 +107,35 @@
                         <i class="fas fa-times mr-2"></i>
                         Cancel
                     </a>
-                    <button type="submit" 
-                            class="inline-flex items-center px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-150"
-                            onclick="return confirm('Submit your exam? You cannot change answers after submission.')">
+                    <button type="button" 
+                            id="submitBtn"
+                            onclick="submitExam()"
+                            class="inline-flex items-center px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-150">
                         <i class="fas fa-check-circle mr-2"></i>
-                        Submit Exam
+                        <span id="submitBtnText">Submit Exam</span>
                     </button>
                 </div>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+function submitExam() {
+    const submitBtn = document.getElementById('submitBtn');
+    const submitBtnText = document.getElementById('submitBtnText');
+    
+    if (confirm('Submit your exam? You cannot change answers after submission.')) {
+        // Disable button and show loading state
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        submitBtnText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
+        
+        // Submit the form
+        document.getElementById('examForm').submit();
+    }
+}
+</script>
 
 @if($exam->duration_minutes)
 <script>
