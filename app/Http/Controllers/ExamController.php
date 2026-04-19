@@ -118,7 +118,8 @@ class ExamController extends Controller
     {
         $attempt = ExamAttempt::with(['exam.questions', 'answers.question'])->findOrFail($attemptId);
 
-        if ($attempt->user_id !== auth()->id()) {
+        // Allow if user owns the attempt OR user is admin/instructor
+        if ($attempt->user_id !== auth()->id() && !in_array(auth()->user()->role, ['admin', 'instructor'])) {
             abort(403);
         }
 
