@@ -307,6 +307,62 @@
             <div id="reviews" class="tab-content hidden">
                 <h3 class="text-2xl font-bold mb-6">Student Reviews</h3>
                 
+                @auth
+                @php
+                    $isEnrolled = $course->enrollments()->where('user_id', Auth::id())->where('payment_status', 'completed')->exists();
+                    $hasReviewed = $course->reviews()->where('user_id', Auth::id())->exists();
+                @endphp
+                
+                @if($isEnrolled && !$hasReviewed)
+                <!-- Review Form -->
+                <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                    <h4 class="text-lg font-semibold mb-4">Write a Review</h4>
+                    <form action="{{ route('reviews.store', $course) }}" method="POST" id="reviewForm">
+                        @csrf
+                        
+                        <!-- Star Rating -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                            <div class="flex items-center space-x-2">
+                                <div id="star-rating" class="flex space-x-1">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="fas fa-star text-3xl text-gray-300 cursor-pointer hover:text-yellow-400 transition-colors" data-rating="{{ $i }}"></i>
+                                    @endfor
+                                </div>
+                                <span id="rating-text" class="text-sm text-gray-600 ml-2"></span>
+                            </div>
+                            <input type="hidden" name="rating" id="rating-input" required>
+                            @error('rating')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <!-- Comment -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Comment (Optional)</label>
+                            <textarea name="comment" rows="4" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-teal-500 focus:border-teal-500" placeholder="Share your experience with this course..."></textarea>
+                            @error('comment')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <div class="flex justify-end">
+                            <button type="submit" class="btn-3d btn-3d-teal">Submit Review</button>
+                        </div>
+                    </form>
+                </div>
+                @elseif($hasReviewed)
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-8">
+                    <p class="text-green-800">You have already reviewed this course. Thank you for your feedback!</p>
+                </div>
+                @endif
+                @else
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+                    <p class="text-blue-800">Please <a href="{{ route('login') }}" class="font-semibold underline">login</a> and enroll in this course to leave a review.</p>
+                </div>
+                @endauth
+                
+                <!-- Reviews List -->
                 @if($course->reviews->count() > 0)
                 <div class="space-y-6">
                     @foreach($course->reviews->take(5) as $review)
@@ -536,6 +592,74 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById(tabId).classList.remove('hidden');
         });
     });
+    
+    // Star rating functionality
+    const starRating = document.getElementById('star-rating');
+    if (starRating) {
+        const stars = starRating.querySelectorAll('i');
+        const ratingInput = document.getElementById('rating-input');
+        const ratingText = document.getElementById('rating-text');
+        let selectedRating = 0;
+        
+        const ratingLabels = {
+            1: 'Poor',
+            2: 'Fair',
+            3: 'Good',
+            4: 'Very Good',
+            5: 'Excellent'
+        };
+        
+        stars.forEach(star => {
+            // Hover effect
+            star.addEventListener('mouseenter', function() {
+                const rating = parseInt(this.getAttribute('data-rating'));
+                highlightStars(rating);
+                ratingText.textContent = ratingLabels[rating];
+            });
+            
+            // Click to select
+            star.addEventListener('click', function() {
+                selectedRating = parseInt(this.getAttribute('data-rating'));
+                ratingInput.value = selectedRating;
+                highlightStars(selectedRating);
+                ratingText.textContent = ratingLabels[selectedRating];
+            });
+        });
+        
+        // Reset on mouse leave
+        starRating.addEventListener('mouseleave', function() {
+            if (selectedRating > 0) {
+                highlightStars(selectedRating);
+                ratingText.textContent = ratingLabels[selectedRating];
+            } else {
+                highlightStars(0);
+                ratingText.textContent = '';
+            }
+        });
+        
+        function highlightStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('text-gray-300');
+                    star.classList.add('text-yellow-400');
+                } else {
+                    star.classList.remove('text-yellow-400');
+                    star.classList.add('text-gray-300');
+                }
+            });
+        }
+        
+        // Form validation
+        const reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', function(e) {
+                if (!ratingInput.value) {
+                    e.preventDefault();
+                    alert('Please select a rating before submitting your review.');
+                }
+            });
+        }
+    }
 });
 </script>
 @endpush

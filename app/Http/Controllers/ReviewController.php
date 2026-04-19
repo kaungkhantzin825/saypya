@@ -18,7 +18,7 @@ class ReviewController extends Controller
 
         // Check if user is enrolled in the course
         if (!$course->enrollments()->where('user_id', Auth::id())->where('payment_status', 'completed')->exists()) {
-            return back()->with('error', 'သင်ခန်းစာတွင် စာရင်းသွင်းပြီးမှသာ သုံးသပ်ချက်ပေးနိုင်ပါသည်။');
+            return back()->with('error', 'You must be enrolled in this course to leave a review.');
         }
 
         // Check if user already reviewed this course
@@ -27,7 +27,7 @@ class ReviewController extends Controller
             ->first();
 
         if ($existingReview) {
-            return back()->with('error', 'သင်သည် ဤသင်ခန်းစာအတွက် သုံးသပ်ချက်ပေးပြီးပါပြီ။');
+            return back()->with('error', 'You have already reviewed this course.');
         }
 
         Review::create([
@@ -37,7 +37,7 @@ class ReviewController extends Controller
             'comment' => $request->comment,
         ]);
 
-        return back()->with('success', 'သုံးသပ်ချက်ပေးပြီးပါပြီ။ ကျေးးဇူးတင်ပါသည်။');
+        return back()->with('success', 'Thank you for your review!');
     }
 
     public function update(Request $request, Review $review)
@@ -57,7 +57,7 @@ class ReviewController extends Controller
             'comment' => $request->comment,
         ]);
 
-        return back()->with('success', 'သုံးသပ်ချက်ကို ပြင်ဆင်ပြီးပါပြီ။');
+        return back()->with('success', 'Review updated successfully.');
     }
 
     public function destroy(Review $review)
@@ -69,6 +69,6 @@ class ReviewController extends Controller
 
         $review->delete();
 
-        return back()->with('success', 'သုံးသပ်ချက်ကို ဖျက်ပြီးပါပြီ။');
+        return back()->with('success', 'Review deleted successfully.');
     }
 }
