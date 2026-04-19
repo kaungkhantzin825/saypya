@@ -54,20 +54,24 @@
                             </div>
                         </div>
 
-                        {{-- ── DONE BUTTON ──────────────────────────────────── --}}
+                        {{-- ── DONE / UNCOMPLETE TOGGLE ──────────────────── --}}
                         <div class="flex-shrink-0 mt-1">
                             @if($alreadyDone)
-                                <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl
-                                             font-semibold text-sm bg-green-100 text-green-700 border border-green-300">
-                                    <i class="fas fa-check-circle"></i> Completed!
-                                </span>
+                                <button id="mark-done-btn"
+                                        onclick="toggleLesson({{ $lesson->id }}, true)"
+                                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl
+                                               font-semibold text-sm bg-green-600 text-white
+                                               hover:bg-red-500 shadow-md hover:shadow-lg
+                                               transition-all duration-200">
+                                    <i class="fas fa-undo"></i> Uncomplete
+                                </button>
                             @else
                                 <button id="mark-done-btn"
-                                        onclick="markLessonComplete({{ $lesson->id }})"
+                                        onclick="toggleLesson({{ $lesson->id }}, false)"
                                         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl
                                                font-semibold text-sm bg-teal-600 text-white
                                                hover:bg-green-600 shadow-md hover:shadow-lg
-                                               transition-all duration-200 hover:-translate-y-0.5">
+                                               transition-all duration-200">
                                     <i class="fas fa-check"></i> Mark as Done
                                 </button>
                             @endif
@@ -144,15 +148,19 @@
                                     @endif
                                 </div>
 
-                                {{-- Done badge/button in sidebar --}}
+                                {{-- Done / Uncomplete toggle in sidebar --}}
                                 <div class="flex-shrink-0" onclick="event.stopPropagation()">
                                     @if($isDone)
-                                        <span class="text-xs font-semibold text-green-700
-                                                     bg-green-100 border border-green-300 rounded px-2 py-0.5">
+                                        <button onclick="toggleLesson({{ $sectionLesson->id }}, true)"
+                                                class="text-xs font-bold text-white
+                                                       bg-green-600 border border-green-700 rounded px-2 py-0.5
+                                                       hover:bg-red-500 hover:border-red-600
+                                                       transition-colors duration-150"
+                                                title="Click to uncomplete">
                                             Done ✓
-                                        </span>
+                                        </button>
                                     @else
-                                        <button onclick="markLessonComplete({{ $sectionLesson->id }}, true)"
+                                        <button onclick="toggleLesson({{ $sectionLesson->id }}, false)"
                                                 class="text-xs font-bold text-white
                                                        bg-teal-500 border border-teal-600 rounded px-2 py-0.5
                                                        hover:bg-green-600 hover:border-green-700
@@ -180,17 +188,28 @@
 {{-- Scripts MUST be OUTSIDE @section to avoid Blade parsing conflicts --}}
 @push('scripts')
 <script>
-// ── Mark lesson as complete ──────────────────────────────────────────────────
-function markLessonComplete(lessonId, fromSidebar) {
-    const btn = fromSidebar ? null : document.getElementById('mark-done-btn');
+// ── Toggle: complete ↔ uncomplete ─────────────────────────────────────────────
+function toggleLesson(lessonId, isCurrentlyDone) {
+    var url = isCurrentlyDone
+        ? '/lessons/' + lessonId + '/uncomplete'
+        : '/lessons/' + lessonId + '/complete';
+    sendProgress(url);
+}
 
-    // Show loading state
+// ── Called when HTML5 video ends (always mark complete) ───────────────────────
+function markLessonComplete(lessonId) {
+    sendProgress('/lessons/' + lessonId + '/complete');
+}
+
+// ── Core fetch function ───────────────────────────────────────────────────────
+function sendProgress(url) {
+    var btn = document.getElementById('mark-done-btn');
     if (btn) {
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
     }
 
-    fetch('/lessons/' + lessonId + '/complete', {
+    fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -200,33 +219,39 @@ function markLessonComplete(lessonId, fromSidebar) {
     .then(function(r) { return r.json(); })
     .then(function(data) {
         if (data.success) {
-            // Show toast
-            var toast = document.createElement('div');
-            toast.textContent = '✅ သင်ခန်းစာ ပြီးစီးပါပြီ! Progress saved.';
-            toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);' +
-                'background:#065f46;color:#fff;padding:12px 24px;border-radius:12px;' +
-                'font-weight:600;font-size:14px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.25);';
-            document.body.appendChild(toast);
-
-            // Reload to update progress % and sidebar
+            var pct = data.progress_percentage !== undefined ? data.progress_percentage : '';
+            var msg = pct !== '' ? '✅ Saved! Progress: ' + pct + '% ပြီးစီး' : '✅ Saved!';
+            showToast(msg);
             setTimeout(function() { location.reload(); }, 1300);
         } else {
-            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Mark as Done'; }
+            if (btn) { btn.disabled = false; }
+            showToast('⚠️ Error. Please try again.');
         }
     })
     .catch(function(err) {
         console.error('Error:', err);
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Mark as Done'; }
-        alert('Error saving progress. Please try again.');
+        if (btn) { btn.disabled = false; }
+        showToast('⚠️ Network error. Please try again.');
     });
 }
 
-// ── Auto-complete when HTML5 video ends ────────────────────────────────────
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(message) {
+    var toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);' +
+        'background:#065f46;color:#fff;padding:12px 24px;border-radius:12px;' +
+        'font-weight:600;font-size:14px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.25);';
+    document.body.appendChild(toast);
+    setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 3500);
+}
+
+// ── Auto-complete when HTML5 video ends ───────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
     var video = document.getElementById('lesson-video');
     if (video && video.tagName === 'VIDEO') {
         video.addEventListener('ended', function() {
-            markLessonComplete({{ $lesson->id }}, false);
+            markLessonComplete({{ $lesson->id }});
         });
     }
 });

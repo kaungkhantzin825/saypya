@@ -96,6 +96,7 @@ Route::middleware('auth')->group(function () {
     // Lesson progress
     Route::post('/lessons/{lesson}/progress', [LessonController::class, 'updateProgress'])->name('lessons.progress');
     Route::post('/lessons/{lesson}/complete', [LessonController::class, 'markComplete'])->name('lessons.complete');
+    Route::post('/lessons/{lesson}/uncomplete', [LessonController::class, 'markUncomplete'])->name('lessons.uncomplete');
     
     // Reviews
     Route::post('/courses/{course}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
