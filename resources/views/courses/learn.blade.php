@@ -57,9 +57,9 @@
             <!-- Course Content Sidebar -->
             <div class="lg:col-span-1 bg-white border-l border-gray-200 max-h-screen overflow-y-auto">
                 <div class="p-4 border-b border-gray-200">
-                    <h2 class="font-semibold text-gray-900 mb-2 myanmar-text">သင်ခန်းစာအကြောင်းအရာ</h2>
+                    <h2 class="font-semibold text-gray-900 mb-2 myanmar-text">Lesson content</h2>
                     <div class="text-sm text-gray-600 myanmar-text">
-                        {{ $enrollment->progress_percentage }}% ပြီးစီး
+                        {{ $enrollment->progress_percentage }}% Complete
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
                         <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $enrollment->progress_percentage }}%"></div>
@@ -131,7 +131,7 @@
                     <div class="p-4 bg-yellow-50 border-t-2 border-yellow-400">
                         <h3 class="font-medium text-gray-900 mb-3 flex items-center">
                             <i class="fas fa-clipboard-check text-yellow-600 mr-2"></i>
-                            <span class="myanmar-text">စာမေးပွဲများ</span>
+                            <span class="myanmar-text">Exam Question</span>
                         </h3>
                         <div class="space-y-2">
                             @foreach($course->exams->where('is_published', true) as $exam)
