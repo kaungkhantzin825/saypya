@@ -34,7 +34,7 @@
                         <!-- Rating -->
                         <div class="mb-3">
                             <label for="rating" class="form-label">Rating <span class="text-danger">*</span></label>
-                            <select name="rating" id="rating" class="form-select @error('rating') is-invalid @enderror" required>
+                            <select name="rating" id="rating" class="form-control @error('rating') is-invalid @enderror" required>
                                 <option value="">Select Rating</option>
                                 @for($i = 1; $i <= 5; $i++)
                                 <option value="{{ $i }}" {{ old('rating', $review->rating) == $i ? 'selected' : '' }}>
@@ -68,18 +68,20 @@
                         </div>
 
                         <!-- Actions -->
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-2"></i>Update Review
                             </button>
-                            <form action="{{ route('admin.reviews.destroy', $review) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this review?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="fas fa-trash me-2"></i>Delete Review
-                                </button>
-                            </form>
                         </div>
+                    </form>
+                    
+                    <!-- Delete Form (separate) -->
+                    <form action="{{ route('admin.reviews.destroy', $review) }}" method="POST" class="mt-3" onsubmit="return confirm('Are you sure you want to delete this review?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="fas fa-trash me-2"></i>Delete Review
+                        </button>
                     </form>
                 </div>
             </div>
