@@ -36,51 +36,20 @@
                 
                 <!-- Lesson Info -->
                 @if($currentLesson)
-                @php $alreadyDone = $currentLesson->isCompletedBy(auth()->id()); @endphp
                 <div class="bg-white p-6 border-b">
-                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900 mb-2 myanmar-text">{{ $currentLesson->title }}</h1>
-                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
-                                <span class="myanmar-text">{{ $course->title }}</span>
-                                <span>•</span>
-                                <span class="myanmar-text">{{ $currentLesson->section->title }}</span>
-                                @if($currentLesson->video_duration)
-                                <span>•</span>
-                                <span>{{ $currentLesson->formatted_duration }}</span>
-                                @endif
-                            </div>
-                            @if($currentLesson->description)
-                            <p class="mt-4 text-gray-700 myanmar-text">{{ $currentLesson->description }}</p>
-                            @endif
-                        </div>
-
-                        {{-- Mark as Done Button --}}
-                        <div class="flex-shrink-0">
-                            @if($alreadyDone)
-                                <span id="done-badge"
-                                      class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm
-                                             bg-green-100 text-green-700 border border-green-300">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    Completed!
-                                </span>
-                            @else
-                                <button id="mark-done-btn"
-                                        onclick="markLessonDone()"
-                                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm
-                                               bg-teal-600 hover:bg-teal-700 text-white shadow-md hover:shadow-lg
-                                               transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0
-                                               disabled:opacity-60 disabled:cursor-not-allowed">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    Mark as Done
-                                </button>
-                            @endif
-                        </div>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2 myanmar-text">{{ $currentLesson->title }}</h1>
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+                        <span class="myanmar-text">{{ $course->title }}</span>
+                        <span>•</span>
+                        <span class="myanmar-text">{{ $currentLesson->section->title }}</span>
+                        @if($currentLesson->video_duration)
+                        <span>•</span>
+                        <span>{{ $currentLesson->formatted_duration }}</span>
+                        @endif
                     </div>
+                    @if($currentLesson->description)
+                    <p class="mt-4 text-gray-700 myanmar-text">{{ $currentLesson->description }}</p>
+                    @endif
                 </div>
                 @endif
             </div>
@@ -103,7 +72,9 @@
                         <h3 class="font-medium text-gray-900 mb-3 myanmar-text">{{ $section->title }}</h3>
                         <div class="space-y-2">
                             @foreach($section->lessons as $lesson)
-                            <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer {{ $currentLesson && $currentLesson->id === $lesson->id ? 'bg-blue-50 border border-blue-200' : '' }}"
+                            @php $lessonDone = $lesson->progress && $lesson->progress->first() && $lesson->progress->first()->is_completed; @endphp
+                            <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 {{ $currentLesson && $currentLesson->id === $lesson->id ? 'bg-blue-50 border border-blue-200' : '' }}"
+                                 style="cursor:pointer"
                                  onclick="window.location.href='{{ route('courses.lesson', [$course->slug, $lesson->id]) }}'">
                                 <div class="flex-shrink-0">
                                     @if($lesson->progress && $lesson->progress->first() && $lesson->progress->first()->is_completed)
@@ -126,6 +97,20 @@
                                     <p class="text-xs text-gray-500">{{ $lesson->formatted_duration }}</p>
                                     @endif
                                 </div>
+                                {{-- Done button in sidebar --}}
+                                <div class="flex-shrink-0" onclick="event.stopPropagation()">
+                                    @if($lessonDone)
+                                        <span class="text-xs text-green-600 font-semibold bg-green-50 border border-green-200 rounded-md px-2 py-1">Done ✓</span>
+                                    @else
+                                        <button
+                                            onclick="markLessonDone({{ $lesson->id }}, this)"
+                                            class="text-xs text-teal-700 font-semibold bg-white border border-teal-400 rounded-md px-2 py-1
+                                                   hover:bg-teal-500 hover:text-white transition-colors duration-150
+                                                   disabled:opacity-50 disabled:cursor-not-allowed">
+                                            Done
+                                        </button>
+                                    @endif
+                                </div>
                             </div>
                             @endforeach
                         </div>
@@ -139,12 +124,8 @@
 
 @push('scripts')
 <script>
-// ─── Mark as Done button click ────────────────────────────────────────────────
-function markLessonDone() {
-    @if(!$currentLesson) return; @endif
-
-    const lessonId = {{ $currentLesson->id }};
-    const btn = document.getElementById('mark-done-btn');
+// ─── Mark as Done button click (call with lessonId + button element) ─────────
+function markLessonDone(lessonId, btn) {
 
     if (btn) {
         btn.disabled = true;
@@ -166,17 +147,9 @@ function markLessonDone() {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            // Swap button → green badge instantly
+            // Swap button → small green badge (sidebar style)
             if (btn) {
-                btn.outerHTML = `
-                    <span id="done-badge"
-                          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm
-                                 bg-green-100 text-green-700 border border-green-300">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Completed!
-                    </span>`;
+                btn.outerHTML = `<span class="text-xs text-green-600 font-semibold bg-green-50 border border-green-200 rounded-md px-2 py-1">Done ✓</span>`;
             }
             showToast('✅ သင်ခန်းစာ ပြီးစီးပါပြီ! Lesson marked as done.');
             // Reload after short delay — updates sidebar ✅ and progress %
@@ -195,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const video = document.getElementById('lesson-video');
     if (video && video.tagName === 'VIDEO') {
         video.addEventListener('ended', function () {
-            markLessonDone();
+            markLessonDone({{ $currentLesson ? $currentLesson->id : 0 }}, null);
         });
     }
 });
