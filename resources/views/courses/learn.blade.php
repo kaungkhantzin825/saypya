@@ -143,14 +143,14 @@
                                     </div>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-900 truncate myanmar-text">{{ $exam->title }}</p>
-                                    <p class="text-xs text-gray-500 myanmar-text">
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $exam->title }}</p>
+                                    <p class="text-xs text-gray-500">
                                         @if($exam->duration_minutes)
-                                            {{ $exam->duration_minutes }} မိနစ်
+                                            {{ $exam->duration_minutes }} minutes
                                         @else
-                                            အချိန်ကန့်သတ်မရှိ
+                                            Unlimited time
                                         @endif
-                                        • {{ $exam->questions->count() }} မေးခွန်း
+                                        • {{ $exam->questions->count() }} questions
                                     </p>
                                 </div>
                                 <div class="flex-shrink-0">
@@ -159,12 +159,12 @@
                                         $canAttempt = $exam->canUserAttempt(auth()->id());
                                     @endphp
                                     @if($userAttempts > 0)
-                                        <span class="text-xs text-gray-600 bg-gray-100 border border-gray-300 rounded-md px-2 py-1 myanmar-text">
-                                            {{ $userAttempts }}/{{ $exam->max_attempts }} ကြိမ်
+                                        <span class="text-xs text-gray-600 bg-gray-100 border border-gray-300 rounded-md px-2 py-1">
+                                            {{ $userAttempts }}/{{ $exam->max_attempts }} attempts
                                         </span>
                                     @else
-                                        <span class="text-xs text-yellow-700 font-semibold bg-yellow-100 border border-yellow-300 rounded-md px-2 py-1 myanmar-text">
-                                            စတင်မည်
+                                        <span class="text-xs text-yellow-700 font-semibold bg-yellow-100 border border-yellow-300 rounded-md px-2 py-1">
+                                            Start Exam
                                         </span>
                                     @endif
                                 </div>
