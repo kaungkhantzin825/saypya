@@ -126,8 +126,8 @@
                     </div>
                     @endforeach
                     
-                    {{-- Exams Section --}}
-                    @if($course->exams->where('is_published', true)->count() > 0)
+                    {{-- Exams Section - Only show if course is 100% complete --}}
+                    @if($enrollment->progress_percentage >= 100 && $course->exams->where('is_published', true)->count() > 0)
                     <div class="p-4 bg-yellow-50 border-t-2 border-yellow-400">
                         <h3 class="font-medium text-gray-900 mb-3 flex items-center">
                             <i class="fas fa-clipboard-check text-yellow-600 mr-2"></i>
@@ -135,11 +135,19 @@
                         </h3>
                         <div class="space-y-2">
                             @foreach($course->exams->where('is_published', true) as $exam)
+                            @php
+                                $userAttempts = $exam->userAttempts(auth()->id());
+                                $canAttempt = $exam->canUserAttempt(auth()->id());
+                                $passedAttempt = $exam->attempts()
+                                    ->where('user_id', auth()->id())
+                                    ->where('passed', true)
+                                    ->first();
+                            @endphp
                             <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-yellow-100 cursor-pointer border border-yellow-200"
-                                 onclick="window.location.href='{{ route('exams.start', $exam) }}'">
+                                 onclick="{{ $passedAttempt ? 'showCertificatePopup()' : "window.location.href='" . route('exams.start', $exam) . "'" }}">
                                 <div class="flex-shrink-0">
-                                    <div class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-file-alt text-white text-xs"></i>
+                                    <div class="w-6 h-6 {{ $passedAttempt ? 'bg-green-500' : 'bg-yellow-500' }} rounded-full flex items-center justify-center">
+                                        <i class="fas fa-{{ $passedAttempt ? 'trophy' : 'file-alt' }} text-white text-xs"></i>
                                     </div>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -154,11 +162,12 @@
                                     </p>
                                 </div>
                                 <div class="flex-shrink-0">
-                                    @php
-                                        $userAttempts = $exam->userAttempts(auth()->id());
-                                        $canAttempt = $exam->canUserAttempt(auth()->id());
-                                    @endphp
-                                    @if($userAttempts > 0)
+                                    @if($passedAttempt)
+                                        <span class="text-xs text-white font-semibold bg-green-600 border border-green-700 rounded-md px-3 py-1">
+                                            <i class="fas fa-certificate mr-1"></i>
+                                            Get Certificate
+                                        </span>
+                                    @elseif($userAttempts > 0)
                                         <span class="text-xs text-gray-600 bg-gray-100 border border-gray-300 rounded-md px-2 py-1">
                                             {{ $userAttempts }}/{{ $exam->max_attempts }} attempts
                                         </span>
@@ -296,11 +305,76 @@ function showToast(message) {
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3500);
 }
+
+// ─── Certificate Popup ────────────────────────────────────────────────────────
+function showCertificatePopup() {
+    const popup = document.createElement('div');
+    popup.id = 'certificatePopup';
+    popup.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7); z-index: 10000;
+        display: flex; align-items: center; justify-content: center;
+        animation: fadeIn 0.3s ease;`;
+    
+    popup.innerHTML = `
+        <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideIn 0.3s ease;">
+            <div style="text-align: center;">
+                <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-certificate" style="font-size: 40px; color: white;"></i>
+                </div>
+                <h2 style="font-size: 24px; font-weight: bold; color: #1f2937; margin-bottom: 12px;">Congratulations! 🎉</h2>
+                <p style="color: #6b7280; margin-bottom: 24px; font-size: 16px;">You have successfully passed the exam!</p>
+                
+                <div style="background: #f3f4f6; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                    <p style="color: #374151; font-weight: 600; margin-bottom: 12px; font-size: 16px;">To get your certificate, please contact us:</p>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
+                        <i class="fab fa-viber" style="font-size: 24px; color: #7360f2;"></i>
+                        <a href="viber://chat?number=%2B959123456789" style="font-size: 20px; font-weight: bold; color: #7360f2; text-decoration: none;">+95 9 123 456 789</a>
+                    </div>
+                    <p style="color: #6b7280; font-size: 14px; margin-top: 12px;">Send us a message on Viber with your course name and exam result to receive your certificate.</p>
+                </div>
+                
+                <button onclick="closeCertificatePopup()" style="width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; font-weight: 600; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px; transition: all 0.15s;">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // Close on background click
+    popup.addEventListener('click', function(e) {
+        if (e.target === popup) {
+            closeCertificatePopup();
+        }
+    });
+}
+
+function closeCertificatePopup() {
+    const popup = document.getElementById('certificatePopup');
+    if (popup) {
+        popup.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => popup.remove(), 300);
+    }
+}
 </script>
 <style>
 @keyframes slideUp {
     from { opacity: 0; transform: translateX(-50%) translateY(16px); }
     to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
 @endpush
