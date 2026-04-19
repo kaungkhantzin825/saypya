@@ -97,17 +97,26 @@
                                     <p class="text-xs text-gray-500">{{ $lesson->formatted_duration }}</p>
                                     @endif
                                 </div>
-                                {{-- Done button in sidebar --}}
+                                {{-- Completed button in sidebar --}}
                                 <div class="flex-shrink-0" onclick="event.stopPropagation()">
                                     @if($lessonDone)
-                                        <span class="text-xs text-green-600 font-semibold bg-green-50 border border-green-200 rounded-md px-2 py-1">Done ✓</span>
+                                        <button
+                                            onclick="markLessonIncomplete({{ $lesson->id }}, this)"
+                                            style="transition: all 0.15s;"
+                                            onmouseover="this.style.backgroundColor='#3B82F6 !important'; this.style.color='white !important'; this.style.borderColor='#3B82F6 !important';"
+                                            onmouseout="this.style.backgroundColor=''; this.style.color=''; this.style.borderColor='';"
+                                            class="text-xs text-green-600 font-semibold bg-green-50 border border-green-200 rounded-md px-2 py-1
+                                                   disabled:opacity-50 disabled:cursor-not-allowed">
+                                            Completed ✓
+                                        </button>
                                     @else
                                         <button
                                             onclick="markLessonDone({{ $lesson->id }}, this)"
-                                            class="text-xs text-teal-700 font-semibold bg-white border border-teal-400 rounded-md px-2 py-1
-                                                   hover:bg-teal-500 hover:text-white transition-colors duration-150
-                                                   disabled:opacity-50 disabled:cursor-not-allowed">
-                                            Done
+                                            style="transition: all 0.15s;"
+                                            onmouseover="this.style.backgroundColor='#14B8A6'; this.style.color='white'; this.style.borderColor='#14B8A6';"
+                                            onmouseout="this.style.backgroundColor=''; this.style.color=''; this.style.borderColor='';"
+                                            class="text-xs text-teal-700 font-semibold bg-white border border-teal-400 rounded-md px-2 py-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                                            Mark Complete
                                         </button>
                                     @endif
                                 </div>
@@ -147,11 +156,18 @@ function markLessonDone(lessonId, btn) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            // Swap button → small green badge (sidebar style)
+            // Swap button → clickable green badge
             if (btn) {
-                btn.outerHTML = `<span class="text-xs text-green-600 font-semibold bg-green-50 border border-green-200 rounded-md px-2 py-1">Done ✓</span>`;
+                btn.outerHTML = `<button
+                    onclick="markLessonIncomplete(${lessonId}, this)"
+                    style="transition: all 0.15s;"
+                    onmouseover="this.style.backgroundColor='#3B82F6'; this.style.color='white'; this.style.borderColor='#3B82F6';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color=''; this.style.borderColor='';"
+                    class="text-xs text-green-600 font-semibold bg-green-50 border border-green-200 rounded-md px-2 py-1">
+                    Completed ✓
+                </button>`;
             }
-            showToast('✅ သင်ခန်းစာ ပြီးစီးပါပြီ! Lesson marked as done.');
+            showToast('✅ သင်ခန်းစာ ပြီးစီးပါပြီ! Lesson marked as completed.');
             // Reload after short delay — updates sidebar ✅ and progress %
             setTimeout(() => location.reload(), 1400);
         }
@@ -172,6 +188,52 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+// ─── Mark as Incomplete button click ──────────────────────────────────────────
+function markLessonIncomplete(lessonId, btn) {
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            Updating…`;
+    }
+
+    fetch(`/lessons/${lessonId}/incomplete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Swap button back to "Mark Complete"
+            if (btn) {
+                btn.outerHTML = `<button
+                    onclick="markLessonDone(${lessonId}, this)"
+                    style="transition: all 0.15s;"
+                    onmouseover="this.style.backgroundColor='#14B8A6'; this.style.color='white'; this.style.borderColor='#14B8A6';"
+                    onmouseout="this.style.backgroundColor=''; this.style.color=''; this.style.borderColor='';"
+                    class="text-xs text-teal-700 font-semibold bg-white border border-teal-400 rounded-md px-2 py-1">
+                    Mark Complete
+                </button>`;
+            }
+            showToast('🔄 Lesson marked as incomplete.');
+            // Reload after short delay
+            setTimeout(() => location.reload(), 1400);
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        if (btn) { btn.disabled = false; }
+        showToast('⚠️ Something went wrong. Please try again.');
+    });
+}
 
 // ─── Toast notification ───────────────────────────────────────────────────────
 function showToast(message) {

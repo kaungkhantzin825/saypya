@@ -100,6 +100,12 @@ class LessonController extends Controller
         ]);
     }
 
+    // ── Alias for markUncomplete ──────────────────────────────────────────────
+    public function markIncomplete(Lesson $lesson)
+    {
+        return $this->markUncomplete($lesson);
+    }
+
     // ── Update progress (video watch time) ───────────────────────────────────
     public function updateProgress(Request $request, Lesson $lesson)
     {
