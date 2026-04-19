@@ -620,13 +620,12 @@ class AdminController extends Controller
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:1000',
-            'is_approved' => 'boolean',
         ]);
 
         $review->update([
             'rating' => $request->rating,
             'comment' => $request->comment,
-            'is_approved' => $request->has('is_approved'),
+            'is_approved' => $request->has('is_approved') ? 1 : 0,
         ]);
 
         return redirect()->route('admin.reviews.index')->with('success', 'Review updated successfully!');
