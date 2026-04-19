@@ -103,12 +103,12 @@
             <div class="bg-white rounded-lg shadow-md p-6 sticky bottom-4">
                 <div class="flex justify-between items-center">
                     <a href="{{ route('courses.learn', $exam->course->slug) }}" 
-                       class="inline-flex items-center px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-150">
+                       class="inline-flex items-center px-6 py-3 bg-white border-2 border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-100 hover:border-gray-400 transition-all duration-150">
                         <i class="fas fa-times mr-2"></i>
                         Cancel
                     </a>
                     <button type="submit" 
-                            class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-150"
+                            class="inline-flex items-center px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-150"
                             onclick="return confirm('Submit your exam? You cannot change answers after submission.')">
                         <i class="fas fa-check-circle mr-2"></i>
                         Submit Exam
