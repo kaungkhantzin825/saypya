@@ -329,7 +329,7 @@ function showCertificatePopup() {
                     <p style="color: #374151; font-weight: 600; margin-bottom: 12px; font-size: 16px;">To get your certificate, please contact us:</p>
                     <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
                         <i class="fab fa-viber" style="font-size: 24px; color: #7360f2;"></i>
-                        <a href="viber://chat?number=%2B959123456789" style="font-size: 20px; font-weight: bold; color: #7360f2; text-decoration: none;">+95 9 123 456 789</a>
+                        <a href="viber://chat?number=%2B959695238273" style="font-size: 20px; font-weight: bold; color: #7360f2; text-decoration: none;">+95 9695238273</a>
                     </div>
                     <p style="color: #6b7280; font-size: 14px; margin-top: 12px;">Send us a message on Viber with your course name and exam result to receive your certificate.</p>
                 </div>
