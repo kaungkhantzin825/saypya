@@ -3,11 +3,82 @@
 @section('title', $lesson->title . ' - ' . $course->title)
 
 @section('content')
+
+{{-- ── Button CSS (uses !important to override Tailwind preflight reset) ── --}}
+<style>
+/* Main "Mark as Done" button */
+.done-btn-main {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    background-color: #0d9488 !important;
+    color: #ffffff !important;
+    border: 2px solid #0f766e !important;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    transition: background-color 0.2s, border-color 0.2s;
+}
+.done-btn-main:hover {
+    background-color: #2563eb !important;
+    border-color: #1d4ed8 !important;
+}
+
+/* Completed badge (non-clickable) */
+.done-badge-main {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    background-color: #16a34a;
+    color: #ffffff;
+    border: 2px solid #15803d;
+}
+
+/* Sidebar "Done" button (small) */
+.done-btn-sidebar {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    background-color: #0d9488 !important;
+    border: 1.5px solid #0f766e !important;
+    border-radius: 6px !important;
+    padding: 3px 10px !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    transition: background-color 0.15s, border-color 0.15s !important;
+}
+.done-btn-sidebar:hover {
+    background-color: #2563eb !important;
+    border-color: #1d4ed8 !important;
+    color: #ffffff !important;
+}
+
+/* Sidebar "Done ✓" badge (non-clickable) */
+.done-badge-sidebar {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #15803d;
+    background-color: #f0fdf4;
+    border: 1.5px solid #16a34a;
+    border-radius: 6px;
+    padding: 3px 10px;
+    white-space: nowrap;
+}
+</style>
+
 <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-0">
 
-            {{-- ── Video + Lesson Info ───────────────────────────────────────── --}}
+            {{-- ── Video + Lesson Info ────────────────────────────────────────── --}}
             <div class="lg:col-span-3 bg-black">
 
                 {{-- Video Player --}}
@@ -24,7 +95,6 @@
                         @else
                             <video id="lesson-video" class="w-full h-full" controls>
                                 <source src="{{ $lesson->video_url_full }}" type="video/mp4">
-                                သင့်ဘရောက်ဆာသည် ဗီဒီယိုကို ပံ့ပိုးမပေးပါ။
                             </video>
                         @endif
                     @else
@@ -35,7 +105,7 @@
                     @endif
                 </div>
 
-                {{-- Lesson Info + Mark as Done Button --}}
+                {{-- Lesson Info + Done Button --}}
                 @php $alreadyDone = $lesson->isCompletedBy(auth()->id()); @endphp
                 <div class="bg-white p-6 border-b">
                     <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -54,27 +124,16 @@
                             </div>
                         </div>
 
-                        {{-- ── DONE BUTTON ─────────────────────────────── --}}
-                        <div style="flex-shrink:0; margin-top:4px;">
+                        {{-- Done / Completed Button --}}
+                        <div style="flex-shrink:0; padding-top:4px">
                             @if($alreadyDone)
-                                <span id="mark-done-btn"
-                                      style="display:inline-flex; align-items:center; gap:8px;
-                                             padding:10px 22px; border-radius:12px; font-weight:700;
-                                             font-size:14px; background:#16a34a; color:#fff;
-                                             border:none; box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                                <span class="done-badge-main">
                                     <i class="fas fa-check-circle"></i> Completed!
                                 </span>
                             @else
-                                <button id="mark-done-btn"
-                                        onclick="doMarkDone({{ $lesson->id }})"
-                                        style="display:inline-flex; align-items:center; gap:8px;
-                                               padding:10px 22px; border-radius:12px; font-weight:700;
-                                               font-size:14px; background:#0d9488; color:#fff;
-                                               border:none; cursor:pointer;
-                                               box-shadow:0 2px 8px rgba(0,0,0,.15);
-                                               transition:background .2s;"
-                                        onmouseover="this.style.background='#2563eb'"
-                                        onmouseout="this.style.background='#0d9488'">
+                                <button id="main-done-btn"
+                                        class="done-btn-main"
+                                        onclick="doMarkDone({{ $lesson->id }})">
                                     <i class="fas fa-check"></i> Mark as Done
                                 </button>
                             @endif
@@ -92,8 +151,9 @@
                     @endif
                 </div>
             </div>
+            {{-- ── End Video+Info ──────────────────────────────────────────────── --}}
 
-            {{-- ── Sidebar ────────────────────────────────────────────────────── --}}
+            {{-- ── Sidebar ─────────────────────────────────────────────────────── --}}
             <div class="lg:col-span-1 bg-white border-l border-gray-200 max-h-screen overflow-y-auto">
 
                 {{-- Progress header --}}
@@ -103,7 +163,7 @@
                         {{ $enrollment->progress_percentage }}% ပြီးစီး
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-teal-500 h-2 rounded-full transition-all duration-500"
+                        <div class="bg-teal-500 h-2 rounded-full"
                              style="width: {{ $enrollment->progress_percentage }}%"></div>
                     </div>
                 </div>
@@ -112,37 +172,36 @@
                 <div class="divide-y divide-gray-100">
                     @foreach($course->sections as $section)
                     <div class="p-4">
-                        <h3 class="font-semibold text-gray-800 mb-3 text-sm uppercase tracking-wide myanmar-text">
+                        <h3 class="font-semibold text-gray-700 mb-3 text-xs uppercase tracking-wider myanmar-text">
                             {{ $section->title }}
                         </h3>
                         <div class="space-y-1">
                             @foreach($section->lessons as $sectionLesson)
                             @php $isDone = $sectionLesson->isCompletedBy(auth()->id()); @endphp
-                            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer
+                            <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer
                                         {{ $lesson->id === $sectionLesson->id ? 'bg-teal-50 border border-teal-200' : '' }}"
                                  onclick="window.location.href='{{ route('courses.lesson', [$course, $sectionLesson->id]) }}'">
 
                                 {{-- Status circle --}}
-                                <div class="flex-shrink-0">
+                                <div style="flex-shrink:0">
                                     @if($isDone)
-                                        <div class="w-7 h-7 bg-green-500 rounded-full flex items-center justify-center shadow-sm">
-                                            <i class="fas fa-check text-white" style="font-size:10px"></i>
+                                        <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-check text-white" style="font-size:9px"></i>
                                         </div>
                                     @elseif($lesson->id === $sectionLesson->id)
-                                        <div class="w-7 h-7 bg-teal-500 rounded-full flex items-center justify-center shadow-sm">
-                                            <i class="fas fa-play text-white" style="font-size:10px"></i>
+                                        <div class="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-play text-white" style="font-size:9px"></i>
                                         </div>
                                     @else
-                                        <div class="w-7 h-7 bg-gray-300 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-play text-white" style="font-size:10px"></i>
+                                        <div class="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-play text-white" style="font-size:9px"></i>
                                         </div>
                                     @endif
                                 </div>
 
                                 {{-- Lesson title --}}
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-900 truncate myanmar-text
-                                              {{ $lesson->id === $sectionLesson->id ? 'text-teal-700' : '' }}">
+                                    <p class="text-xs font-medium text-gray-900 truncate myanmar-text">
                                         {{ $sectionLesson->title }}
                                     </p>
                                     @if($sectionLesson->video_duration)
@@ -150,28 +209,13 @@
                                     @endif
                                 </div>
 
-                                {{-- Done badge / button in sidebar (inline styles for reliability) --}}
+                                {{-- Done button / badge --}}
                                 <div style="flex-shrink:0" onclick="event.stopPropagation()">
                                     @if($isDone)
-                                        {{-- Already done: static green badge --}}
-                                        <span style="font-size:11px; font-weight:700;
-                                                     color:#15803d; background:#f0fdf4;
-                                                     border:1.5px solid #16a34a;
-                                                     border-radius:6px; padding:3px 9px;
-                                                     white-space:nowrap;">
-                                            Done ✓
-                                        </span>
+                                        <span class="done-badge-sidebar">Done ✓</span>
                                     @else
-                                        {{-- Not done: teal button, blue on hover --}}
-                                        <button onclick="doMarkDone({{ $sectionLesson->id }})"
-                                                style="font-size:11px; font-weight:700;
-                                                       color:#fff; background:#0d9488;
-                                                       border:1.5px solid #0f766e;
-                                                       border-radius:6px; padding:3px 9px;
-                                                       cursor:pointer; white-space:nowrap;
-                                                       transition:background .15s;"
-                                                onmouseover="this.style.background='#2563eb';this.style.borderColor='#1d4ed8';"
-                                                onmouseout="this.style.background='#0d9488';this.style.borderColor='#0f766e';">
+                                        <button class="done-btn-sidebar"
+                                                onclick="doMarkDone({{ $sectionLesson->id }})">
                                             Done
                                         </button>
                                     @endif
@@ -185,20 +229,21 @@
                 </div>
 
             </div>
-            {{-- ── End Sidebar ─────────────────────────────────────────────────── --}}
+            {{-- ── End Sidebar ──────────────────────────────────────────────────── --}}
 
         </div>
     </div>
 </div>
 @endsection
 
-{{-- Scripts MUST be OUTSIDE @section to avoid Blade parsing conflicts --}}
+{{-- ── Scripts (OUTSIDE @section — required to avoid Blade directive conflicts) ── --}}
 @push('scripts')
 <script>
-// ── Mark lesson as done ────────────────────────────────────────────────────────
 function doMarkDone(lessonId) {
-    var btn = document.getElementById('mark-done-btn');
-    if (btn && btn.tagName === 'BUTTON') {
+    // Disable whichever button was clicked
+    var btn = document.getElementById('main-done-btn');
+
+    if (btn) {
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
     }
@@ -213,33 +258,35 @@ function doMarkDone(lessonId) {
     .then(function(r) { return r.json(); })
     .then(function(data) {
         if (data.success) {
-            var pct = data.progress_percentage !== undefined ? data.progress_percentage : '';
+            var pct = (data.progress_percentage !== undefined) ? data.progress_percentage : '?';
             showToast('✅ Saved! Progress: ' + pct + '% ပြီးစီး');
-            setTimeout(function() { location.reload(); }, 1300);
+            setTimeout(function() { location.reload(); }, 1400);
         } else {
             if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Mark as Done'; }
             showToast('⚠️ Error. Please try again.');
         }
     })
     .catch(function(err) {
-        console.error('Error:', err);
+        console.error('doMarkDone error:', err);
         if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Mark as Done'; }
-        showToast('⚠️ Network error.');
+        showToast('⚠️ Network error. Please try again.');
     });
 }
 
-// ── Toast notification ─────────────────────────────────────────────────────────
 function showToast(message) {
-    var toast = document.createElement('div');
-    toast.textContent = message;
-    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);' +
-        'background:#065f46;color:#fff;padding:12px 24px;border-radius:12px;' +
-        'font-weight:600;font-size:14px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.25);';
-    document.body.appendChild(toast);
-    setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 3500);
+    var t = document.createElement('div');
+    t.textContent = message;
+    t.style.cssText = [
+        'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%)',
+        'background:#065f46', 'color:#fff', 'padding:12px 24px', 'border-radius:12px',
+        'font-weight:700', 'font-size:14px', 'z-index:99999',
+        'box-shadow:0 8px 24px rgba(0,0,0,.3)'
+    ].join(';');
+    document.body.appendChild(t);
+    setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 3500);
 }
 
-// ── Auto-complete when HTML5 video ends ────────────────────────────────────────
+// Auto-mark complete when HTML5 video ends
 document.addEventListener('DOMContentLoaded', function() {
     var video = document.getElementById('lesson-video');
     if (video && video.tagName === 'VIDEO') {
@@ -250,4 +297,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
-
