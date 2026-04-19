@@ -125,6 +125,54 @@
                         </div>
                     </div>
                     @endforeach
+                    
+                    {{-- Exams Section --}}
+                    @if($course->exams->where('is_published', true)->count() > 0)
+                    <div class="p-4 bg-yellow-50 border-t-2 border-yellow-400">
+                        <h3 class="font-medium text-gray-900 mb-3 flex items-center">
+                            <i class="fas fa-clipboard-check text-yellow-600 mr-2"></i>
+                            <span class="myanmar-text">စာမေးပွဲများ</span>
+                        </h3>
+                        <div class="space-y-2">
+                            @foreach($course->exams->where('is_published', true) as $exam)
+                            <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-yellow-100 cursor-pointer border border-yellow-200"
+                                 onclick="window.location.href='{{ route('exams.start', $exam) }}'">
+                                <div class="flex-shrink-0">
+                                    <div class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-file-alt text-white text-xs"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 truncate myanmar-text">{{ $exam->title }}</p>
+                                    <p class="text-xs text-gray-500">
+                                        @if($exam->duration_minutes)
+                                            {{ $exam->duration_minutes }} minutes
+                                        @else
+                                            Unlimited time
+                                        @endif
+                                        • {{ $exam->questions->count() }} questions
+                                    </p>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    @php
+                                        $userAttempts = $exam->userAttempts(auth()->id());
+                                        $canAttempt = $exam->canUserAttempt(auth()->id());
+                                    @endphp
+                                    @if($userAttempts > 0)
+                                        <span class="text-xs text-gray-600 bg-gray-100 border border-gray-300 rounded-md px-2 py-1">
+                                            {{ $userAttempts }}/{{ $exam->max_attempts }} attempts
+                                        </span>
+                                    @else
+                                        <span class="text-xs text-yellow-700 font-semibold bg-yellow-100 border border-yellow-300 rounded-md px-2 py-1">
+                                            Start Exam
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>

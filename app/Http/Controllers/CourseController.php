@@ -209,7 +209,8 @@ class CourseController extends Controller
                     $q->where('user_id', $user->id);
                 }]);
             },
-            'instructor'
+            'instructor',
+            'exams.questions'
         ]);
 
         // Get current lesson (first incomplete or first lesson)
@@ -257,7 +258,8 @@ class CourseController extends Controller
                 $query->with(['progress' => function ($q) use ($user) {
                     $q->where('user_id', $user->id);
                 }]);
-            }
+            },
+            'exams.questions'
         ]);
 
         $progress = $lesson->getProgressFor($user->id);

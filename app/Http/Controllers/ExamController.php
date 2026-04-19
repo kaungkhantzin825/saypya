@@ -16,7 +16,7 @@ class ExamController extends Controller
         $course = \App\Models\Course::findOrFail($courseId);
         
         // Check if user is enrolled
-        if (!$course->enrollments()->where('user_id', auth()->id())->where('payment_status', 'approved')->exists()) {
+        if (!$course->enrollments()->where('user_id', auth()->id())->where('payment_status', 'completed')->exists()) {
             return redirect()->route('courses.show', $course->slug)
                 ->with('error', 'You must be enrolled in this course to view exams.');
         }
@@ -32,7 +32,7 @@ class ExamController extends Controller
         $exam = Exam::with('questions')->findOrFail($examId);
         
         // Check enrollment
-        if (!$exam->course->enrollments()->where('user_id', auth()->id())->where('payment_status', 'approved')->exists()) {
+        if (!$exam->course->enrollments()->where('user_id', auth()->id())->where('payment_status', 'completed')->exists()) {
             return redirect()->back()->with('error', 'You must be enrolled to take this exam.');
         }
 
