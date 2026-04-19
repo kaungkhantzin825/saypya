@@ -1,88 +1,121 @@
 @extends('layouts.app')
 
+@section('title', $exam->title . ' - Exam')
+
 @section('content')
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">{{ $exam->title }}</h4>
-                        @if($exam->duration_minutes)
-                            <div id="timer" class="fs-5">
-                                <i class="fas fa-clock"></i> <span id="timeLeft">{{ $exam->duration_minutes }}:00</span>
-                            </div>
-                        @endif
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4">
+        <!-- Exam Header -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white mb-1">{{ $exam->title }}</h1>
+                        <p class="text-blue-100 text-sm">{{ $exam->course->title }}</p>
                     </div>
-                </div>
-                <div class="card-body">
-                    @if($exam->description)
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> {{ $exam->description }}
+                    @if($exam->duration_minutes)
+                        <div id="timer" class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg px-4 py-2">
+                            <div class="flex items-center space-x-2 text-white">
+                                <i class="fas fa-clock text-xl"></i>
+                                <span id="timeLeft" class="text-2xl font-bold">{{ $exam->duration_minutes }}:00</span>
+                            </div>
                         </div>
                     @endif
+                </div>
+            </div>
 
-                    <form action="{{ route('exams.submit', $attempt) }}" method="POST" id="examForm">
-                        @csrf
+            @if($exam->description)
+                <div class="bg-blue-50 border-l-4 border-blue-500 px-6 py-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                        <p class="text-gray-700">{{ $exam->description }}</p>
+                    </div>
+                </div>
+            @endif
 
-                        @foreach($exam->questions as $question)
-                            <div class="mb-4 p-4 border rounded">
-                                <h5 class="mb-3">
-                                    Question {{ $loop->iteration }}
-                                    <span class="badge bg-secondary">{{ $question->points }} {{ Str::plural('point', $question->points) }}</span>
-                                </h5>
-                                <p class="mb-3">{{ $question->question }}</p>
-
-                                @if($question->type === 'multiple_choice')
-                                    @foreach($question->options as $index => $option)
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="radio" 
-                                                   name="question_{{ $question->id }}" 
-                                                   value="{{ $index }}" 
-                                                   id="q{{ $question->id }}_{{ $index }}">
-                                            <label class="form-check-label" for="q{{ $question->id }}_{{ $index }}">
-                                                {{ $option }}
-                                            </label>
-                                        </div>
-                                    @endforeach
-
-                                @elseif($question->type === 'true_false')
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="radio" 
-                                               name="question_{{ $question->id }}" 
-                                               value="true" 
-                                               id="q{{ $question->id }}_true">
-                                        <label class="form-check-label" for="q{{ $question->id }}_true">True</label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="radio" 
-                                               name="question_{{ $question->id }}" 
-                                               value="false" 
-                                               id="q{{ $question->id }}_false">
-                                        <label class="form-check-label" for="q{{ $question->id }}_false">False</label>
-                                    </div>
-
-                                @elseif($question->type === 'essay')
-                                    <textarea name="question_{{ $question->id }}" 
-                                              class="form-control" 
-                                              rows="6" 
-                                              placeholder="Type your answer here..."></textarea>
-                                @endif
-                            </div>
-                        @endforeach
-
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <a href="{{ route('courses.show', $exam->course->slug) }}" class="btn btn-secondary">
-                                Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary btn-lg" onclick="return confirm('Submit your exam? You cannot change answers after submission.')">
-                                <i class="fas fa-check"></i> Submit Exam
-                            </button>
-                        </div>
-                    </form>
+            <div class="px-6 py-4 bg-gray-50 border-b">
+                <div class="flex items-center justify-between text-sm text-gray-600">
+                    <span><i class="fas fa-question-circle mr-2"></i>{{ $exam->questions->count() }} Questions</span>
+                    <span><i class="fas fa-star mr-2"></i>Total Points: {{ $exam->total_points }}</span>
+                    <span><i class="fas fa-check-circle mr-2"></i>Passing Score: {{ $exam->passing_score }}%</span>
                 </div>
             </div>
         </div>
+
+        <!-- Exam Form -->
+        <form action="{{ route('exams.submit', $attempt) }}" method="POST" id="examForm">
+            @csrf
+
+            @foreach($exam->questions as $question)
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            Question {{ $loop->iteration }}
+                        </h3>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                            {{ $question->points }} {{ Str::plural('point', $question->points) }}
+                        </span>
+                    </div>
+                    
+                    <p class="text-gray-700 mb-6 text-base leading-relaxed">{{ $question->question }}</p>
+
+                    @if($question->type === 'multiple_choice')
+                        <div class="space-y-3">
+                            @foreach($question->options as $index => $option)
+                                <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all duration-150">
+                                    <input type="radio" 
+                                           name="question_{{ $question->id }}" 
+                                           value="{{ $index }}" 
+                                           class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <span class="ml-3 text-gray-700 flex-1">{{ chr(97 + $index) }}) {{ $option }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+
+                    @elseif($question->type === 'true_false')
+                        <div class="space-y-3">
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all duration-150">
+                                <input type="radio" 
+                                       name="question_{{ $question->id }}" 
+                                       value="true" 
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-3 text-gray-700 font-medium">True</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all duration-150">
+                                <input type="radio" 
+                                       name="question_{{ $question->id }}" 
+                                       value="false" 
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-3 text-gray-700 font-medium">False</span>
+                            </label>
+                        </div>
+
+                    @elseif($question->type === 'essay')
+                        <textarea name="question_{{ $question->id }}" 
+                                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-150" 
+                                  rows="8" 
+                                  placeholder="Type your answer here..."></textarea>
+                    @endif
+                </div>
+            @endforeach
+
+            <!-- Submit Section -->
+            <div class="bg-white rounded-lg shadow-md p-6 sticky bottom-4">
+                <div class="flex justify-between items-center">
+                    <a href="{{ route('courses.learn', $exam->course->slug) }}" 
+                       class="inline-flex items-center px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-150">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-150"
+                            onclick="return confirm('Submit your exam? You cannot change answers after submission.')">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Submit Exam
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -97,9 +130,19 @@ const countdown = setInterval(function() {
     const seconds = timeLeft % 60;
     timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     
+    // Warning when 5 minutes left
+    if (timeLeft === 300) {
+        alert('⚠️ 5 minutes remaining!');
+    }
+    
+    // Warning when 1 minute left
+    if (timeLeft === 60) {
+        alert('⚠️ 1 minute remaining!');
+    }
+    
     if (timeLeft <= 0) {
         clearInterval(countdown);
-        alert('Time is up! Your exam will be submitted automatically.');
+        alert('⏰ Time is up! Your exam will be submitted automatically.');
         examForm.submit();
     }
     
