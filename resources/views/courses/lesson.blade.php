@@ -66,7 +66,7 @@
                                         onclick="markLessonComplete({{ $lesson->id }})"
                                         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl
                                                font-semibold text-sm bg-teal-600 text-white
-                                               hover:bg-teal-700 shadow-md hover:shadow-lg
+                                               hover:bg-green-600 shadow-md hover:shadow-lg
                                                transition-all duration-200 hover:-translate-y-0.5">
                                     <i class="fas fa-check"></i> Mark as Done
                                 </button>
@@ -147,15 +147,16 @@
                                 {{-- Done badge/button in sidebar --}}
                                 <div class="flex-shrink-0" onclick="event.stopPropagation()">
                                     @if($isDone)
-                                        <span class="text-xs font-semibold text-green-600
-                                                     bg-green-50 border border-green-200 rounded px-2 py-0.5">
+                                        <span class="text-xs font-semibold text-green-700
+                                                     bg-green-100 border border-green-300 rounded px-2 py-0.5">
                                             Done ✓
                                         </span>
                                     @else
                                         <button onclick="markLessonComplete({{ $sectionLesson->id }}, true)"
-                                                class="text-xs font-semibold text-teal-700
-                                                       bg-white border border-teal-400 rounded px-2 py-0.5
-                                                       hover:bg-teal-500 hover:text-white transition-colors">
+                                                class="text-xs font-bold text-white
+                                                       bg-teal-500 border border-teal-600 rounded px-2 py-0.5
+                                                       hover:bg-green-600 hover:border-green-700
+                                                       transition-colors duration-150">
                                             Done
                                         </button>
                                     @endif

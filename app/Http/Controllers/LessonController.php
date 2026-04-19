@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Lesson;
 use App\Models\LessonProgress;
+use App\Models\Enrollment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,7 +13,7 @@ class LessonController extends Controller
     public function updateProgress(Request $request, Lesson $lesson)
     {
         $user = Auth::user();
-        
+
         $request->validate([
             'watch_time' => 'required|integer|min:0',
             'is_completed' => 'boolean'
@@ -20,22 +21,22 @@ class LessonController extends Controller
 
         $progress = LessonProgress::updateOrCreate(
             [
-                'user_id' => $user->id,
+                'user_id'   => $user->id,
                 'lesson_id' => $lesson->id,
             ],
             [
-                'watch_time' => $request->watch_time,
+                'watch_time'   => $request->watch_time,
                 'is_completed' => $request->is_completed ?? false,
             ]
         );
 
         if ($request->is_completed) {
-            $progress->markAsCompleted();
+            $this->syncEnrollmentProgress($user->id, $lesson);
         }
 
         return response()->json([
-            'success' => true,
-            'completed' => $progress->is_completed,
+            'success'            => true,
+            'completed'          => $progress->is_completed,
             'progress_percentage' => $progress->progress_percentage,
         ]);
     }
@@ -43,10 +44,11 @@ class LessonController extends Controller
     public function markComplete(Lesson $lesson)
     {
         $user = Auth::user();
-        
-        $progress = LessonProgress::updateOrCreate(
+
+        // 1. Save the lesson progress record
+        LessonProgress::updateOrCreate(
             [
-                'user_id' => $user->id,
+                'user_id'   => $user->id,
                 'lesson_id' => $lesson->id,
             ],
             [
@@ -55,11 +57,34 @@ class LessonController extends Controller
             ]
         );
 
-        $progress->markAsCompleted();
+        // 2. Directly find the course via section, then update enrollment %
+        $courseId = $lesson->section->course_id;
+
+        $enrollment = Enrollment::where('user_id', $user->id)
+            ->where('course_id', $courseId)
+            ->first();
+
+        if ($enrollment) {
+            $enrollment->updateProgress();
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Lesson marked as completed!'
+            'message' => 'Lesson marked as completed!',
+            'progress_percentage' => $enrollment ? $enrollment->fresh()->progress_percentage : 0,
         ]);
+    }
+
+    // ── Shared helper ──────────────────────────────────────────────────────────
+    private function syncEnrollmentProgress($userId, Lesson $lesson)
+    {
+        $courseId   = $lesson->section->course_id;
+        $enrollment = Enrollment::where('user_id', $userId)
+            ->where('course_id', $courseId)
+            ->first();
+
+        if ($enrollment) {
+            $enrollment->updateProgress();
+        }
     }
 }
