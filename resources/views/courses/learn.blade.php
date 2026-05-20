@@ -126,18 +126,22 @@
                     </div>
                     @endforeach
                     
-                    {{-- Exams Section - Only show if course is 100% complete --}}
-                    @if($enrollment->progress_percentage >= 100 && $course->exams->where('is_published', true)->count() > 0)
+                    {{-- Exams Section --}}
+                    @php
+                        $publishedExams = $course->exams->where('is_published', true);
+                    @endphp
+
+                    @if($publishedExams->count() > 0 && $enrollment->progress_percentage >= 100)
+                    {{-- Show exams when course is 100% complete --}}
                     <div class="p-4 bg-yellow-50 border-t-2 border-yellow-400">
                         <h3 class="font-medium text-gray-900 mb-3 flex items-center">
                             <i class="fas fa-clipboard-check text-yellow-600 mr-2"></i>
                             <span class="myanmar-text">Exam Question</span>
                         </h3>
                         <div class="space-y-2">
-                            @foreach($course->exams->where('is_published', true) as $exam)
+                            @foreach($publishedExams as $exam)
                             @php
                                 $userAttempts = $exam->userAttempts(auth()->id());
-                                $canAttempt = $exam->canUserAttempt(auth()->id());
                                 $passedAttempt = $exam->attempts()
                                     ->where('user_id', auth()->id())
                                     ->where('passed', true)
@@ -180,6 +184,26 @@
                             </div>
                             @endforeach
                         </div>
+                    </div>
+                    @elseif($course->exams->count() > 0)
+                    {{-- Exam exists but course not complete or not published --}}
+                    <div class="p-4 bg-blue-50 border-t-2 border-blue-400">
+                        <h3 class="font-medium text-gray-900 mb-2 flex items-center">
+                            <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                            <span class="myanmar-text">Exam Information</span>
+                        </h3>
+                        @if($enrollment->progress_percentage < 100)
+                            <p class="text-sm text-gray-700 mb-2">
+                                <i class="fas fa-lock text-blue-500 mr-1"></i>
+                                Complete all lessons to unlock the exam. Your progress: <strong>{{ number_format($enrollment->progress_percentage, 1) }}%</strong>
+                            </p>
+                        @endif
+                        @if($publishedExams->count() === 0)
+                            <p class="text-sm text-gray-700">
+                                <i class="fas fa-clock text-blue-500 mr-1"></i>
+                                The exam is being prepared and will be available soon.
+                            </p>
+                        @endif
                     </div>
                     @endif
                 </div>
