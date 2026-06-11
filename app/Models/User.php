@@ -142,12 +142,29 @@ class User extends Authenticatable
 
     public function getAvatarUrlAttribute()
     {
+        // If already a full URL (starts with http/https)
         if ($this->avatar && str_starts_with($this->avatar, 'http')) {
             return $this->avatar;
         }
-        if ($this->avatar && file_exists(storage_path('app/public/' . $this->avatar))) {
-            return asset('storage/' . $this->avatar);
+        
+        // If avatar exists, return full CDN URL
+        if ($this->avatar) {
+            // Get the base URL from config (APP_URL)
+            $baseUrl = rtrim(config('app.url'), '/');
+            
+            // Clean the path - remove leading slashes
+            $path = ltrim($this->avatar, '/');
+            
+            // Build the full URL
+            // If path already contains 'storage/', use it as-is
+            // Otherwise, prepend 'storage/'
+            if (str_starts_with($path, 'storage/')) {
+                return $baseUrl . '/' . $path;
+            } else {
+                return $baseUrl . '/storage/' . $path;
+            }
         }
+        
         // Return UI Avatars placeholder
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name ?? 'User') . '&background=0d9488&color=fff&size=200';
     }

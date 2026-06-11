@@ -552,12 +552,49 @@ class StudentApiController extends Controller
 
     private function formatCourse(Course $course, ?int $userId = null): array
     {
+        // Ensure full URL for thumbnail - HARDCODED FIX
+        $thumbnailUrl = $course->thumbnail;
+        if ($thumbnailUrl) {
+            if (str_starts_with($thumbnailUrl, 'http')) {
+                // Already full URL
+                $thumbnailUrl = $thumbnailUrl;
+            } else {
+                // Build full URL
+                $path = ltrim($thumbnailUrl, '/');
+                if (str_starts_with($path, 'storage/')) {
+                    $thumbnailUrl = 'https://sanpyalearning.com/' . $path;
+                } else {
+                    $thumbnailUrl = 'https://sanpyalearning.com/storage/' . $path;
+                }
+            }
+        } else {
+            $thumbnailUrl = 'https://placehold.co/400x300/3498db/ffffff?text=Course';
+        }
+        
+        // Ensure full URL for avatar - HARDCODED FIX
+        $avatar = $course->instructor?->avatar;
+        if ($avatar) {
+            if (str_starts_with($avatar, 'http')) {
+                $avatarUrl = $avatar;
+            } else {
+                $path = ltrim($avatar, '/');
+                if (str_starts_with($path, 'storage/')) {
+                    $avatarUrl = 'https://sanpyalearning.com/' . $path;
+                } else {
+                    $avatarUrl = 'https://sanpyalearning.com/storage/' . $path;
+                }
+            }
+        } else {
+            $instructorName = $course->instructor?->name ?? 'User';
+            $avatarUrl = 'https://ui-avatars.com/api/?name=' . urlencode($instructorName) . '&background=0d9488&color=fff&size=200';
+        }
+        
         return [
             'id'                  => $course->id,
             'title'               => $course->title,
             'slug'                => $course->slug,
             'short_description'   => $course->short_description,
-            'thumbnail_url'       => $course->thumbnail_url,
+            'thumbnail_url'       => $thumbnailUrl,
             'price'               => $course->price,
             'discount_price'      => $course->discount_price,
             'current_price'       => $course->current_price,
@@ -576,7 +613,7 @@ class StudentApiController extends Controller
             'instructor' => [
                 'id'         => $course->instructor?->id,
                 'name'       => $course->instructor?->name,
-                'avatar_url' => $course->instructor?->avatar_url,
+                'avatar_url' => $avatarUrl,
             ],
         ];
     }

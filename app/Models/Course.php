@@ -133,12 +133,29 @@ class Course extends Model
     // Accessors
     public function getThumbnailUrlAttribute()
     {
+        // If already a full URL (starts with http/https)
         if ($this->thumbnail && str_starts_with($this->thumbnail, 'http')) {
             return $this->thumbnail;
         }
-        if ($this->thumbnail && file_exists(storage_path('app/public/' . $this->thumbnail))) {
-            return asset('storage/' . $this->thumbnail);
+        
+        // If thumbnail exists, return full CDN URL
+        if ($this->thumbnail) {
+            // Get the base URL from config (APP_URL)
+            $baseUrl = rtrim(config('app.url'), '/');
+            
+            // Clean the path - remove leading slashes
+            $path = ltrim($this->thumbnail, '/');
+            
+            // Build the full URL
+            // If path already contains 'storage/', use it as-is
+            // Otherwise, prepend 'storage/'
+            if (str_starts_with($path, 'storage/')) {
+                return $baseUrl . '/' . $path;
+            } else {
+                return $baseUrl . '/storage/' . $path;
+            }
         }
+        
         // Return placeholder image based on course title
         $colors = ['3498db', 'e74c3c', '2ecc71', '9b59b6', 'f39c12', '1abc9c', 'e67e22', '34495e'];
         $colorIndex = crc32($this->title ?? 'course') % count($colors);

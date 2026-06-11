@@ -20,6 +20,14 @@ use App\Http\Controllers\Api\StudentApiController;
 // Public
 Route::post('/login', [AuthApiController::class, 'login']);
 Route::post('/register', [AuthApiController::class, 'register']);
+Route::get('/test-image-url', function() {
+    $course = \App\Models\Course::first();
+    return response()->json([
+        'thumbnail' => $course->thumbnail,
+        'thumbnail_url' => $course->thumbnail_url,
+        'app_url' => config('app.url'),
+    ]);
+});
 Route::get('/courses', [StudentApiController::class, 'courses']);
 Route::get('/courses/{id}', [StudentApiController::class, 'courseDetail']);
 
