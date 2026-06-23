@@ -123,9 +123,14 @@ class CourseController extends Controller
 
         $user = Auth::user();
 
-        if ($course->isEnrolledBy($user->id)) {
-            return redirect()->back()
-                ->with('error', 'You are already enrolled in this course.');
+        $existingEnrollment = $user->enrollments()->where('course_id', $course->id)->first();
+        if ($existingEnrollment) {
+            if ($existingEnrollment->payment_status === 'completed') {
+                return redirect()->route('courses.learn', $course)
+                    ->with('info', 'You are already enrolled in this course.');
+            }
+            return redirect()->route('courses.show', $course)
+                ->with('info', 'Your enrollment request is already pending admin approval.');
         }
 
         // For free courses, enroll directly
