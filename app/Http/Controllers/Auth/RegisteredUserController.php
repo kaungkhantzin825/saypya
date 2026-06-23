@@ -97,23 +97,24 @@ class RegisteredUserController extends Controller
                 ->with('error', 'This email is already registered. Please login.');
         }
 
-        // Create user with pending status (requires admin approval)
+        // Create user with active status — no admin approval needed
         $user = User::create([
             'name' => $registrationData['name'] ?? 'User',
             'email' => $otpRecord->email,
             'password' => $registrationData['password'] ?? Hash::make(Str::random(16)),
             'role' => $registrationData['role'] ?? 'student',
-            'status' => 'pending', // User needs admin approval
+            'status' => 'active',
             'email_verified_at' => now(),
         ]);
 
         event(new Registered($user));
 
-        // Clear session data
+        // Clear session data and log user in directly
         session()->forget('registration_data');
+        Auth::login($user);
 
-        return redirect()->route('login')
-            ->with('success', 'Email verified successfully! Your account is pending admin approval. You will be able to login once approved.');
+        return redirect()->route('dashboard')
+            ->with('success', 'Welcome! Your account has been created successfully.');
     }
 
     /**

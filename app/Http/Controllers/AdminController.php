@@ -153,6 +153,9 @@ class AdminController extends Controller
 
     public function usersDestroy(User $user)
     {
+        if (!auth()->user()->isSuperAdmin()) {
+            return redirect()->back()->with('error', 'Only super admins can delete users.');
+        }
         if ($user->id === auth()->id()) {
             return redirect()->back()->with('error', 'You cannot delete yourself!');
         }

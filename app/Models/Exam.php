@@ -55,11 +55,24 @@ class Exam extends Model
 
     public function userAttempts($userId)
     {
-        return $this->attempts()->where('user_id', $userId)->count();
+        // Only count completed/graded attempts, not abandoned in-progress ones
+        return $this->attempts()
+            ->where('user_id', $userId)
+            ->whereIn('status', ['submitted', 'graded'])
+            ->count();
     }
 
     public function canUserAttempt($userId)
     {
         return $this->userAttempts($userId) < $this->max_attempts;
+    }
+
+    public function getInProgressAttempt($userId)
+    {
+        return $this->attempts()
+            ->where('user_id', $userId)
+            ->where('status', 'in_progress')
+            ->latest()
+            ->first();
     }
 }

@@ -94,24 +94,7 @@
                                 <i class="fas fa-edit"></i>
                             </a>
                             
-                            @if($user->status === 'pending')
-                                <form action="{{ route('admin.users.approve', $user) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Approve this user?')">
-                                        <i class="fas fa-check"></i> Approve
-                                    </button>
-                                </form>
-                                <form action="{{ route('admin.users.reject', $user) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this user?')">
-                                        <i class="fas fa-times"></i> Reject
-                                    </button>
-                                </form>
-                            @endif
-                            
-                            @if($user->id !== auth()->id())
+                            @if(auth()->user()->isSuperAdmin() && $user->id !== auth()->id())
                             <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')

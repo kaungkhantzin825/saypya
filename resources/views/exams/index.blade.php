@@ -36,6 +36,11 @@
                                 @if($exam->description)
                                     <p class="text-gray-600 text-sm mt-1">{{ $exam->description }}</p>
                                 @endif
+                                @php
+                                    $usedAttempts   = $exam->userAttempts(auth()->id());
+                                    $hasInProgress  = $exam->getInProgressAttempt(auth()->id());
+                                    $attemptsLeft   = $exam->max_attempts - $usedAttempts;
+                                @endphp
                                 <div class="flex flex-wrap gap-3 mt-3">
                                     @if($exam->duration_minutes)
                                         <span class="inline-flex items-center text-xs bg-blue-50 text-blue-700 rounded-full px-3 py-1">
@@ -49,8 +54,9 @@
                                     <span class="inline-flex items-center text-xs bg-green-50 text-green-700 rounded-full px-3 py-1">
                                         <i class="fas fa-percentage mr-1"></i> Pass: {{ $exam->passing_score }}%
                                     </span>
-                                    <span class="inline-flex items-center text-xs bg-purple-50 text-purple-700 rounded-full px-3 py-1">
-                                        <i class="fas fa-redo mr-1"></i> Max {{ $exam->max_attempts }} attempt(s)
+                                    <span class="inline-flex items-center text-xs {{ $attemptsLeft <= 0 ? 'bg-red-50 text-red-700' : 'bg-purple-50 text-purple-700' }} rounded-full px-3 py-1">
+                                        <i class="fas fa-redo mr-1"></i>
+                                        {{ $usedAttempts }} / {{ $exam->max_attempts }} attempt(s) used
                                     </span>
                                     <span class="inline-flex items-center text-xs bg-orange-50 text-orange-700 rounded-full px-3 py-1">
                                         <i class="fas fa-question-circle mr-1"></i> {{ $exam->questions->count() }} questions
@@ -58,7 +64,12 @@
                                 </div>
                             </div>
                             <div class="flex-shrink-0">
-                                @if($exam->canUserAttempt(auth()->id()))
+                                @if($hasInProgress)
+                                    <a href="{{ route('exams.start', $exam->id) }}"
+                                       class="inline-flex items-center px-6 py-2.5 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition-colors">
+                                        <i class="fas fa-play-circle mr-2"></i> Resume Exam
+                                    </a>
+                                @elseif($exam->canUserAttempt(auth()->id()))
                                     <a href="{{ route('exams.start', $exam->id) }}"
                                        class="inline-flex items-center px-6 py-2.5 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-colors">
                                         <i class="fas fa-play mr-2"></i> Start Exam

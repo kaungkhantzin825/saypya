@@ -232,6 +232,7 @@
                             <button type="submit" class="btn-3d btn-3d-red">Logout</button>
                         </form>
                     @else
+                        <a href="{{ route('register') }}" class="btn-3d btn-3d-white">{{ __('app.register') }}</a>
                         <a href="{{ route('login') }}" class="btn-3d btn-3d-teal">{{ __('app.login') }}</a>
                     @endauth
                 </div>
@@ -289,6 +290,7 @@
                             <button type="submit" class="btn-3d btn-3d-red">Logout</button>
                         </form>
                     @else
+                        <a href="{{ route('register') }}" class="btn-3d btn-3d-white">{{ __('app.register') }}</a>
                         <a href="{{ route('login') }}" class="btn-3d btn-3d-teal">{{ __('app.login') }}</a>
                     @endauth
                 </div>
