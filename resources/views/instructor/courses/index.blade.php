@@ -58,13 +58,6 @@
                         <a href="{{ route('instructor.courses.content', $course) }}" class="btn btn-sm btn-primary">
                             <i class="fas fa-list"></i> Content
                         </a>
-                        <form action="{{ route('instructor.courses.destroy', $course) }}" method="POST" class="d-inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
                     </div>
                 </div>
             </div>

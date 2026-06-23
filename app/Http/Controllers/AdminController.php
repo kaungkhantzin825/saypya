@@ -968,6 +968,17 @@ class AdminController extends Controller
         return redirect()->route('admin.contact-messages.index')->with('success', 'Message deleted successfully!');
     }
 
+    public function contactMessageBulkDelete(\Illuminate\Http\Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'No messages selected.');
+        }
+        \App\Models\ContactMessage::whereIn('id', $ids)->delete();
+        return redirect()->route('admin.contact-messages.index')
+            ->with('success', count($ids) . ' message(s) deleted successfully!');
+    }
+
     // ==================== SITE SETTINGS ====================
 
     public function settings()

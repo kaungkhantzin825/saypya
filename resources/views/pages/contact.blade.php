@@ -84,50 +84,79 @@
             <!-- Contact Form -->
             <div class="bg-white p-8 rounded-lg shadow-lg">
                 <h2 class="text-2xl font-bold mb-6">Send us a Message</h2>
-                
+
                 @if(session('success'))
                     <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                         {{ session('success') }}
                     </div>
                 @endif
-                
+
+                @if($errors->any())
+                    <div class="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded mb-4">
+                        <ul class="list-disc list-inside text-sm">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @php
+                    $num1 = rand(1, 9);
+                    $num2 = rand(1, 9);
+                @endphp
+
                 <form action="{{ route('contact.submit') }}" method="POST" class="space-y-6">
                     @csrf
+
+                    {{-- Honeypot: hidden from real users, bots fill it --}}
+                    <div style="display:none;" aria-hidden="true">
+                        <input type="text" name="website" value="" tabindex="-1" autocomplete="off">
+                    </div>
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Your Name *</label>
                         <input type="text" name="name" value="{{ old('name') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500" required>
-                        @error('name')
-                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        @error('name')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
                         <input type="email" name="email" value="{{ old('email') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500" required>
-                        @error('email')
-                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        @error('email')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Phone (Optional)</label>
                         <input type="text" name="phone" value="{{ old('phone') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500">
-                        @error('phone')
-                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        @error('phone')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
                         <input type="text" name="subject" value="{{ old('subject') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500" required>
-                        @error('subject')
-                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        @error('subject')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Message *</label>
                         <textarea name="message" rows="5" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500" required>{{ old('message') }}</textarea>
-                        @error('message')
-                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        @error('message')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
+
+                    {{-- Math Captcha --}}
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-shield-alt text-teal-600 mr-1"></i>
+                            Spam Check: What is {{ $num1 }} + {{ $num2 }}? *
+                        </label>
+                        <input type="number"
+                               name="captcha_answer"
+                               value="{{ old('captcha_answer') }}"
+                               class="w-32 border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500 @error('captcha_answer') border-red-500 @enderror"
+                               placeholder="Answer"
+                               required>
+                        {{-- Store the expected answer (obfuscated by being server-side) --}}
+                        <input type="hidden" name="captcha_expected" value="{{ $num1 + $num2 }}">
+                        @error('captcha_answer')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+                    </div>
+
                     <button type="submit" class="btn-3d btn-3d-cyan w-full">
                         <i class="fas fa-paper-plane mr-2"></i>Send Message
                     </button>
