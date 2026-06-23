@@ -884,20 +884,16 @@ class AdminController extends Controller
             'grades.*.feedback' => 'nullable|string',
         ]);
 
-        $totalScore = 0;
-
         foreach ($request->grades as $grade) {
             $answer = \App\Models\ExamAnswer::find($grade['answer_id']);
             $answer->update([
-                'points_earned' => $grade['points'],
+                'points_earned' => (int) $grade['points'],
                 'feedback' => $grade['feedback'] ?? null,
             ]);
-            $totalScore += $grade['points'];
         }
 
-        // Add auto-graded scores
-        $autoGradedScore = $attempt->answers()->whereNotNull('points_earned')->sum('points_earned');
-        $totalScore += $autoGradedScore;
+        // Sum all answers (auto-graded MCQ/TF + manually graded essay)
+        $totalScore = $attempt->answers()->sum('points_earned');
 
         $percentage = ($attempt->total_points > 0) ? ($totalScore / $attempt->total_points) * 100 : 0;
 

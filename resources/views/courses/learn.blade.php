@@ -141,43 +141,58 @@
                         <div class="space-y-2">
                             @foreach($publishedExams as $exam)
                             @php
-                                $userAttempts = $exam->userAttempts(auth()->id());
+                                $usedAttempts  = $exam->userAttempts(auth()->id());
+                                $canAttempt    = $exam->canUserAttempt(auth()->id());
+                                $inProgress    = $exam->getInProgressAttempt(auth()->id());
                                 $passedAttempt = $exam->attempts()
                                     ->where('user_id', auth()->id())
                                     ->where('passed', true)
                                     ->first();
                             @endphp
-                            <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-yellow-100 cursor-pointer border border-yellow-200"
-                                 onclick="{{ $passedAttempt ? 'showCertificatePopup()' : "window.location.href='" . route('exams.start', $exam) . "'" }}">
-                                <div class="flex-shrink-0">
-                                    <div class="w-6 h-6 {{ $passedAttempt ? 'bg-green-500' : 'bg-yellow-500' }} rounded-full flex items-center justify-center">
-                                        <i class="fas fa-{{ $passedAttempt ? 'trophy' : 'file-alt' }} text-white text-xs"></i>
+                            <div class="rounded-lg border border-yellow-200 bg-white p-2 mb-1">
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-6 h-6 {{ $passedAttempt ? 'bg-green-500' : ($usedAttempts > 0 ? 'bg-red-400' : 'bg-yellow-500') }} rounded-full flex items-center justify-center">
+                                            <i class="fas fa-{{ $passedAttempt ? 'trophy' : 'file-alt' }} text-white text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 truncate">{{ $exam->title }}</p>
+                                        <p class="text-xs text-gray-500">
+                                            @if($exam->duration_minutes){{ $exam->duration_minutes }} min @else Unlimited @endif
+                                            • {{ $exam->questions->count() }} questions
+                                            • {{ $usedAttempts }}/{{ $exam->max_attempts }} used
+                                        </p>
                                     </div>
                                 </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $exam->title }}</p>
-                                    <p class="text-xs text-gray-500">
-                                        @if($exam->duration_minutes)
-                                            {{ $exam->duration_minutes }} minutes
-                                        @else
-                                            Unlimited time
-                                        @endif
-                                        • {{ $exam->questions->count() }} questions
-                                    </p>
-                                </div>
-                                <div class="flex-shrink-0">
+
+                                {{-- Action buttons row --}}
+                                <div class="flex flex-wrap gap-1 mt-2">
+                                    {{-- Certificate button (always visible if passed) --}}
                                     @if($passedAttempt)
-                                        <span class="text-xs text-white font-semibold bg-green-600 border border-green-700 rounded-md px-3 py-1">
-                                            <i class="fas fa-certificate mr-1"></i>
-                                            Get Certificate
-                                        </span>
-                                    @elseif($userAttempts > 0)
-                                        <span class="text-xs text-gray-600 bg-gray-100 border border-gray-300 rounded-md px-2 py-1">
-                                            {{ $userAttempts }}/{{ $exam->max_attempts }} attempts
-                                        </span>
-                                    @else
-                                        <span class="text-xs text-yellow-700 font-semibold bg-yellow-100 border border-yellow-300 rounded-md px-2 py-1">
-                                            Start Exam
+                                        <button onclick="showCertificatePopup()"
+                                                class="text-xs text-white font-semibold bg-green-600 border border-green-700 rounded-md px-2 py-1 hover:bg-green-700">
+                                            <i class="fas fa-certificate mr-1"></i>Certificate
+                                        </button>
+                                    @endif
+
+                                    {{-- Retake / Start / Resume button --}}
+                                    @if($inProgress)
+                                        <a href="{{ route('exams.start', $exam) }}"
+                                           class="text-xs text-white font-semibold bg-yellow-500 border border-yellow-600 rounded-md px-2 py-1 hover:bg-yellow-600">
+                                            <i class="fas fa-play-circle mr-1"></i>Resume
+                                        </a>
+                                    @elseif($canAttempt)
+                                        <a href="{{ route('exams.start', $exam) }}"
+                                           class="text-xs font-semibold rounded-md px-2 py-1 border
+                                                  {{ $passedAttempt
+                                                      ? 'text-blue-700 bg-blue-50 border-blue-300 hover:bg-blue-100'
+                                                      : 'text-yellow-700 bg-yellow-100 border-yellow-300 hover:bg-yellow-200' }}">
+                                            <i class="fas fa-play mr-1"></i>{{ $passedAttempt ? 'Retake' : 'Start Exam' }}
+                                        </a>
+                                    @elseif(!$passedAttempt)
+                                        <span class="text-xs text-gray-500 bg-gray-100 border border-gray-300 rounded-md px-2 py-1 cursor-not-allowed">
+                                            <i class="fas fa-lock mr-1"></i>Max Attempts Reached
                                         </span>
                                     @endif
                                 </div>
