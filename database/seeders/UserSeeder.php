@@ -10,6 +10,20 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        // ── Test student for Flutter app ─────────────────────────────
+        User::firstOrCreate(
+            ['email' => 'webdeveloperkkz@gmail.com'],
+            [
+                'name'              => 'Ko Kaung',
+                'password'          => Hash::make('12345678'),
+                'role'              => 'student',
+                'status'            => 'active',
+                'email_verified_at' => now(),
+                'bio'               => 'Student at Sanpya Online Academy',
+                'is_active'         => true,
+            ]
+        );
+
         // Create admin user
         User::create([
             'name' => 'Admin User',
