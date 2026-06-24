@@ -16,11 +16,20 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
+    private function registrationEnabled(): bool
+    {
+        return \App\Models\Setting::get('registration_enabled', '1') === '1';
+    }
+
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(): View|\Illuminate\Http\RedirectResponse
     {
+        if (!$this->registrationEnabled()) {
+            return redirect()->route('login')
+                ->with('error', 'User registration is currently disabled.');
+        }
         return view('auth.register');
     }
 
@@ -29,6 +38,11 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        if (!$this->registrationEnabled()) {
+            return redirect()->route('login')
+                ->with('error', 'User registration is currently disabled.');
+        }
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],

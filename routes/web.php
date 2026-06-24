@@ -249,6 +249,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
+
+    // Admin Tools
+    Route::get('/create-lecturer', [AdminController::class, 'createLecturer'])->name('create-lecturer');
+    Route::post('/create-lecturer', [AdminController::class, 'storeLecturer'])->name('store-lecturer');
+    Route::post('/toggle-registration', [AdminController::class, 'toggleRegistration'])->name('toggle-registration');
+    Route::patch('/users/{user}/toggle-status', [AdminController::class, 'usersToggleStatus'])->name('users.toggle-status');
     
     // Blog Management
     Route::prefix('blog')->name('blog.')->group(function () {
