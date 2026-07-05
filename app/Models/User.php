@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -25,6 +26,7 @@ class User extends Authenticatable
         'country',
         'is_active',
         'last_login_at',
+        'is_super_admin',
     ];
 
     protected $hidden = [
@@ -37,6 +39,7 @@ class User extends Authenticatable
         'date_of_birth' => 'date',
         'last_login_at' => 'datetime',
         'is_active' => 'boolean',
+        'is_super_admin' => 'boolean',
         'password' => 'hashed',
     ];
 
@@ -118,6 +121,11 @@ class User extends Authenticatable
     public function isAdmin()
     {
         return $this->role === 'admin';
+    }
+
+    public function isSuperAdmin()
+    {
+        return (bool) $this->is_super_admin;
     }
 
     public function isActive()

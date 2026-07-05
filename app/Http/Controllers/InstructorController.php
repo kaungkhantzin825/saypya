@@ -165,18 +165,6 @@ class InstructorController extends Controller
         return redirect()->route('instructor.courses')->with('success', 'Course updated successfully!');
     }
 
-    public function destroyCourse(Course $course)
-    {
-        $this->authorize('delete', $course);
-        
-        if ($course->thumbnail) {
-            Storage::disk('public')->delete($course->thumbnail);
-        }
-        $course->delete();
-        
-        return redirect()->route('instructor.courses')->with('success', 'Course deleted successfully!');
-    }
-
     public function courseContent(Course $course)
     {
         $this->authorize('update', $course);

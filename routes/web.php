@@ -43,7 +43,7 @@ Route::get('/partners', function () {
 Route::get('/contact', function () {
     return view('pages.contact');
 })->name('contact');
-Route::post('/contact', [App\Http\Controllers\ContactController::class, 'submit'])->name('contact.submit');
+Route::post('/contact', [App\Http\Controllers\ContactController::class, 'submit'])->name('contact.submit')->middleware('throttle:3,10');
 Route::get('/help', function () {
     return view('pages.help');
 })->name('help');
@@ -136,7 +136,6 @@ Route::middleware(['auth', 'role:lecturer'])->prefix('instructor')->name('instru
     Route::post('/courses', [InstructorController::class, 'storeCourse'])->name('courses.store');
     Route::get('/courses/{course}/edit', [InstructorController::class, 'editCourse'])->name('courses.edit');
     Route::put('/courses/{course}', [InstructorController::class, 'updateCourse'])->name('courses.update');
-    Route::delete('/courses/{course}', [InstructorController::class, 'destroyCourse'])->name('courses.destroy');
     
     // Course content management
     Route::get('/courses/{course}/content', [InstructorController::class, 'courseContent'])->name('courses.content');
@@ -241,6 +240,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // Contact Messages
     Route::get('/contact-messages', [AdminController::class, 'contactMessages'])->name('contact-messages.index');
+    Route::delete('/contact-messages/bulk-delete', [AdminController::class, 'contactMessageBulkDelete'])->name('contact-messages.bulk-delete');
     Route::get('/contact-messages/{message}', [AdminController::class, 'contactMessageShow'])->name('contact-messages.show');
     Route::post('/contact-messages/{message}/reply', [AdminController::class, 'contactMessageReply'])->name('contact-messages.reply');
     Route::delete('/contact-messages/{message}', [AdminController::class, 'contactMessageDestroy'])->name('contact-messages.destroy');
@@ -249,6 +249,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
+
+    // Admin Tools
+    Route::get('/create-lecturer', [AdminController::class, 'createLecturer'])->name('create-lecturer');
+    Route::post('/create-lecturer', [AdminController::class, 'storeLecturer'])->name('store-lecturer');
+    Route::post('/toggle-registration', [AdminController::class, 'toggleRegistration'])->name('toggle-registration');
+    Route::patch('/users/{user}/toggle-status', [AdminController::class, 'usersToggleStatus'])->name('users.toggle-status');
     
     // Blog Management
     Route::prefix('blog')->name('blog.')->group(function () {

@@ -55,10 +55,8 @@ class AdminController extends Controller
         if ($request->role) {
             $query->where('role', $request->role);
         }
-        if ($request->status === 'active') {
-            $query->where('is_active', true);
-        } elseif ($request->status === 'inactive') {
-            $query->where('is_active', false);
+        if ($request->status) {
+            $query->where('status', $request->status);
         }
         if ($request->search) {
             $query->where(function($q) use ($request) {
@@ -68,7 +66,8 @@ class AdminController extends Controller
         }
 
         $users = $query->latest()->paginate(20);
-        return view('admin.users.index', compact('users'));
+        $registrationEnabled = \App\Models\Setting::get('registration_enabled', '1') === '1';
+        return view('admin.users.index', compact('users', 'registrationEnabled'));
     }
 
     public function usersCreate()
@@ -91,7 +90,8 @@ class AdminController extends Controller
 
         $data = $request->only(['name', 'email', 'role', 'phone', 'country', 'bio']);
         $data['password'] = Hash::make($request->password);
-        $data['is_active'] = $request->boolean('is_active');
+        $data['status'] = 'active';
+        $data['is_active'] = true;
         $data['email_verified_at'] = now();
 
         if ($request->hasFile('avatar')) {
@@ -151,8 +151,21 @@ class AdminController extends Controller
         return redirect()->back()->with('success', "User {$status} successfully!");
     }
 
+    public function usersToggleStatus(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return redirect()->back()->with('error', 'You cannot change your own status.');
+        }
+        $newStatus = $user->status === 'active' ? 'inactive' : 'active';
+        $user->update(['status' => $newStatus, 'is_active' => $newStatus === 'active']);
+        return redirect()->back()->with('success', "User account {$newStatus}d successfully!");
+    }
+
     public function usersDestroy(User $user)
     {
+        if (!auth()->user()->isSuperAdmin()) {
+            return redirect()->back()->with('error', 'Only super admins can delete users.');
+        }
         if ($user->id === auth()->id()) {
             return redirect()->back()->with('error', 'You cannot delete yourself!');
         }
@@ -881,20 +894,16 @@ class AdminController extends Controller
             'grades.*.feedback' => 'nullable|string',
         ]);
 
-        $totalScore = 0;
-
         foreach ($request->grades as $grade) {
             $answer = \App\Models\ExamAnswer::find($grade['answer_id']);
             $answer->update([
-                'points_earned' => $grade['points'],
+                'points_earned' => (int) $grade['points'],
                 'feedback' => $grade['feedback'] ?? null,
             ]);
-            $totalScore += $grade['points'];
         }
 
-        // Add auto-graded scores
-        $autoGradedScore = $attempt->answers()->whereNotNull('points_earned')->sum('points_earned');
-        $totalScore += $autoGradedScore;
+        // Sum all answers (auto-graded MCQ/TF + manually graded essay)
+        $totalScore = $attempt->answers()->sum('points_earned');
 
         $percentage = ($attempt->total_points > 0) ? ($totalScore / $attempt->total_points) * 100 : 0;
 
@@ -967,6 +976,17 @@ class AdminController extends Controller
     {
         $message->delete();
         return redirect()->route('admin.contact-messages.index')->with('success', 'Message deleted successfully!');
+    }
+
+    public function contactMessageBulkDelete(\Illuminate\Http\Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'No messages selected.');
+        }
+        \App\Models\ContactMessage::whereIn('id', $ids)->delete();
+        return redirect()->route('admin.contact-messages.index')
+            ->with('success', count($ids) . ' message(s) deleted successfully!');
     }
 
     // ==================== SITE SETTINGS ====================
@@ -1078,5 +1098,47 @@ class AdminController extends Controller
         $post->delete();
 
         return redirect()->route('admin.blog.index')->with('success', 'Blog post deleted successfully!');
+    }
+
+    // ==================== ADMIN TOOLS ====================
+
+    public function createLecturer()
+    {
+        return view('admin.users.create-lecturer');
+    }
+
+    public function storeLecturer(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|min:8|confirmed',
+            'phone'    => 'nullable|string|max:20',
+            'bio'      => 'nullable|string|max:1000',
+        ]);
+
+        $user = User::create([
+            'name'              => $request->name,
+            'email'             => $request->email,
+            'password'          => Hash::make($request->password),
+            'role'              => 'lecturer',
+            'status'            => 'active',
+            'is_active'         => true,
+            'phone'             => $request->phone,
+            'bio'               => $request->bio,
+            'email_verified_at' => now(),
+        ]);
+
+        return redirect()->route('admin.users.index', ['role' => 'lecturer'])
+            ->with('success', "Lecturer account created! Name: {$user->name} | Email: {$user->email}");
+    }
+
+    public function toggleRegistration()
+    {
+        $current = \App\Models\Setting::get('registration_enabled', '1');
+        $new     = $current === '1' ? '0' : '1';
+        \App\Models\Setting::set('registration_enabled', $new);
+        $msg = $new === '1' ? 'User registration is now ENABLED.' : 'User registration is now DISABLED.';
+        return redirect()->back()->with('success', $msg);
     }
 }

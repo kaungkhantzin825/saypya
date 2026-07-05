@@ -36,7 +36,13 @@ class ExamController extends Controller
             return redirect()->back()->with('error', 'You must be enrolled to take this exam.');
         }
 
-        // Check if user can attempt
+        // Resume an unfinished in-progress attempt instead of creating a new one
+        $existing = $exam->getInProgressAttempt(auth()->id());
+        if ($existing) {
+            return view('exams.take', ['exam' => $exam, 'attempt' => $existing]);
+        }
+
+        // Check if user can attempt (only counts submitted/graded)
         if (!$exam->canUserAttempt(auth()->id())) {
             return redirect()->back()->with('error', 'You have reached the maximum number of attempts for this exam.');
         }
@@ -60,6 +66,12 @@ class ExamController extends Controller
 
         if ($attempt->user_id !== auth()->id()) {
             abort(403);
+        }
+
+        // Guard against double-submission (page refresh after submit)
+        if ($attempt->status !== 'in_progress') {
+            return redirect()->route('exams.result', $attempt->id)
+                ->with('info', 'This exam has already been submitted.');
         }
 
         DB::beginTransaction();
