@@ -139,35 +139,42 @@
                         </td>
                         <td>{{ $user->created_at->format('M d, Y') }}</td>
                         <td style="white-space:nowrap;">
-                            {{-- View --}}
-                            <a href="{{ route('admin.users.show', $user) }}" class="btn btn-info btn-sm" title="View">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            {{-- Edit --}}
-                            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning btn-sm" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            {{-- Enable / Disable (not for yourself) --}}
-                            @if($user->id !== auth()->id())
-                                <form action="{{ route('admin.users.toggle-status', $user) }}" method="POST" class="d-inline">
-                                    @csrf @method('PATCH')
-                                    <button type="submit"
+                            <div class="btn-group" role="group">
+                                {{-- View --}}
+                                <a href="{{ route('admin.users.show', $user) }}" class="btn btn-info btn-sm" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {{-- Edit --}}
+                                <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning btn-sm" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {{-- Enable / Disable (not for yourself) --}}
+                                @if($user->id !== auth()->id())
+                                    <button type="submit" form="toggle-status-{{ $user->id }}"
                                             class="btn btn-sm btn-{{ $user->status === 'active' ? 'secondary' : 'success' }}"
                                             title="{{ $user->status === 'active' ? 'Disable account' : 'Enable account' }}"
                                             onclick="return confirm('{{ $user->status === 'active' ? 'Disable' : 'Enable' }} {{ $user->name }}\'s account?')">
                                         <i class="fas fa-{{ $user->status === 'active' ? 'ban' : 'check' }}"></i>
-                                        {{ $user->status === 'active' ? 'Disable' : 'Enable' }}
                                     </button>
-                                </form>
-                            @endif
-                            {{-- Delete (super admin only) --}}
-                            @if(auth()->user()->isSuperAdmin() && $user->id !== auth()->id())
-                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm" title="Delete"
+                                @endif
+                                {{-- Delete (super admin only) --}}
+                                @if(auth()->user()->isSuperAdmin() && $user->id !== auth()->id())
+                                    <button type="submit" form="delete-user-{{ $user->id }}"
+                                            class="btn btn-danger btn-sm" title="Delete"
                                             onclick="return confirm('Permanently delete {{ $user->name }}?')">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                @endif
+                            </div>
+                            {{-- Hidden forms targeted by the buttons above via the HTML5 form="" attribute, so the buttons stay direct children of .btn-group and keep the connected border styling --}}
+                            @if($user->id !== auth()->id())
+                                <form id="toggle-status-{{ $user->id }}" action="{{ route('admin.users.toggle-status', $user) }}" method="POST" class="d-none">
+                                    @csrf @method('PATCH')
+                                </form>
+                            @endif
+                            @if(auth()->user()->isSuperAdmin() && $user->id !== auth()->id())
+                                <form id="delete-user-{{ $user->id }}" action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-none">
+                                    @csrf @method('DELETE')
                                 </form>
                             @endif
                         </td>
