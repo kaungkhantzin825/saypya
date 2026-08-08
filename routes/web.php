@@ -57,6 +57,28 @@ Route::get('/terms', function () {
 // Language switching
 Route::get('/language/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('language.switch');
 
+// GitHub deploy webhook
+Route::post('/github-webhook', function (Illuminate\Http\Request $request) {
+    $secret = config('services.github.webhook_secret');
+    $signature = $request->header('X-Hub-Signature-256');
+
+    if (!$secret || !$signature) {
+        abort(403, 'Missing webhook secret or signature.');
+    }
+
+    $expected = 'sha256=' . hash_hmac('sha256', $request->getContent(), $secret);
+
+    if (!hash_equals($expected, $signature)) {
+        abort(403, 'Invalid webhook signature.');
+    }
+
+    exec('/var/www/html/sanpyalearning/deploy.sh > /tmp/deploy.log 2>&1 &');
+
+    return response()->json([
+        'success' => true
+    ]);
+});
+
 // Course routes
 Route::prefix('courses')->name('courses.')->group(function () {
     Route::get('/', [CourseController::class, 'index'])->name('index');
@@ -249,6 +271,15 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
+
+    // Hero Slides (homepage carousel)
+    Route::get('/hero-slides', [AdminController::class, 'heroSlidesIndex'])->name('hero-slides.index');
+    Route::get('/hero-slides/create', [AdminController::class, 'heroSlidesCreate'])->name('hero-slides.create');
+    Route::post('/hero-slides', [AdminController::class, 'heroSlidesStore'])->name('hero-slides.store');
+    Route::get('/hero-slides/{heroSlide}/edit', [AdminController::class, 'heroSlidesEdit'])->name('hero-slides.edit');
+    Route::put('/hero-slides/{heroSlide}', [AdminController::class, 'heroSlidesUpdate'])->name('hero-slides.update');
+    Route::patch('/hero-slides/{heroSlide}/toggle', [AdminController::class, 'heroSlidesToggle'])->name('hero-slides.toggle');
+    Route::delete('/hero-slides/{heroSlide}', [AdminController::class, 'heroSlidesDestroy'])->name('hero-slides.destroy');
 
     // Admin Tools
     Route::get('/create-lecturer', [AdminController::class, 'createLecturer'])->name('create-lecturer');

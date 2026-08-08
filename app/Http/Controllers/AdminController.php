@@ -9,6 +9,7 @@ use App\Models\Section;
 use App\Models\Lesson;
 use App\Models\Enrollment;
 use App\Models\Review;
+use App\Models\HeroSlide;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -297,7 +298,7 @@ class AdminController extends Controller
     public function coursesStore(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'instructor_id' => 'required|exists:users,id',
             'description' => 'required|string',
@@ -351,7 +352,7 @@ class AdminController extends Controller
     public function coursesUpdate(Request $request, Course $course)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'instructor_id' => 'required|exists:users,id',
             'description' => 'required|string',
@@ -403,7 +404,7 @@ class AdminController extends Controller
     public function coursesStoreSection(Request $request, Course $course)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
         ]);
 
@@ -422,7 +423,7 @@ class AdminController extends Controller
     public function coursesUpdateSection(Request $request, Course $course, Section $section)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
         ]);
 
@@ -447,7 +448,7 @@ class AdminController extends Controller
     public function coursesStoreLesson(Request $request, Course $course, Section $section)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'type' => 'required|in:video,text,quiz,assignment',
             'video_url' => 'nullable|string',
@@ -476,7 +477,7 @@ class AdminController extends Controller
     public function coursesUpdateLesson(Request $request, Course $course, Section $section, Lesson $lesson)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'type' => 'required|in:video,text,quiz,assignment',
             'video_url' => 'nullable|string',
@@ -754,7 +755,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'course_id' => 'required|exists:courses,id',
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'duration_minutes' => 'nullable|integer|min:1',
             'passing_score' => 'required|integer|min:0|max:100',
@@ -789,7 +790,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'course_id' => 'required|exists:courses,id',
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'duration_minutes' => 'nullable|integer|min:1',
             'passing_score' => 'required|integer|min:0|max:100',
@@ -1000,20 +1001,122 @@ class AdminController extends Controller
     public function updateSettings(Request $request)
     {
         $validated = $request->validate([
-            'settings' => 'required|array',
+            'settings' => 'nullable|array',
             'settings.*' => 'nullable',
+            'images' => 'nullable|array',
+            'images.*' => 'nullable|image|max:4096',
         ]);
 
-        foreach ($request->settings as $key => $value) {
+        foreach ($request->input('settings', []) as $key => $value) {
             $setting = \App\Models\SiteSetting::where('key', $key)->first();
             if ($setting) {
                 $setting->update(['value' => $value]);
             }
         }
 
+        foreach ($request->file('images', []) as $key => $file) {
+            $setting = \App\Models\SiteSetting::where('key', $key)->where('type', 'image')->first();
+            if ($setting && $file) {
+                if ($setting->value && !str_starts_with($setting->value, 'http')) {
+                    Storage::disk('public')->delete($setting->value);
+                }
+                $setting->update(['value' => $file->store('settings', 'public')]);
+            }
+        }
+
         \App\Models\SiteSetting::clearCache();
 
         return redirect()->route('admin.settings')->with('success', 'Settings updated successfully!');
+    }
+
+    // ==================== HERO SLIDES (Homepage Carousel) ====================
+
+    public function heroSlidesIndex()
+    {
+        $slides = HeroSlide::ordered()->get();
+        return view('admin.hero-slides.index', compact('slides'));
+    }
+
+    public function heroSlidesCreate()
+    {
+        return view('admin.hero-slides.create');
+    }
+
+    public function heroSlidesStore(Request $request)
+    {
+        $request->validate([
+            'title' => 'nullable|string|max:255',
+            'subtitle' => 'nullable|string|max:500',
+            'image_url' => 'nullable|url',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
+            'button_text' => 'nullable|string|max:100',
+            'button_link' => 'nullable|string|max:255',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        if (!$request->hasFile('image') && !$request->filled('image_url')) {
+            return back()->withInput()->with('error', 'Please provide an image URL or upload an image file.');
+        }
+
+        $data = $request->only(['title', 'subtitle', 'button_text', 'button_link', 'sort_order']);
+        $data['is_active'] = $request->boolean('is_active');
+        $data['image'] = $request->hasFile('image')
+            ? $request->file('image')->store('hero-slides', 'public')
+            : $request->image_url;
+
+        HeroSlide::create($data);
+        return redirect()->route('admin.hero-slides.index')->with('success', 'Slide created successfully!');
+    }
+
+    public function heroSlidesEdit(HeroSlide $heroSlide)
+    {
+        return view('admin.hero-slides.edit', ['slide' => $heroSlide]);
+    }
+
+    public function heroSlidesUpdate(Request $request, HeroSlide $heroSlide)
+    {
+        $request->validate([
+            'title' => 'nullable|string|max:255',
+            'subtitle' => 'nullable|string|max:500',
+            'image_url' => 'nullable|url',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
+            'button_text' => 'nullable|string|max:100',
+            'button_link' => 'nullable|string|max:255',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        $data = $request->only(['title', 'subtitle', 'button_text', 'button_link', 'sort_order']);
+        $data['is_active'] = $request->boolean('is_active');
+
+        if ($request->hasFile('image')) {
+            if ($heroSlide->image && !str_starts_with($heroSlide->image, 'http')) {
+                Storage::disk('public')->delete($heroSlide->image);
+            }
+            $data['image'] = $request->file('image')->store('hero-slides', 'public');
+        } elseif ($request->filled('image_url')) {
+            if ($heroSlide->image && !str_starts_with($heroSlide->image, 'http')) {
+                Storage::disk('public')->delete($heroSlide->image);
+            }
+            $data['image'] = $request->image_url;
+        }
+
+        $heroSlide->update($data);
+        return redirect()->route('admin.hero-slides.index')->with('success', 'Slide updated successfully!');
+    }
+
+    public function heroSlidesDestroy(HeroSlide $heroSlide)
+    {
+        if ($heroSlide->image && !str_starts_with($heroSlide->image, 'http')) {
+            Storage::disk('public')->delete($heroSlide->image);
+        }
+        $heroSlide->delete();
+        return redirect()->route('admin.hero-slides.index')->with('success', 'Slide deleted successfully!');
+    }
+
+    public function heroSlidesToggle(HeroSlide $heroSlide)
+    {
+        $heroSlide->update(['is_active' => !$heroSlide->is_active]);
+        return redirect()->back()->with('success', 'Slide status updated!');
     }
 
     // ==================== BLOG POSTS ====================
@@ -1032,7 +1135,7 @@ class AdminController extends Controller
     public function storeBlogPost(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'excerpt' => 'nullable|string',
             'content' => 'required|string',
             'featured_image' => 'nullable|image|max:2048',
@@ -1063,7 +1166,7 @@ class AdminController extends Controller
     public function updateBlogPost(Request $request, \App\Models\BlogPost $post)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'excerpt' => 'nullable|string',
             'content' => 'required|string',
             'featured_image' => 'nullable|image|max:2048',

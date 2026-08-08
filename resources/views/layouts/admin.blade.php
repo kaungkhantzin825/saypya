@@ -53,6 +53,14 @@
         </ul>
     </li>
 
+    <!-- Hero Slides -->
+    <li class="nav-item">
+        <a href="{{ route('admin.hero-slides.index') }}" class="nav-link {{ request()->routeIs('admin.hero-slides*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-images"></i>
+            <p>Hero Slides</p>
+        </a>
+    </li>
+
     <!-- Categories -->
     <li class="nav-item {{ request()->routeIs('admin.categories*') ? 'menu-open' : '' }}">
         <a href="#" class="nav-link {{ request()->routeIs('admin.categories*') ? 'active' : '' }}">

@@ -6,12 +6,15 @@ use App\Models\Category;
 use App\Models\Course;
 use App\Models\User;
 use App\Models\Review;
+use App\Models\HeroSlide;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     public function index()
     {
+        $heroSlides = HeroSlide::active()->ordered()->get();
+
         $featuredCourses = Course::published()
             ->featured()
             ->with(['instructor', 'category', 'reviews'])
@@ -49,6 +52,7 @@ class HomeController extends Controller
         ];
 
         return view('home', compact(
+            'heroSlides',
             'featuredCourses',
             'popularCourses',
             'categories',

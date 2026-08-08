@@ -52,6 +52,29 @@ class SiteSetting extends Model
     }
 
     /**
+     * Get an image setting's full URL (handles both stored uploads and full external URLs)
+     */
+    public static function imageUrl($key, $default = null)
+    {
+        $value = self::get($key, $default);
+
+        if (!$value) {
+            return $default;
+        }
+
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+
+        $baseUrl = rtrim(config('app.url'), '/');
+        $path = ltrim($value, '/');
+
+        return str_starts_with($path, 'storage/')
+            ? $baseUrl . '/' . $path
+            : $baseUrl . '/storage/' . $path;
+    }
+
+    /**
      * Get all settings by group
      */
     public static function getByGroup($group)

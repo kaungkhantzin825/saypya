@@ -3,17 +3,99 @@
 @section('title', 'Home')
 
 @section('content')
-<!-- Hero Section with Background Image -->
-<section class="relative bg-cover bg-center bg-no-repeat min-h-[450px] flex items-center" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920&q=80');">
-    <div class="max-w-7xl mx-auto px-4 py-16 text-center text-white">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">Learn Anytime, Anywhere</h1>
-        <p class="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">Join thousands of learners and start building your skills today with our expert-led courses.</p>
-        
-        <a href="{{ route('courses.index') }}" class="btn-3d btn-3d-cyan text-lg">
-            Browse Courses
-        </a>
+<!-- Hero Carousel -->
+@if($heroSlides->count() > 0)
+<section class="relative min-h-[500px] overflow-hidden group" x-data="{
+        slides: {{ $heroSlides->count() }},
+        current: 0,
+        timer: null,
+        start() {
+            if (this.slides <= 1) return;
+            this.timer = setInterval(() => this.next(), 6000);
+        },
+        restart() {
+            clearInterval(this.timer);
+            this.start();
+        },
+        next() { this.current = (this.current + 1) % this.slides; },
+        prev() { this.current = (this.current - 1 + this.slides) % this.slides; }
+    }" x-init="start()">
+    @foreach($heroSlides as $index => $slide)
+    @php $hasText = $slide->title || $slide->subtitle || $slide->button_text; @endphp
+    <div
+        class="absolute inset-0 min-h-[500px]"
+        x-show="current === {{ $index }}"
+        x-transition:enter="transition-opacity ease-out duration-1000"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-in duration-700"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    >
+        {{-- Background layer: slow continuous zoom, kept separate from the opacity fade above --}}
+        <div
+            class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[6000ms] ease-out"
+            style="background-image: {{ $hasText ? 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.7) 100%), ' : '' }}url('{{ $slide->image_url }}');"
+            :class="current === {{ $index }} ? 'scale-110' : 'scale-100'"
+        ></div>
+
+        @if($hasText)
+        <div class="relative min-h-[500px] flex items-center">
+            <div
+                class="max-w-7xl mx-auto px-4 py-16 text-center text-white w-full"
+                x-show="current === {{ $index }}"
+                x-transition:enter="transition ease-out duration-700 delay-300"
+                x-transition:enter-start="opacity-0 translate-y-6"
+                x-transition:enter-end="opacity-100 translate-y-0"
+            >
+                @if($slide->title)
+                    <h1 class="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg tracking-tight">{{ $slide->title }}</h1>
+                @endif
+                @if($slide->subtitle)
+                    <p class="text-xl text-gray-100 mb-8 max-w-2xl mx-auto drop-shadow">{{ $slide->subtitle }}</p>
+                @endif
+                @if($slide->button_text)
+                    <a href="{{ $slide->button_link ?: route('courses.index') }}" class="btn-3d btn-3d-cyan text-lg">
+                        {{ $slide->button_text }}
+                    </a>
+                @endif
+            </div>
+        </div>
+        @endif
     </div>
+    @endforeach
+
+    @if($heroSlides->count() > 1)
+    <!-- Arrow Navigation -->
+    <button
+        @click="prev(); restart()"
+        class="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-12 md:h-12 rounded-full bg-white/15 hover:bg-white/30 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white transition-all duration-200 opacity-70 hover:opacity-100 hover:scale-110"
+        aria-label="Previous slide"
+    >
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button
+        @click="next(); restart()"
+        class="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-12 md:h-12 rounded-full bg-white/15 hover:bg-white/30 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white transition-all duration-200 opacity-70 hover:opacity-100 hover:scale-110"
+        aria-label="Next slide"
+    >
+        <i class="fas fa-chevron-right"></i>
+    </button>
+
+    <!-- Dots -->
+    <div class="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+        @foreach($heroSlides as $index => $slide)
+        <button
+            class="h-2.5 rounded-full transition-all duration-300"
+            :class="current === {{ $index }} ? 'bg-white w-8' : 'bg-white/40 w-2.5 hover:bg-white/70'"
+            @click="current = {{ $index }}; restart()"
+            aria-label="Go to slide {{ $index + 1 }}"
+        ></button>
+        @endforeach
+    </div>
+    @endif
 </section>
+@endif
 
 <!-- Categories -->
 <!-- <section class="py-12 bg-gray-50">

@@ -14,7 +14,7 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.settings.update') }}" method="POST" class="space-y-6">
+    <form action="{{ route('admin.settings.update') }}" method="POST" class="space-y-6" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -34,7 +34,26 @@
                                 @endif
                             </label>
 
-                            @if($setting->type === 'textarea')
+                            @if($setting->type === 'image')
+                                @if($setting->value)
+                                    <img src="{{ \App\Models\SiteSetting::imageUrl($setting->key) }}" alt="{{ $setting->label }}" class="w-full max-w-xs h-32 object-cover rounded-md border border-gray-300 mb-2">
+                                @endif
+                                <input
+                                    type="text"
+                                    name="settings[{{ $setting->key }}]"
+                                    id="{{ $setting->key }}"
+                                    value="{{ old('settings.' . $setting->key, $setting->value) }}"
+                                    placeholder="https://example.com/image.jpg"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                                >
+                                <p class="text-xs text-gray-500 mb-2">Paste an image URL above, or upload a file below (uploading overrides the URL).</p>
+                                <input
+                                    type="file"
+                                    name="images[{{ $setting->key }}]"
+                                    accept="image/*"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                            @elseif($setting->type === 'textarea')
                                 <textarea 
                                     name="settings[{{ $setting->key }}]" 
                                     id="{{ $setting->key }}"
@@ -60,6 +79,9 @@
                             @endif
 
                             @error('settings.' . $setting->key)
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                            @error('images.' . $setting->key)
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
