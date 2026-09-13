@@ -40,9 +40,7 @@ Route::get('/team', function () {
 Route::get('/partners', function () {
     return view('pages.partners');
 })->name('partners');
-Route::get('/contact', function () {
-    return view('pages.contact');
-})->name('contact');
+Route::get('/contact', [App\Http\Controllers\ContactController::class, 'show'])->name('contact');
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'submit'])->name('contact.submit')->middleware('throttle:3,10');
 Route::get('/help', function () {
     return view('pages.help');

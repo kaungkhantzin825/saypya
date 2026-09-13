@@ -15,6 +15,15 @@ class ContactController extends Controller
         'wire transfer', 'bank account', 'prince', 'inheritance',
     ];
 
+    public function show()
+    {
+        $num1 = rand(1, 9);
+        $num2 = rand(1, 9);
+        session(['contact_captcha' => $num1 + $num2]);
+
+        return view('pages.contact', compact('num1', 'num2'));
+    }
+
     public function submit(Request $request)
     {
         // Honeypot: bots fill this hidden field, humans don't see it
@@ -30,14 +39,18 @@ class ContactController extends Controller
             'message' => 'required|string|min:10|max:5000',
         ]);
 
-        // Simple math captcha check
-        $captchaAnswer  = (int) $request->input('captcha_answer');
-        $captchaExpected = (int) $request->input('captcha_expected');
-        if ($captchaAnswer !== $captchaExpected || $captchaExpected === 0) {
+        // Secure session-based math captcha check
+        $captchaAnswer   = (int) $request->input('captcha_answer');
+        $captchaExpected = session('contact_captcha');
+
+        if (!$captchaExpected || $captchaAnswer !== (int) $captchaExpected) {
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['captcha_answer' => 'Incorrect answer. Please solve the math question.']);
         }
+
+        // Invalidate captcha once solved
+        session()->forget('contact_captcha');
 
         // Spam keyword check in subject + message
         $combined = strtolower($request->subject . ' ' . $request->message);

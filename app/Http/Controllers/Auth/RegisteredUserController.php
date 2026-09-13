@@ -62,10 +62,16 @@ class RegisteredUserController extends Controller
         ]);
 
         // Generate and send verification link
-        Otp::generate($request->email, 'registration');
-
-        return redirect()->route('verify.email.sent')
-            ->with('success', 'A verification link has been sent to your email. Please check your inbox.');
+        try {
+            Otp::generate($request->email, 'registration');
+            return redirect()->route('verify.email.sent')
+                ->with('success', 'A verification link has been sent to your email. Please check your inbox.');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Registration email delivery failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->withInput($request->except('password', 'password_confirmation'))
+                ->with('error', 'Unable to send verification email at this moment. Please check back shortly or contact the administrator.');
+        }
     }
 
     /**
@@ -144,8 +150,12 @@ class RegisteredUserController extends Controller
         }
 
         // Generate and send new verification link
-        Otp::generate($registrationData['email'], 'registration');
-
-        return back()->with('success', 'New verification link has been sent to your email.');
+        try {
+            Otp::generate($registrationData['email'], 'registration');
+            return back()->with('success', 'New verification link has been sent to your email.');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Resend verification email delivery failed: ' . $e->getMessage());
+            return back()->with('error', 'Unable to send verification email at this moment. Please try again later.');
+        }
     }
 }
