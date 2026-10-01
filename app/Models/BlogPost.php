@@ -26,6 +26,8 @@ class BlogPost extends Model
         'published_at' => 'datetime',
     ];
 
+    protected $appends = ['image_url', 'featured_image_url', 'reading_time'];
+
     /**
      * Boot the model
      */
@@ -81,6 +83,24 @@ class BlogPost extends Model
             return asset('storage/' . $this->featured_image);
         }
         return 'https://via.placeholder.com/800x400?text=Blog+Post';
+    }
+
+    /**
+     * Alias of `featured_image_url` — the Vue blog pages read `image_url`.
+     */
+    public function getImageUrlAttribute()
+    {
+        return $this->featured_image_url;
+    }
+
+    /**
+     * Rough reading time in minutes, at ~200 words per minute.
+     */
+    public function getReadingTimeAttribute()
+    {
+        $words = str_word_count(strip_tags($this->content ?? ''));
+
+        return max(1, (int) ceil($words / 200));
     }
 
     /**

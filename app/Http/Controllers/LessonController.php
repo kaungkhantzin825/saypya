@@ -3,13 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lesson;
-use App\Models\LessonProgress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class LessonController extends Controller
 {
+    /**
+     * The Vue player talks to these endpoints through Inertia, which requires an
+     * Inertia response (a redirect + flash) rather than JSON. The legacy
+     * `window.trackVideoProgress()` helper in resources/js/app.js still expects
+     * JSON, so both shapes are served depending on the request.
+     */
+    private function respond(string $message, int $percentage)
+    {
+        if (request()->header('X-Inertia')) {
+            return back()->with('success', $message);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'progress_percentage' => $percentage,
+        ]);
+    }
+
     // ── Helper: recalculate progress and save to enrollments table ────────────
     private function recalculateProgress(int $userId, int $lessonId): int
     {
@@ -70,11 +88,7 @@ class LessonController extends Controller
 
         $pct = $this->recalculateProgress($userId, $lesson->id);
 
-        return response()->json([
-            'success'             => true,
-            'message'             => 'Lesson marked as completed!',
-            'progress_percentage' => $pct,
-        ]);
+        return $this->respond('Lesson marked as completed!', $pct);
     }
 
     // ── Mark lesson incomplete (uncomplete / undo) ────────────────────────────
@@ -93,11 +107,7 @@ class LessonController extends Controller
 
         $pct = $this->recalculateProgress($userId, $lesson->id);
 
-        return response()->json([
-            'success'             => true,
-            'message'             => 'Lesson marked as incomplete.',
-            'progress_percentage' => $pct,
-        ]);
+        return $this->respond('Lesson marked as incomplete.', $pct);
     }
 
     // ── Alias for markUncomplete ──────────────────────────────────────────────
@@ -126,15 +136,10 @@ class LessonController extends Controller
             ]
         );
 
-        if ($request->is_completed) {
-            $pct = $this->recalculateProgress($userId, $lesson->id);
-        } else {
-            $pct = 0;
-        }
+        $pct = $request->is_completed
+            ? $this->recalculateProgress($userId, $lesson->id)
+            : 0;
 
-        return response()->json([
-            'success'             => true,
-            'progress_percentage' => $pct,
-        ]);
+        return $this->respond('Progress saved.', $pct);
     }
 }

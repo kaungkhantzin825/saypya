@@ -20,6 +20,12 @@ class WishlistController extends Controller
             $message = 'သင်ခန်းစာကို စိတ်ကြိုက်စာရင်းသို့ ထည့်ပြီးပါပြီ။';
         }
 
+        // Inertia sends `X-Requested-With: XMLHttpRequest` too, so check the
+        // Inertia header first and hand those requests a redirect + flash.
+        if (request()->header('X-Inertia')) {
+            return back()->with('success', $message);
+        }
+
         if (request()->ajax()) {
             return response()->json(['message' => $message]);
         }

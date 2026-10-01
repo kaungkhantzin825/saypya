@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
@@ -24,13 +25,18 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View|\Illuminate\Http\RedirectResponse
+    public function create(): Response|\Illuminate\Http\RedirectResponse
     {
         if (!$this->registrationEnabled()) {
             return redirect()->route('login')
                 ->with('error', 'User registration is currently disabled.');
         }
-        return view('auth.register');
+
+        return Inertia::render('Auth/Register', [
+            'registrationEnabled' => true,
+            'title' => 'Create your account',
+            'subtitle' => 'Join Sanpya Online Academy and start learning today.',
+        ]);
     }
 
     /**
@@ -71,13 +77,18 @@ class RegisteredUserController extends Controller
     /**
      * Show email sent confirmation
      */
-    public function showEmailSent(): View
+    public function showEmailSent(): Response|\Illuminate\Http\RedirectResponse
     {
         if (!session('registration_data')) {
             return redirect()->route('register');
         }
 
-        return view('auth.verify-email-sent', ['type' => 'registration']);
+        return Inertia::render('Auth/VerifyEmailSent', [
+            'email' => session('registration_data.email'),
+            'type' => 'registration',
+            'title' => 'Check your inbox',
+            'subtitle' => 'We have sent you a verification link.',
+        ]);
     }
 
     /**

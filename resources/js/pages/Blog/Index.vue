@@ -1,0 +1,178 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
+import { ArrowRight, CalendarDays, Clock, Newspaper } from 'lucide-vue-next';
+import { Avatar, Badge, Button, EmptyState, Pagination } from '@/components/ui';
+import PublicLayout from '@/layouts/PublicLayout.vue';
+import { formatDate } from '@/lib/utils';
+import { routes } from '@/lib/routes';
+import type { BlogPost, Paginated } from '@/types';
+
+defineOptions({ layout: PublicLayout });
+
+const props = defineProps<{ posts: Paginated<BlogPost> }>();
+
+const featured = computed<BlogPost | null>(() => props.posts.data[0] ?? null);
+const rest = computed<BlogPost[]>(() => props.posts.data.slice(1));
+const isEmpty = computed(() => props.posts.data.length === 0);
+
+const authorName = (post: BlogPost) => post.author?.name ?? 'Sanpya Academy';
+const readingTime = (post: BlogPost) => `${post.reading_time ?? 1} min read`;
+</script>
+
+<template>
+    <!-- ============================================================ Hero -->
+    <section class="relative overflow-hidden border-b border-border">
+        <div class="hero-backdrop pointer-events-none absolute inset-0" />
+        <div class="page-container relative py-14 sm:py-20">
+            <Badge variant="brand" class="mb-5">
+                <Newspaper class="size-3" />
+                Blog
+            </Badge>
+            <h1 class="max-w-3xl text-balance text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
+                Insights, guides and stories from Sanpya
+            </h1>
+            <p class="mt-5 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
+                Study tips, career advice and product updates — written for learners in Myanmar and beyond.
+            </p>
+        </div>
+    </section>
+
+    <!-- ========================================================== Empty -->
+    <section v-if="isEmpty" class="page-container py-16 sm:py-20">
+        <EmptyState
+            :icon="Newspaper"
+            title="No articles yet"
+            description="We are busy writing our first posts. Check back soon — or start learning straight away."
+        >
+            <Button :href="routes.courses()" variant="brand">
+                Browse courses
+                <ArrowRight />
+            </Button>
+        </EmptyState>
+    </section>
+
+    <template v-else>
+        <!-- ===================================================== Featured -->
+        <section v-if="featured" class="page-container py-12 sm:py-16">
+            <Link
+                :href="routes.blogPost(featured.slug)"
+                class="group grid overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-all hover:border-brand-200 hover:shadow-lift dark:hover:border-brand-800 lg:grid-cols-2"
+            >
+                <div class="relative aspect-[16/10] overflow-hidden lg:aspect-auto">
+                    <img
+                        v-if="featured.image_url"
+                        :src="featured.image_url"
+                        :alt="featured.title"
+                        class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="eager"
+                    />
+                    <div
+                        v-else
+                        class="flex size-full items-center justify-center bg-gradient-to-br from-brand-600 to-brand-800"
+                    >
+                        <Newspaper class="size-12 text-white/70" />
+                    </div>
+                    <Badge variant="brand" class="absolute left-4 top-4 shadow-soft">Latest</Badge>
+                </div>
+
+                <div class="flex flex-col justify-center gap-4 p-6 sm:p-9">
+                    <div class="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                        <Badge v-if="featured.category" variant="muted">{{ featured.category }}</Badge>
+                        <span class="inline-flex items-center gap-1.5">
+                            <CalendarDays class="size-3.5" />
+                            {{ formatDate(featured.published_at) }}
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <Clock class="size-3.5" />
+                            {{ readingTime(featured) }}
+                        </span>
+                    </div>
+
+                    <h2
+                        class="text-balance text-2xl font-extrabold leading-tight tracking-tight transition-colors group-hover:text-brand-700 dark:group-hover:text-brand-400 sm:text-3xl"
+                    >
+                        {{ featured.title }}
+                    </h2>
+
+                    <p v-if="featured.excerpt" class="line-clamp-3 text-pretty text-sm leading-relaxed text-muted-foreground">
+                        {{ featured.excerpt }}
+                    </p>
+
+                    <div class="mt-1 flex items-center gap-3">
+                        <Avatar :src="featured.author?.avatar_url" :name="authorName(featured)" size="sm" />
+                        <span class="text-sm font-medium">{{ authorName(featured) }}</span>
+                    </div>
+
+                    <span class="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-brand-700 dark:text-brand-400">
+                        Read article
+                        <ArrowRight class="size-4 transition-transform group-hover:translate-x-1" />
+                    </span>
+                </div>
+            </Link>
+        </section>
+
+        <!-- ========================================================= Grid -->
+        <section v-if="rest.length" class="page-container pb-16 sm:pb-20">
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <Link
+                    v-for="post in rest"
+                    :key="post.id"
+                    :href="routes.blogPost(post.slug)"
+                    class="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-soft transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-lift dark:hover:border-brand-800"
+                >
+                    <div class="relative aspect-[16/9] overflow-hidden">
+                        <img
+                            v-if="post.image_url"
+                            :src="post.image_url"
+                            :alt="post.title"
+                            class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            loading="lazy"
+                        />
+                        <div
+                            v-else
+                            class="flex size-full items-center justify-center bg-gradient-to-br from-brand-600 to-brand-800"
+                        >
+                            <Newspaper class="size-10 text-white/70" />
+                        </div>
+                    </div>
+
+                    <div class="flex flex-1 flex-col gap-3 p-5">
+                        <div class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                            <Badge v-if="post.category" variant="muted">{{ post.category }}</Badge>
+                            <span>{{ formatDate(post.published_at) }}</span>
+                        </div>
+
+                        <h3
+                            class="line-clamp-2 text-lg font-bold leading-snug transition-colors group-hover:text-brand-700 dark:group-hover:text-brand-400"
+                        >
+                            {{ post.title }}
+                        </h3>
+
+                        <p v-if="post.excerpt" class="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                            {{ post.excerpt }}
+                        </p>
+
+                        <div class="mt-auto flex items-center gap-3 border-t border-border pt-4">
+                            <Avatar :src="post.author?.avatar_url" :name="authorName(post)" size="xs" />
+                            <span class="truncate text-xs font-medium">{{ authorName(post) }}</span>
+                            <span class="ml-auto inline-flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+                                <Clock class="size-3.5" />
+                                {{ post.reading_time ?? 1 }} min
+                            </span>
+                        </div>
+                    </div>
+                </Link>
+            </div>
+
+            <Pagination
+                v-if="props.posts.last_page > 1"
+                class="mt-12"
+                :links="props.posts.links"
+                :from="props.posts.from"
+                :to="props.posts.to"
+                :total="props.posts.total"
+            />
+        </section>
+    </template>
+</template>

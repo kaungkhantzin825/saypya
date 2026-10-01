@@ -27,17 +27,17 @@ MAIL_FROM_NAME="Sanpya Online Academy"
 4. User redirected to confirmation page → `/verify-email-sent` (GET)
 5. User clicks verification link in email → `/verify-email/{token}` (GET)
 6. System verifies token:
-   - Valid: User account created with "pending" status
+   - Valid: User account created with "active" status (email already verified)
    - Invalid: Error message, redirect to login
-7. User redirected to login page with message: "Email verified! Your account is pending admin approval."
-8. Admin reviews and approves/rejects user in admin panel
-9. Once approved, user can login normally
+7. User is logged in automatically and redirected to their dashboard
+8. No admin approval step — the account is usable immediately
 
-### Admin Approval Required:
-- New users are created with status = "pending"
-- Users cannot login until admin approves them
-- Admin sees notification badge with pending users count
-- Admin can approve or reject users from Users Management page
+### Self-Service Registration (current behaviour):
+- New users are created with status = "active" and `email_verified_at` set
+- Users are logged in directly after clicking the verification link
+- Admin approval is NOT required (the DB default was changed from `pending` to `active` in migration `2026_06_24_000001_...`)
+- Registration can be disabled platform-wide via the `registration_enabled` setting (admin toggle, route `admin.toggle-registration`)
+- The admin approve / reject / toggle-status buttons still exist and still work — an admin may still set a user back to "pending" or "inactive" manually
 
 ### Files Involved:
 - Controller: `app/Http/Controllers/Auth/RegisteredUserController.php`
@@ -105,9 +105,8 @@ MAIL_FROM_NAME="Sanpya Online Academy"
 2. Fill form with valid data
 3. Check email for verification link
 4. Click "Verify Email Address" button in email
-5. Should redirect to login with pending approval message
-6. Admin approves user
-7. User can now login
+5. Should be logged in automatically and land on the dashboard
+6. Log out and log back in with the same credentials to confirm the account is active
 
 ### Test Password Reset:
 1. Go to `/login`
@@ -121,8 +120,8 @@ MAIL_FROM_NAME="Sanpya Online Academy"
 ## User Status System
 
 ### Status Types:
-1. **pending** - New user waiting for admin approval (cannot login)
-2. **active** - Approved user (can login normally)
+1. **pending** - Account parked for review (cannot login). No longer the default for new signups, but admins can still set it manually.
+2. **active** - Normal, usable account (can login). This is the default for new registrations.
 3. **inactive** - Deactivated user (cannot login)
 
 ### Login Restrictions:

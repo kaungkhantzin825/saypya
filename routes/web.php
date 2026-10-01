@@ -13,7 +13,9 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\CommentController;
+use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,28 +32,99 @@ Route::get('/instructors/{user}', [HomeController::class, 'instructorProfile'])-
 Route::get('/blog', [App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
 
-// Static pages
+// Static pages (rendered by Inertia/Vue)
 Route::get('/about', function () {
-    return view('pages.about');
+    return Inertia::render('Pages/About', [
+        'siteName' => SiteSetting::get('site_name', config('app.name')),
+        'stats' => [
+            'students' => (int) SiteSetting::get('about_students_count', 0),
+            'courses' => (int) SiteSetting::get('about_courses_count', 0),
+            'instructors' => (int) SiteSetting::get('about_instructors_count', 0),
+            'partners' => (int) SiteSetting::get('about_partners_count', 0),
+        ],
+    ]);
 })->name('about');
+
 Route::get('/team', function () {
-    return view('pages.team');
+    // Content carried over from the previous pages/team.blade.php.
+    return Inertia::render('Pages/Team', [
+        'team' => [
+            [
+                'id' => 1,
+                'name' => 'Aung Kyaw',
+                'role' => 'Founder & CEO',
+                'bio' => "Passionate about education and technology, leading Sanpya Academy's vision.",
+                'avatar_url' => 'https://ui-avatars.com/api/?name=Aung+Kyaw&size=200&background=0d9488&color=fff',
+            ],
+            [
+                'id' => 2,
+                'name' => 'Su Mon',
+                'role' => 'Head of Education',
+                'bio' => 'Ensuring quality content and curriculum development for all courses.',
+                'avatar_url' => 'https://ui-avatars.com/api/?name=Su+Mon&size=200&background=06b6d4&color=fff',
+            ],
+            [
+                'id' => 3,
+                'name' => 'Min Thu',
+                'role' => 'Technical Lead',
+                'bio' => "Building and maintaining the platform's technical infrastructure.",
+                'avatar_url' => 'https://ui-avatars.com/api/?name=Min+Thu&size=200&background=8b5cf6&color=fff',
+            ],
+        ],
+    ]);
 })->name('team');
+
 Route::get('/partners', function () {
-    return view('pages.partners');
+    // Content carried over from the previous pages/partners.blade.php.
+    return Inertia::render('Pages/Partners', [
+        'partners' => [
+            [
+                'id' => 1,
+                'name' => 'Edu Gamekabar',
+                'description' => 'Educational Partner',
+                'logo_url' => asset('images/logo-6ZHKaEM-.png'),
+                'website' => null,
+            ],
+            [
+                'id' => 2,
+                'name' => 'MM Certify',
+                'description' => 'Certification Partner',
+                'logo_url' => asset('images/mmlogo.png'),
+                'website' => null,
+            ],
+            [
+                'id' => 3,
+                'name' => '3 Education',
+                'description' => 'Educational Partner',
+                'logo_url' => asset('images/images.png'),
+                'website' => null,
+            ],
+        ],
+    ]);
 })->name('partners');
+
 Route::get('/contact', function () {
-    return view('pages.contact');
+    // Simple server-side maths captcha; the expected sum is posted back and
+    // re-checked in ContactController::submit().
+    $num1 = random_int(1, 9);
+    $num2 = random_int(1, 9);
+
+    return Inertia::render('Pages/Contact', [
+        'captcha' => [
+            'expected' => $num1 + $num2,
+            'question' => "Spam check: what is {$num1} + {$num2}?",
+        ],
+    ]);
 })->name('contact');
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'submit'])->name('contact.submit')->middleware('throttle:3,10');
 Route::get('/help', function () {
-    return view('pages.help');
+    return Inertia::render('Pages/Help');
 })->name('help');
 Route::get('/privacy', function () {
-    return view('pages.privacy');
+    return Inertia::render('Pages/Privacy');
 })->name('privacy');
 Route::get('/terms', function () {
-    return view('pages.terms');
+    return Inertia::render('Pages/Terms');
 })->name('terms');
 
 // Language switching

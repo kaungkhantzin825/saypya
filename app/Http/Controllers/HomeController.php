@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Course;
-use App\Models\User;
-use App\Models\Review;
+use App\Models\Enrollment;
 use App\Models\HeroSlide;
+use App\Models\Review;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class HomeController extends Controller
 {
@@ -18,13 +20,14 @@ class HomeController extends Controller
         $featuredCourses = Course::published()
             ->featured()
             ->with(['instructor', 'category', 'reviews'])
+            ->withCount('lessons')
             ->take(8)
             ->get();
 
         $popularCourses = Course::published()
-            ->withCount('enrollments')
-            ->orderBy('enrollments_count', 'desc')
             ->with(['instructor', 'category', 'reviews'])
+            ->withCount(['enrollments', 'lessons'])
+            ->orderByDesc('enrollments_count')
             ->take(8)
             ->get();
 
@@ -40,25 +43,37 @@ class HomeController extends Controller
                 $query->published();
             }])
             ->having('courses_count', '>', 0)
-            ->orderBy('courses_count', 'desc')
+            ->orderByDesc('courses_count')
             ->take(6)
-            ->get();
+            ->get()
+            ->map(function (User $instructor) {
+                $publishedCourseIds = $instructor->courses()->published()->select('id');
+
+                return [
+                    'id' => $instructor->id,
+                    'name' => $instructor->name,
+                    'avatar_url' => $instructor->avatar_url,
+                    'bio' => $instructor->bio,
+                    'courses_count' => $instructor->courses_count,
+                    'average_rating' => round((float) Review::whereIn('course_id', $publishedCourseIds)->avg('rating'), 1),
+                ];
+            });
 
         $stats = [
             'total_courses' => Course::published()->count(),
             'total_students' => User::students()->active()->count(),
             'total_instructors' => User::lecturers()->active()->count(),
-            'total_enrollments' => \App\Models\Enrollment::completed()->count(),
+            'total_enrollments' => Enrollment::completed()->count(),
         ];
 
-        return view('home', compact(
-            'heroSlides',
-            'featuredCourses',
-            'popularCourses',
-            'categories',
-            'topInstructors',
-            'stats'
-        ));
+        return Inertia::render('Home', [
+            'heroSlides' => $heroSlides,
+            'featuredCourses' => $featuredCourses,
+            'popularCourses' => $popularCourses,
+            'categories' => $categories,
+            'topInstructors' => $topInstructors,
+            'stats' => $stats,
+        ]);
     }
 
     public function search(Request $request)
@@ -69,7 +84,8 @@ class HomeController extends Controller
         $sort = $request->get('sort', 'relevance');
 
         $courses = Course::published()
-            ->with(['instructor', 'category', 'reviews']);
+            ->with(['instructor', 'category', 'reviews'])
+            ->withCount('lessons');
 
         if ($query) {
             $courses->search($query);
@@ -106,35 +122,31 @@ class HomeController extends Controller
                        ->orderByDesc('created_at');
         }
 
-        $courses = $courses->paginate(12);
-        $categories = Category::active()->ordered()->get();
-
-        return view('courses.search', compact(
-            'courses',
-            'categories',
-            'query',
-            'category',
-            'level',
-            'sort'
-        ));
+        return Inertia::render('Search', [
+            'courses' => $courses->paginate(12)->withQueryString(),
+            'categories' => Category::active()->ordered()->get(),
+            'query' => $query,
+            'category' => $category,
+            'level' => $level,
+            'sort' => $sort,
+        ]);
     }
 
     public function instructorProfile(User $user)
     {
-        // Ensure the user is an instructor
+        // Only lecturers have a public profile.
         if (!$user->isLecturer()) {
             abort(404);
         }
 
         $instructor = $user;
-        
-        // Get instructor's courses
+
         $courses = $instructor->courses()
             ->published()
-            ->with(['category', 'reviews', 'enrollments'])
+            ->with(['category', 'reviews'])
+            ->withCount('lessons')
             ->paginate(12);
 
-        // Calculate instructor stats
         $stats = [
             'total_courses' => $instructor->courses()->published()->count(),
             'total_students' => $instructor->courses()
@@ -142,23 +154,33 @@ class HomeController extends Controller
                 ->where('enrollments.payment_status', 'completed')
                 ->distinct('enrollments.user_id')
                 ->count('enrollments.user_id'),
-            'average_rating' => $instructor->courses()
+            'average_rating' => round((float) ($instructor->courses()
                 ->published()
                 ->withAvg('reviews', 'rating')
                 ->get()
-                ->avg('reviews_avg_rating') ?? 0,
+                ->avg('reviews_avg_rating') ?? 0), 1),
             'total_reviews' => $instructor->courses()
                 ->join('reviews', 'courses.id', '=', 'reviews.course_id')
                 ->count(),
         ];
 
-        // Get recent reviews
         $recentReviews = Review::whereIn('course_id', $instructor->courses()->pluck('id'))
             ->with(['user', 'course'])
             ->latest()
             ->take(5)
             ->get();
 
-        return view('instructors.profile', compact('instructor', 'courses', 'stats', 'recentReviews'));
+        return Inertia::render('Instructors/Profile', [
+            'instructor' => [
+                'id' => $instructor->id,
+                'name' => $instructor->name,
+                'avatar_url' => $instructor->avatar_url,
+                'bio' => $instructor->bio,
+                'created_at' => $instructor->created_at,
+            ],
+            'courses' => $courses,
+            'stats' => $stats,
+            'recentReviews' => $recentReviews,
+        ]);
     }
 }

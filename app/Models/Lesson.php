@@ -27,6 +27,13 @@ class Lesson extends Model
         'is_preview' => 'boolean',
     ];
 
+    /** Computed attributes the Vue player reads directly. */
+    protected $appends = [
+        'video_url_full',
+        'youtube_embed_url',
+        'formatted_duration',
+    ];
+
     // Relationships
     public function section()
     {

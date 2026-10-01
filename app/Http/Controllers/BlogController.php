@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BlogPost;
-use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class BlogController extends Controller
 {
@@ -17,7 +17,9 @@ class BlogController extends Controller
             ->latest('published_at')
             ->paginate(12);
 
-        return view('blog.index', compact('posts'));
+        return Inertia::render('Blog/Index', [
+            'posts' => $posts,
+        ]);
     }
 
     /**
@@ -30,16 +32,17 @@ class BlogController extends Controller
             ->with('author')
             ->firstOrFail();
 
-        // Increment views
         $post->incrementViews();
 
-        // Get related posts
         $relatedPosts = BlogPost::published()
             ->where('id', '!=', $post->id)
             ->latest('published_at')
             ->take(3)
             ->get();
 
-        return view('blog.show', compact('post', 'relatedPosts'));
+        return Inertia::render('Blog/Show', [
+            'post' => $post,
+            'relatedPosts' => $relatedPosts,
+        ]);
     }
 }

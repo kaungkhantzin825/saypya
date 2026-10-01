@@ -23,6 +23,8 @@ class HeroSlide extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $appends = ['image_url'];
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

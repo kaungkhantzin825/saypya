@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Course;
+use App\Models\Enrollment;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
@@ -17,43 +19,41 @@ class CategoryController extends Controller
             ->ordered()
             ->get();
 
-        return view('categories.index', compact('categories'));
+        return Inertia::render('Categories/Index', [
+            'categories' => $categories,
+        ]);
     }
 
     public function show(Request $request, Category $category)
     {
         $query = Course::published()
             ->where('category_id', $category->id)
-            ->with(['instructor', 'reviews']);
+            ->with(['instructor', 'category', 'reviews'])
+            ->withCount('lessons');
 
-        // Apply filters
         if ($request->level) {
             $query->where('level', $request->level);
         }
 
-        // Apply sorting
         switch ($request->sort) {
             case 'popular':
-                $query->withCount('enrollments')->orderBy('enrollments_count', 'desc');
+                $query->withCount('enrollments')->orderByDesc('enrollments_count');
                 break;
             case 'price_low':
-                $query->orderBy('price', 'asc');
+                $query->orderBy('price');
                 break;
             case 'price_high':
-                $query->orderBy('price', 'desc');
+                $query->orderByDesc('price');
                 break;
             default:
                 $query->latest();
         }
 
-        $courses = $query->paginate(12);
-
-        // Get total students in this category
-        $totalStudents = \App\Models\Enrollment::whereIn('course_id', 
+        $totalStudents = Enrollment::whereIn(
+            'course_id',
             Course::where('category_id', $category->id)->pluck('id')
-        )->where('payment_status', 'completed')->distinct('user_id')->count();
+        )->where('payment_status', 'completed')->distinct('user_id')->count('user_id');
 
-        // Get other categories
         $otherCategories = Category::active()
             ->where('id', '!=', $category->id)
             ->withCount(['courses' => function ($query) {
@@ -63,13 +63,18 @@ class CategoryController extends Controller
             ->take(6)
             ->get();
 
-        return view('categories.show', compact('category', 'courses', 'totalStudents', 'otherCategories'));
+        return Inertia::render('Categories/Show', [
+            'category' => $category,
+            'courses' => $query->paginate(12)->withQueryString(),
+            'totalStudents' => $totalStudents,
+            'otherCategories' => $otherCategories,
+            'level' => $request->level,
+            'sort' => $request->sort,
+        ]);
     }
 
     public function apiIndex()
     {
-        $categories = Category::active()->ordered()->get();
-        
-        return response()->json($categories);
+        return response()->json(Category::active()->ordered()->get());
     }
 }

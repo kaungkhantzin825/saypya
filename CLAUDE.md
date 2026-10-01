@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-Laravel 10 LMS ("Sanpya Online Academy" / "Sanpya Academy") — students browse/enroll in courses, lecturers manage their own course content and exams, admins manage the whole platform. Blade + Bootstrap/AdminLTE 3 admin panel, Alpine.js + Tailwind on the public site, Vite for asset bundling. Deployed at sanpyalearning.com on a Linux server (`/var/www/html/sanpyalearning`), developed locally on Windows at `d:\education\LearningWeb`.
+Laravel 10 LMS ("Sanpya Online Academy" / "Sanpya Academy") — students browse/enroll in courses, lecturers manage their own course content and exams, admins manage the whole platform. Vue 3 + Inertia v2 + TypeScript + Tailwind on the public site and student area; Blade + Bootstrap/AdminLTE 3 for the admin and instructor panels; Vite for asset bundling. See `FRONTEND_GUIDE.md` for the Vue architecture and server-side contracts. Deployed at sanpyalearning.com on a Linux server (`/var/www/html/sanpyalearning`), developed locally on Windows at `d:\education\LearningWeb`.
 
 ## Commands
 
@@ -24,7 +24,9 @@ Laravel 10 LMS ("Sanpya Online Academy" / "Sanpya Academy") — students browse/
 
 ### Roles and access control
 
-Three roles live on `users.role`: `student`, `lecturer`, `admin`. Route groups are gated with the `role:<name>` middleware alias (`App\Http\Middleware\RoleMiddleware`, registered in `bootstrap/app.php`), which does a strict `$request->user()->role !== $role` check (no hierarchy — admin does not automatically pass a `role:lecturer` gate).
+Three roles live on `users.role`: `student`, `lecturer`, `admin`. Route groups are gated with the `role:<name>` middleware alias (`App\Http\Middleware\RoleMiddleware`, registered in `app/Http/Kernel.php` `$middlewareAliases` — this is Laravel 10, so `bootstrap/app.php` is stock and only binds the kernels), which does a strict `$request->user()->role !== $role` check and aborts 403 (no hierarchy — admin does not automatically pass a `role:lecturer` gate).
+
+`App\Policies\CoursePolicy` (owner-or-admin checks for update/delete) is **not** listed in `AuthServiceProvider::$policies` but works via Laravel's naming convention (`App\Models\Course` → `App\Policies\CoursePolicy`). It is invoked with `$this->authorize('update', $course)` in `InstructorController` — the admin panel does not use it.
 
 On top of `role`, `users.is_super_admin` (boolean) is a separate, narrower permission used only for the most destructive admin action (permanently deleting a user account — see `AdminController::usersDestroy`). Regular admins can manage/disable users but cannot delete them; only super admins can. There is no UI to grant this — it's set directly via `php artisan tinker` (`User::where('email', ...)->update(['is_super_admin' => true])`).
 
@@ -32,7 +34,7 @@ Separately, `users.status` (`pending` / `active` / `inactive`) gates login itsel
 
 ### Three separate UI surfaces
 
-- **Public site** (`resources/views/pages/*`, `layouts/app.blade.php`) — Tailwind/Alpine.js, course catalog, checkout, learning player.
+- **Public site and student area** (`resources/js/pages/*`, `resources/js/layouts/*`) — Vue 3 + Inertia v2 + TypeScript + Tailwind, including auth, course catalog, checkout, learning player, and exams. `resources/views/app.blade.php` is the required Inertia HTML root, not the old UI. The 42 unused Blade templates were backed up and removed on 2026-10-01; 48 referenced templates remain for this root and the admin/instructor panels.
 - **Admin panel** (`resources/views/admin/*`, `layouts/admin.blade.php` / `layouts/adminlte.blade.php`) — AdminLTE 3, routes under `admin.*` name prefix / `/admin` path prefix, all behind `role:admin`.
 - **Lecturer/instructor panel** (`resources/views/instructor/*`, `layouts/lecturer.blade.php`) — routes under `instructor.*` / `/instructor`, behind `role:lecturer`. Its exam-management routes largely mirror the admin exam routes but are scoped to the lecturer's own courses (`InstructorController` vs `AdminController`).
 
@@ -48,7 +50,11 @@ Separately, `users.status` (`pending` / `active` / `inactive`) gates login itsel
 
 ### Auth / registration flow
 
-Registration and password reset use emailed verification **links** (not OTP codes despite the `Otp` model name and `otps` table) — a 40-char single-use token valid 24h, generated/verified via `App\Models\Otp`. New self-registered users are created with `status = pending` and cannot log in until an admin approves them (flips status to `active`) from the admin Users page; rejecting sets `inactive`. See `OTP_FLOW_GUIDE.md` for the full route list and file map if working on this flow.
+Registration and password reset use emailed verification **links** (not OTP codes despite the `Otp` model name and `otps` table) — a 40-char single-use token valid 24h, generated/verified via `App\Models\Otp`. Two token types: `registration` and `password_reset`.
+
+**Self-registration is self-service and auto-activates.** `RegisteredUserController::verifyEmail()` creates the user with `status = 'active'` and `email_verified_at = now()`, then logs them straight in — no admin approval step. Registration can be switched off globally with the `registration_enabled` setting (`Setting::get('registration_enabled', '1') === '1'`, checked in both `create()` and `store()`; toggle route is `admin.toggle-registration`). The DB default for `users.status` was changed from `pending` to `active` by migration `2026_06_24_000001_...`, which also activated every existing pending user.
+
+`users.status` (`pending`/`active`/`inactive`) still gates **login** in `AuthenticatedSessionController::store()` — `pending` and `inactive` are logged out immediately with a Myanmar-language error. The admin approve/reject/toggle-status routes and the "pending users" badge still exist and work, so an admin *can* still park a user in `pending`; it is just no longer the default path for new signups. See `OTP_FLOW_GUIDE.md` for the full route list and file map of this flow.
 
 ### Localization
 

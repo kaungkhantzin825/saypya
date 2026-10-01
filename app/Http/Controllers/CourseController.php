@@ -4,10 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Category;
-use App\Models\Review;
-use App\Models\Discussion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class CourseController extends Controller
 {
@@ -19,10 +18,11 @@ class CourseController extends Controller
         $sort = $request->get('sort', 'newest');
 
         $courses = Course::published()
-            ->with(['instructor', 'category', 'reviews']);
+            ->with(['instructor', 'category', 'reviews'])
+            ->withCount('lessons');
 
         if ($search) {
-            $courses->where(function($query) use ($search) {
+            $courses->where(function ($query) use ($search) {
                 $query->where('title', 'like', "%{$search}%")
                       ->orWhere('description', 'like', "%{$search}%")
                       ->orWhere('short_description', 'like', "%{$search}%");
@@ -59,16 +59,13 @@ class CourseController extends Controller
                 $courses->orderByDesc('created_at');
         }
 
-        $courses = $courses->paginate(12);
-        $categories = Category::active()->ordered()->get();
-
-        return view('courses.index', compact(
-            'courses',
-            'categories',
-            'category',
-            'level',
-            'sort'
-        ));
+        return Inertia::render('Courses/Index', [
+            'courses' => $courses->paginate(12)->withQueryString(),
+            'categories' => Category::active()->ordered()->get(),
+            'category' => $category,
+            'level' => $level,
+            'sort' => $sort,
+        ]);
     }
 
     public function show(Course $course)
@@ -78,23 +75,26 @@ class CourseController extends Controller
             'category',
             'sections.lessons',
             'reviews.user',
-            'discussions.user'
+            'discussions.user',
         ]);
+
+        $course->loadCount('lessons');
 
         $isEnrolled = Auth::check() && $course->isEnrolledBy(Auth::id());
         $isInWishlist = Auth::check() && $course->isInWishlistOf(Auth::id());
-        $userReview = Auth::check() ? $course->reviews()->where('user_id', Auth::id())->first() : null;
-        
-        // Get enrollment status
-        $enrollment = null;
-        if (Auth::check()) {
-            $enrollment = Auth::user()->enrollments()->where('course_id', $course->id)->first();
-        }
+        $userReview = Auth::check()
+            ? $course->reviews()->where('user_id', Auth::id())->first()
+            : null;
+
+        $enrollment = Auth::check()
+            ? Auth::user()->enrollments()->where('course_id', $course->id)->first()
+            : null;
 
         $relatedCourses = Course::published()
             ->where('category_id', $course->category_id)
             ->where('id', '!=', $course->id)
             ->with(['instructor', 'reviews'])
+            ->withCount('lessons')
             ->take(4)
             ->get();
 
@@ -103,22 +103,22 @@ class CourseController extends Controller
             ->with('section')
             ->get();
 
-        return view('courses.show', compact(
-            'course',
-            'isEnrolled',
-            'isInWishlist',
-            'userReview',
-            'relatedCourses',
-            'previewLessons',
-            'enrollment'
-        ));
+        return Inertia::render('Courses/Show', [
+            'course' => $course,
+            'isEnrolled' => $isEnrolled,
+            'isInWishlist' => $isInWishlist,
+            'userReview' => $userReview,
+            'relatedCourses' => $relatedCourses,
+            'previewLessons' => $previewLessons,
+            'enrollment' => $enrollment,
+        ]);
     }
 
     public function enroll(Request $request, Course $course)
     {
         if (!Auth::check()) {
             return redirect()->route('login')
-                ->with('message', 'Please login to enroll in this course.');
+                ->with('error', 'Please login to enroll in this course.');
         }
 
         $user = Auth::user();
@@ -129,11 +129,12 @@ class CourseController extends Controller
                 return redirect()->route('courses.learn', $course)
                     ->with('info', 'You are already enrolled in this course.');
             }
+
             return redirect()->route('courses.show', $course)
                 ->with('info', 'Your enrollment request is already pending admin approval.');
         }
 
-        // For free courses, enroll directly
+        // Free courses enrol immediately.
         if ($course->isFree()) {
             $user->enrollments()->create([
                 'course_id' => $course->id,
@@ -146,16 +147,13 @@ class CourseController extends Controller
                 ->with('success', 'Successfully enrolled in the course!');
         }
 
-        // For paid courses from checkout page
+        // Paid courses submitted from checkout — pending manual confirmation.
         if ($request->has('payment_method')) {
-            $paymentMethod = $request->input('payment_method');
-            
-            // Create enrollment with pending status - needs admin approval
             $user->enrollments()->create([
                 'course_id' => $course->id,
                 'price_paid' => $course->current_price,
-                'payment_status' => 'pending', // Pending admin approval
-                'payment_method' => $paymentMethod,
+                'payment_status' => 'pending',
+                'payment_method' => $request->input('payment_method'),
                 'enrolled_at' => now(),
             ]);
 
@@ -163,7 +161,6 @@ class CourseController extends Controller
                 ->with('success', 'Enrollment request submitted! Please wait for admin approval to access the course.');
         }
 
-        // For paid courses without payment method, redirect to checkout
         return redirect()->route('courses.checkout', $course);
     }
 
@@ -183,7 +180,9 @@ class CourseController extends Controller
             return redirect()->route('courses.enroll', $course);
         }
 
-        return view('courses.checkout', compact('course'));
+        return Inertia::render('Courses/Checkout', [
+            'course' => $course->load(['instructor', 'category'])->loadCount('lessons'),
+        ]);
     }
 
     public function learn(Course $course)
@@ -202,7 +201,6 @@ class CourseController extends Controller
                 ->with('error', 'You need to enroll in this course first.');
         }
 
-        // Check if enrollment is approved
         if ($enrollment->payment_status !== 'completed') {
             return redirect()->route('courses.show', $course)
                 ->with('error', 'Your enrollment is pending admin approval. Please wait for approval to access the course.');
@@ -215,10 +213,12 @@ class CourseController extends Controller
                 }]);
             },
             'instructor',
-            'exams.questions'
+            'exams' => function ($query) {
+                $query->withCount('questions')->with('questions');
+            },
         ]);
 
-        // Get current lesson (first incomplete or first lesson)
+        // First incomplete lesson, falling back to the very first lesson.
         $currentLesson = null;
         foreach ($course->sections as $section) {
             foreach ($section->lessons as $lesson) {
@@ -233,10 +233,15 @@ class CourseController extends Controller
             $currentLesson = $course->sections->first()?->lessons->first();
         }
 
-        // Update last accessed
         $enrollment->update(['last_accessed_at' => now()]);
 
-        return view('courses.learn', compact('course', 'enrollment', 'currentLesson'));
+        return Inertia::render('Courses/Learn', [
+            'course' => $course,
+            'enrollment' => $enrollment,
+            'currentLesson' => $currentLesson,
+            'title' => $course->title,
+            'description' => 'Course player',
+        ]);
     }
 
     public function lesson(Course $course, $lessonId)
@@ -256,7 +261,6 @@ class CourseController extends Controller
         }
 
         $lesson = $course->lessons()->findOrFail($lessonId);
-        $lesson->load(['section', 'discussions.user.replies']);
 
         $course->load([
             'sections.lessons' => function ($query) use ($user) {
@@ -264,35 +268,57 @@ class CourseController extends Controller
                     $q->where('user_id', $user->id);
                 }]);
             },
-            'exams.questions'
+            'exams' => function ($query) {
+                $query->withCount('questions');
+            },
         ]);
 
-        $progress = $lesson->getProgressFor($user->id);
-
-        return view('courses.lesson', compact('course', 'lesson', 'enrollment', 'progress'));
+        return Inertia::render('Courses/Lesson', [
+            'course' => $course,
+            'lesson' => $lesson,
+            'enrollment' => $enrollment,
+            'progress' => $lesson->getProgressFor($user->id),
+            'title' => $lesson->title,
+            'description' => $course->title,
+        ]);
     }
 
+    /**
+     * Toggle a course in the current user's wishlist.
+     *
+     * Responds with a redirect + flash for Inertia visits, and keeps the original
+     * JSON shape for the legacy `fetch()` caller in resources/js/app.js.
+     */
     public function toggleWishlist(Course $course)
     {
         if (!Auth::check()) {
+            if (request()->header('X-Inertia')) {
+                return redirect()->route('login');
+            }
+
             return response()->json(['error' => 'Please login first'], 401);
         }
 
         $user = Auth::user();
-        $wishlist = $user->wishlist()->where('course_id', $course->id)->first();
 
-        if ($wishlist) {
-            $wishlist->delete();
+        if ($user->wishlist()->where('course_id', $course->id)->exists()) {
+            $user->wishlist()->detach($course->id);
             $inWishlist = false;
+            $message = 'Removed from wishlist';
         } else {
             $user->wishlist()->attach($course->id);
             $inWishlist = true;
+            $message = 'Added to wishlist';
+        }
+
+        if (request()->header('X-Inertia')) {
+            return back()->with('success', $message);
         }
 
         return response()->json([
             'success' => true,
             'in_wishlist' => $inWishlist,
-            'message' => $inWishlist ? 'Added to wishlist' : 'Removed from wishlist'
+            'message' => $message,
         ]);
     }
 }

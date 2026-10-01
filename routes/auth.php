@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
@@ -27,7 +28,10 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
     Route::get('forgot-password', function () {
-        return view('auth.forgot-password');
+        return Inertia::render('Auth/ForgotPassword', [
+            'title' => 'Forgot your password?',
+            'subtitle' => 'Enter your email address and we will send you a link to reset it.',
+        ]);
     })->name('password.request');
     
     Route::post('forgot-password', [PasswordResetController::class, 'sendOtp'])

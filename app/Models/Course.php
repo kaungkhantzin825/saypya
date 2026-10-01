@@ -38,6 +38,23 @@ class Course extends Model
         'is_featured' => 'boolean',
     ];
 
+    /**
+     * Computed attributes the Inertia/Vue frontend reads directly.
+     * Every accessor below prefers an already-loaded relation so that eager-loaded
+     * listings don't turn into an N+1.
+     */
+    protected $appends = [
+        'thumbnail_url',
+        'preview_video_url',
+        'current_price',
+        'discount_percentage',
+        'average_rating',
+        'total_reviews',
+        'total_students',
+        'total_lessons',
+        'total_duration',
+    ];
+
     // Relationships
     public function category()
     {
@@ -183,27 +200,50 @@ class Course extends Model
 
     public function getAverageRatingAttribute()
     {
-        return $this->reviews()->avg('rating') ?? 0;
+        $value = $this->relationLoaded('reviews')
+            ? $this->reviews->avg('rating')
+            : $this->reviews()->avg('rating');
+
+        return round((float) $value, 1);
     }
 
     public function getTotalReviewsAttribute()
     {
-        return $this->reviews()->count();
+        return $this->relationLoaded('reviews')
+            ? $this->reviews->count()
+            : $this->reviews()->count();
     }
 
     public function getTotalStudentsAttribute()
     {
+        if ($this->relationLoaded('enrollments')) {
+            return $this->enrollments->where('payment_status', 'completed')->count();
+        }
+
         return $this->enrollments()->where('payment_status', 'completed')->count();
     }
 
     public function getTotalLessonsAttribute()
     {
+        // Set by `withCount('lessons')` on listings.
+        if (array_key_exists('lessons_count', $this->attributes)) {
+            return (int) $this->attributes['lessons_count'];
+        }
+
+        if ($this->relationLoaded('lessons')) {
+            return $this->lessons->count();
+        }
+
         return $this->lessons()->count();
     }
 
     public function getTotalDurationAttribute()
     {
-        return $this->lessons()->sum('video_duration');
+        if ($this->relationLoaded('lessons')) {
+            return (int) $this->lessons->sum('video_duration');
+        }
+
+        return (int) $this->lessons()->sum('video_duration');
     }
 
     // Helper methods

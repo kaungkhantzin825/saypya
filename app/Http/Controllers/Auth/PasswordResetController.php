@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PasswordResetController extends Controller
 {
@@ -39,13 +41,17 @@ class PasswordResetController extends Controller
     /**
      * Show link sent confirmation
      */
-    public function showLinkSent(): View
+    public function showLinkSent(): Response|\Illuminate\Http\RedirectResponse
     {
         if (!session('password_reset_email')) {
             return redirect()->route('password.request');
         }
 
-        return view('auth.password-link-sent');
+        return Inertia::render('Auth/PasswordLinkSent', [
+            'email' => session('password_reset_email'),
+            'title' => 'Check your inbox',
+            'subtitle' => 'We have sent you a password reset link.',
+        ]);
     }
 
     /**
@@ -77,13 +83,18 @@ class PasswordResetController extends Controller
     /**
      * Show reset password form
      */
-    public function showResetForm(): View
+    public function showResetForm(): Response|\Illuminate\Http\RedirectResponse
     {
         if (!session('password_reset_token')) {
             return redirect()->route('password.request');
         }
 
-        return view('auth.reset-password');
+        return Inertia::render('Auth/ResetPassword', [
+            'email' => session('password_reset_email'),
+            'token' => session('password_reset_token'),
+            'title' => 'Set a new password',
+            'subtitle' => 'Choose a strong password you have not used before.',
+        ]);
     }
 
     /**
