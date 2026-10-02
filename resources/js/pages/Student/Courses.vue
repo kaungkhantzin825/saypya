@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { BookOpen, Calendar, PlayCircle, Sparkles } from 'lucide-vue-next';
-import { Button, EmptyState, Pagination, Progress } from '@/components/ui';
+import { AppImage, Button, EmptyState, Pagination, Progress } from '@/components/ui';
 import StudentLayout from '@/layouts/StudentLayout.vue';
 import { routes } from '@/lib/routes';
 import { clampPercent, formatDate } from '@/lib/utils';
@@ -43,11 +43,10 @@ function started(progress: number | null | undefined): boolean {
                         :href="routes.course(enrollment.course.slug)"
                         class="relative block aspect-video overflow-hidden bg-muted"
                     >
-                        <img
+                        <AppImage
                             :src="enrollment.course.thumbnail_url"
                             :alt="enrollment.course.title"
                             loading="lazy"
-                            decoding="async"
                             class="size-full object-cover transition-transform duration-500 hover:scale-105"
                         />
                     </Link>

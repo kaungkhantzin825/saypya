@@ -11,7 +11,7 @@ import {
     User,
     type LucideIcon,
 } from 'lucide-vue-next';
-import { Alert, Badge, Button, Card, Checkbox, Label, Select, Separator } from '@/components/ui';
+import { Alert, AppImage, Badge, Button, Card, Checkbox, Label, Select, Separator } from '@/components/ui';
 import PriceTag from '@/components/site/PriceTag.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { useFormatting } from '@/composables/useApp';
@@ -108,7 +108,7 @@ function submit() {
             <section class="grid content-start gap-6">
                 <Card :padded="false" class="overflow-hidden">
                     <div class="flex flex-col gap-5 p-5 sm:flex-row">
-                        <img
+                        <AppImage
                             :src="course.thumbnail_url"
                             :alt="course.title"
                             class="aspect-video w-full rounded-lg object-cover sm:w-56"

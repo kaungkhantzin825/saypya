@@ -41,6 +41,7 @@ withDefaults(
 <template>
     <section class="relative isolate overflow-hidden border-b border-border">
         <img
+            v-if="image"
             :src="image"
             alt=""
             aria-hidden="true"

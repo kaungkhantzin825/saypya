@@ -18,7 +18,20 @@ Laravel 10 LMS ("Sanpya Online Academy" / "Sanpya Academy") — students browse/
 
 ### Deploying to production
 
-`public/build/` is not committed to git. After pulling changes on the server, asset changes require: `git pull`, then `npm install && npm run build`. Vite inputs are declared in `vite.config.js` (`laravel-vite-plugin`) — any new top-level CSS/JS file referenced via `@vite([...])` in a Blade view must be added to that `input` array first or the build will throw "Unable to locate file in Vite manifest."
+**Run BOTH installers — `composer install` is not optional.** `/vendor` is gitignored, so a server that only pulls and rebuilds assets will keep a stale PHP dependency tree. A missing package surfaces as a fatal `Class "…" not found` (e.g. `Inertia\Middleware`) on every page. The full sequence on the server:
+
+```bash
+git pull
+composer install --no-dev --optimize-autoloader   # PHP deps + regenerates the classmap
+npm install && npm run build                      # assets
+php artisan optimize:clear                        # drop cached config/routes/views
+```
+
+If `deploy.sh` (which lives on the server at `/var/www/html/sanpyalearning/deploy.sh`, **not** in this repo) omits the `composer install` line, add it — otherwise every dependency change breaks production silently. Do not commit a `deploy.sh` here: it would collide with the server's untracked copy and make `git pull` refuse to run.
+
+`public/build/` is not committed to git, so asset changes require the `npm install && npm run build` step. Vite inputs are declared in `vite.config.js` (`laravel-vite-plugin`) — any new top-level CSS/JS file referenced via `@vite([...])` in a Blade view must be added to that `input` array first or the build will throw "Unable to locate file in Vite manifest."
+
+Also confirm `APP_DEBUG=false` in the server's `.env`: with debug on, Laravel's Ignition page is served publicly on error and exposes paths, the PHP version and environment values.
 
 ## Architecture
 

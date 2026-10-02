@@ -3,10 +3,9 @@
 Laravel 10 LMS, "Sanpya Online Academy" (sanpyalearning.com). Dev on Windows
 `d:\education\LearningWeb`; prod Linux `/var/www/html/sanpyalearning`.
 
-**Read `CLAUDE.md` (backend) and `FRONTEND_GUIDE.md` (Inertia/Vue) first.** Both are canonical.
-This file is deliberately a *short index* — it records state, environment traps and harness
-lessons. The frontend rules live in `FRONTEND_GUIDE.md` (§"The rules that bite", §"Deleting a
-migrated Blade view", §"Server-side contract"); do not duplicate them here.
+**Read `CLAUDE.md` (backend) and `FRONTEND_GUIDE.md` (Inertia/Vue) first — both canonical.** This
+file is a *short index*: state, environment traps, harness lessons. Frontend rule detail lives in
+`FRONTEND_GUIDE.md`; do not duplicate it here.
 
 | Surface | Stack | Status |
 |---|---|---|
@@ -17,14 +16,12 @@ migrated Blade view", §"Server-side contract"); do not duplicate them here.
 ## Migration state (started 2026-10-01)
 
 **Migrated to Vue:** `layouts/AdminLayout.vue` (role-aware, shared by both panels),
-`components/ui/{DataTable,ImageUpload}.vue`, `components/charts/{LineChart,DoughnutChart}.vue`,
+`components/ui/{DataTable,ImageUpload,AppImage}.vue`, `components/charts/{LineChart,DoughnutChart}.vue`,
 `pages/Admin/`: `Dashboard`, `Users/{Index,Form}`, `Courses/{Index,Form,Show,Content}`,
 `Categories/{Index,Form}`, `HeroSlides/{Index,Form}`, `Enrollments/Index`, `Reviews/{Index,Form}`,
 `ContactMessages/{Index,Show}`, `Blog/{Index,Form}`, `Exams/{Index,Form,Results,Grade}`,
-`Reports`, `Settings`.
-
-Charts are hand-rolled SVG rather than Chart.js — this project deliberately avoids runtime deps
-(`lib/routes.ts` is hand-written rather than Ziggy).
+`Reports`, `Settings`. Charts are hand-rolled SVG, not Chart.js — this project deliberately avoids
+runtime deps (`lib/routes.ts` is hand-written rather than Ziggy).
 
 **Remaining admin Blade (2):** `users/{show,create-lecturer}` — then the instructor panel, which can
 reuse `AdminLayout`. Admin Blade went 48 → 2. `app.blade.php` is the Inertia root — never delete.
@@ -40,14 +37,20 @@ manifest) + delete the orphaned Blade view.
   blacklisted here, so start it directly:
   `/c/xampp/mysql/bin/mysqld.exe --defaults-file="C:/xampp/mysql/bin/my.ini" --standalone`.
   `[2002] connection refused` on every page means MySQL is down, not that the app is broken.
-- **MySQL CLI needs `--default-character-set=utf8mb4`** or Myanmar text comes back as `?`. It also
-  emits CRLF, so `split('\n')` leaves a stray `\r` — enough to break `WHERE key = 'x\r'`.
-- **`public/hot` is legitimate iff a Vite dev server is really running** (Laravel reads it to choose
-  dev-server asset URLs; a stale one breaks every CSS/JS request). While a real dev server runs, the
-  browser loads *source* modules — a `npm run build` changes nothing the tests see.
+- **MySQL CLI needs `--default-character-set=utf8mb4`** or Myanmar text comes back as `?`. It emits
+  CRLF, so `split('\n')` leaves a stray `\r` — enough to break `WHERE key = 'x\r'`.
+- **`public/hot` is legitimate iff a Vite dev server is really running** (Laravel reads it to pick
+  dev-server asset URLs; a stale one breaks every CSS/JS request). While a real dev server runs the
+  browser loads *source* modules, so `npm run build` changes nothing the tests see; with `public/hot`
+  gone the browser serves **built** assets and a source edit needs a rebuild first.
 - **`public/build/` is gitignored.** After ANY change under `resources/css|js`, rebuild. A new Vite
   entry must go in `vite.config.js`'s `input` array first or Blade `@vite([...])` throws "Unable to
-  locate file in Vite manifest". Deploy: `git pull && npm install && npm run build`.
+  locate file in Vite manifest". Deploy: `git pull` **+ `composer install --no-dev
+  --optimize-autoloader`** + `npm install && npm run build` + `php artisan optimize:clear`. Omitting
+  the composer step broke production on 2026-10-02 (`Class "Inertia\Middleware" not found`, HTTP 500)
+  — `/vendor` is gitignored and the server's `deploy.sh` had no composer line. Never commit a
+  `deploy.sh`: the server's copy is untracked and a pull would then refuse to run. Confirm
+  `APP_DEBUG=false` (it was leaking the Ignition page publicly).
 - **Vite's clean step can hit `SAFE_DELETE_BULK_CONFIRM_REQUIRED`.** Do not work around deletion
   protection by splitting deletes — use `.workbuddy-ai/build-safe.mjs`
   (`build({build:{emptyOutDir:false}})`, retains old hashed assets, updates the manifest).
@@ -88,15 +91,18 @@ says "it's still Blade", first check which directory `php artisan serve` runs fr
 - **The homepage hero is full-bleed** (`Home.vue`): the active slide's photo is an absolutely
   positioned `object-cover` background with the copy on a themed gradient scrim, and the dotted
   `hero-backdrop` texture renders only when there is no photo. `hero_slides.image` is **NOT NULL**,
-  so it cannot be used to detect an empty slide — the carousel instead drops any slide whose title
-  *and* subtitle are unusable, where `usableText()` counts punctuation-only values (`-`, `—`, `N/A`)
-  as empty. A contentless slide must never reach the DOM. `.fade-*` transition classes live in
-  `inertia.css`.
+  so it cannot detect an empty slide — the carousel instead drops any slide whose title *and*
+  subtitle are unusable, where `usableText()` counts punctuation-only values (`-`, `—`, `N/A`) as
+  empty. A contentless slide must never reach the DOM. `.fade-*` classes live in `inertia.css`.
 - **Public page headers are one shared component** — `components/site/PageHero.vue` (photo background
-  + direction-aware scrim), used by `/courses`, `/categories`, `/blog`, `/about`, `/contact`. Props:
-  `eyebrow/title/subtitle/image/align/size/icon`, plus `subtitle` and default slots. Backgrounds are
-  WebP in `public/images/page-headers/`, referenced root-relative like `Logo.vue`. Heavy generated
-  PNGs must be converted before committing — PHP GD `imagewebp` at q82 took 8.8 MB of PNG to 356 KB.
+  + direction-aware scrim), used by `/courses`, `/categories`, `/blog`, `/about`, `/contact`. Props
+  `eyebrow/title/subtitle/image/align/size/icon` + `subtitle` and default slots. Backgrounds are WebP
+  in `public/images/page-headers/`, referenced root-relative like `Logo.vue`. Convert heavy generated
+  PNGs before committing — PHP GD `imagewebp` q82 took 8.8 MB of PNG to 356 KB.
+- **Missing images fall back to `/images/SanPya-Logo.png`** via `components/ui/AppImage.vue` (renders
+  the fallback when `src` is empty *and* on `@error`). Never emit a bare `<img :src>` for
+  user-supplied or nullable media — an empty src renders a broken-image icon. Public cards use
+  `AppImage`; admin tables keep `v-if` guards.
 - **`courses` has no `is_published`** — it is `status='published'` (`Course::scopePublished`).
   Exams *do* have `is_published`.
 - **Exam visibility needs ALL of:** exam `is_published`, ≥1 `ExamQuestion`, enrollment
@@ -114,43 +120,13 @@ says "it's still Blade", first check which directory `php artisan serve` runs fr
   `courses.discussions.*`; instructor exam `grade`/`results` are missing too.
 - `tests/` holds only stock examples — effectively no coverage; verify by hand.
 
-## Verification toolbox
+## Verification
 
-Chrome `/c/Program Files/Google/Chrome/Application/chrome.exe`; Playwright in the managed Node
-workspace `C:/Users/Ko Kaung/.workbuddy-ai/binaries/node/workspace/node_modules/playwright`; use
-managed Node + `chromium.launch({channel:'chrome',headless:true})`. Run suites as
-`SANPYA_SEED_PASSWORD=password <managed-node> .workbuddy-ai/<script>.cjs`.
+**→ Read `.workbuddy-ai/memory/TESTING.md` before writing or running any Playwright suite.** It holds
+the toolbox paths, the harness lessons that cost real time (stale `data-page`, Inertia login polling,
+SVG `innerText`, `ERR_NETWORK_IO_SUSPENDED`, geometry-not-presence) and the suite inventory.
 
-- **Log every check as it passes, not only in a final summary** — otherwise a stall is
-  indistinguishable from slow progress.
-- **A very long silent run is usually environmental.** `net::ERR_NETWORK_IO_SUSPENDED` / `Network
-  Error` means Windows suspended Chrome's network I/O (machine slept) and the POST never completed.
-  Re-run before hunting a product bug — and confirm the fixture cleanup actually ran.
-- **`#app`'s `data-page` is stale after any SPA visit** (`@inertiajs/core` only reads it at boot).
-  Assert component identity only after a full `page.goto`; for SPA nav assert on the rendered DOM.
-  Inertia pushes the URL *before* swapping the component, so gate on the DOM, not `location.pathname`.
-  The attribute is JSON-escaped, so a raw regex capture gives `Admin\/Reports` — unescape (`\\/` → `/`)
-  or `JSON.parse` the attribute before comparing, or every component check falsely fails.
-- **Inertia login forms can't use `page.waitForURL`** — poll `window.location.pathname` via
-  `waitForFunction`; expect a 409 for non-student logins (`Inertia::location`). The CSRF token goes
-  stale after login regenerates the session — log out with `context.clearCookies()`.
-- **A debounced search input swallows clicks** — wait for the query param + network idle first.
-- **Toasts live ~7s, so identical repeats can't be told apart** — wait for the dialog to hide
-  (`onSuccess`) instead, and only assert a toast whose text differs from the previous one.
-- **reka-ui `Checkbox` is a `<button role="checkbox" data-state>`**; the hidden `<input>` only renders
-  when `name` is set. Click when `data-state` differs rather than trusting `locator.check()`.
-- **SVG has no `innerText`** — use `allTextContents()`. Adjacent inline `<span>`s concatenate
-  (`Students 1673%`), so assert discrete cells or the chart's `aria-label` summary.
-- Git Bash mangles `/route` args into Windows paths — set `MSYS_NO_PATHCONV=1`; `curl` needs `--noproxy '*'`.
+Two rules that matter even when you are not testing:
 
-### Scripts (`.workbuddy-ai/`)
-
-`logo-check.cjs` (15) · `admin-pilot-check.cjs` (28, cleanup `DELETE FROM users WHERE email LIKE
-'pilot.user.%@example.com'`) · `courses-check.cjs` (18) · `categories-check.cjs` (17) ·
-`hero-slides-check.cjs` (14) · `course-cluster-check.cjs` (26) · `reviews-enrollments-check.cjs` (24) ·
-`contact-blog-check.cjs` (26) · `exams-check.cjs` (31) · `reports-settings-check.cjs` (23) ·
-`smoke-reports-settings.cjs` (login + assert both pages still serve after the Blade deletion).
-`shots.cjs` = screenshots; `diag-*.cjs` = redirect chains / broken images / overflow / SPA traces;
-`build-safe.mjs` = non-destructive rebuild.
-
-**Re-run the regression suites after any layout-wide nav change.**
+- **Bash kills commands at 120s** — long suites need `run_in_background: true`.
+- **Re-run the regression suites after any layout-wide nav change.**

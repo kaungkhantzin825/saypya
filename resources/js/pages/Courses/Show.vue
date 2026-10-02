@@ -14,7 +14,7 @@ import {
     Users,
     type LucideIcon,
 } from 'lucide-vue-next';
-import { Accordion, Alert, Avatar, Badge, Button, Card, EmptyState, Label, Separator, Tabs, Textarea } from '@/components/ui';
+import { Accordion, Alert, AppImage, Avatar, Badge, Button, Card, EmptyState, Label, Separator, Tabs, Textarea } from '@/components/ui';
 import CourseCard from '@/components/site/CourseCard.vue';
 import PriceTag from '@/components/site/PriceTag.vue';
 import SectionHeading from '@/components/site/SectionHeading.vue';
@@ -224,7 +224,7 @@ function submitReview() {
             <!-- ================================================= Sidebar -->
             <aside class="lg:order-2 lg:sticky lg:top-24 lg:self-start">
                 <Card :padded="false" class="overflow-hidden">
-                    <img
+                    <AppImage
                         :src="course.thumbnail_url"
                         :alt="course.title"
                         class="aspect-video w-full object-cover"

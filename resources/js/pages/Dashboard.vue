@@ -10,7 +10,7 @@ import {
     Compass,
     PlayCircle,
 } from 'lucide-vue-next';
-import { Button, Card, EmptyState, Progress } from '@/components/ui';
+import { AppImage, Button, Card, EmptyState, Progress } from '@/components/ui';
 import CourseCard from '@/components/site/CourseCard.vue';
 import StudentLayout from '@/layouts/StudentLayout.vue';
 import { routes } from '@/lib/routes';
@@ -175,11 +175,10 @@ const hasNothing = computed(
                         :key="enrollment.id"
                         class="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-soft sm:flex-row sm:items-center sm:gap-5 sm:p-5"
                     >
-                        <img
+                        <AppImage
                             :src="enrollment.course.thumbnail_url"
                             :alt="enrollment.course.title"
                             loading="lazy"
-                            decoding="async"
                             class="aspect-video w-full shrink-0 rounded-lg object-cover sm:w-40"
                         />
 

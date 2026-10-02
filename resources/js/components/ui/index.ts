@@ -6,6 +6,7 @@
  */
 export { default as Accordion } from './Accordion.vue';
 export { default as Alert } from './Alert.vue';
+export { default as AppImage } from './AppImage.vue';
 export { default as Avatar } from './Avatar.vue';
 export { default as Badge } from './Badge.vue';
 export { default as Button } from './Button.vue';

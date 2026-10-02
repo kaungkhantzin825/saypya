@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { BookOpen, Clock, Heart, PlayCircle, Users } from 'lucide-vue-next';
-import { Badge, Progress } from '@/components/ui';
+import { AppImage, Avatar, Badge, Progress } from '@/components/ui';
 import StarRating from './StarRating.vue';
 import PriceTag from './PriceTag.vue';
 import { useAuth } from '@/composables/useApp';
@@ -78,11 +78,10 @@ const durationLabel = computed(() => {
     >
         <!-- Thumbnail -->
         <a :href="routes.course(course.slug)" class="relative block aspect-video overflow-hidden bg-muted">
-            <img
+            <AppImage
                 :src="course.thumbnail_url"
                 :alt="course.title"
                 loading="lazy"
-                decoding="async"
                 class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
 
@@ -133,12 +132,11 @@ const durationLabel = computed(() => {
             </p>
 
             <div class="flex items-center gap-2 text-xs text-muted-foreground">
-                <img
+                <Avatar
                     v-if="course.instructor"
                     :src="course.instructor.avatar_url"
-                    :alt="course.instructor.name"
-                    loading="lazy"
-                    class="size-5 rounded-full object-cover ring-1 ring-border"
+                    :name="course.instructor.name"
+                    class="size-5 text-[9px]"
                 />
                 <span class="truncate">{{ course.instructor?.name ?? 'Sanpya Academy' }}</span>
             </div>

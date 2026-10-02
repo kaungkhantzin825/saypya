@@ -10,10 +10,9 @@ import {
     Facebook,
     Link2,
     Linkedin,
-    Newspaper,
     Twitter,
 } from 'lucide-vue-next';
-import { Avatar, Badge, Button } from '@/components/ui';
+import { AppImage, Avatar, Badge, Button } from '@/components/ui';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { formatDate } from '@/lib/utils';
 import { routes } from '@/lib/routes';
@@ -125,10 +124,11 @@ const proseClasses = [
         </header>
 
         <!-- ======================================================== Image -->
-        <div v-if="post.image_url" class="page-container pt-10">
-            <img
+        <div class="page-container pt-10">
+            <AppImage
                 :src="post.image_url"
                 :alt="post.title"
+                loading="eager"
                 class="aspect-[16/9] w-full rounded-2xl border border-border object-cover shadow-soft"
             />
         </div>
@@ -250,19 +250,12 @@ const proseClasses = [
                     class="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-soft transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-lift dark:hover:border-brand-800"
                 >
                     <div class="relative aspect-[16/9] overflow-hidden">
-                        <img
-                            v-if="item.image_url"
+                        <AppImage
                             :src="item.image_url"
                             :alt="item.title"
                             class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                             loading="lazy"
                         />
-                        <div
-                            v-else
-                            class="flex size-full items-center justify-center bg-gradient-to-br from-brand-600 to-brand-800"
-                        >
-                            <Newspaper class="size-9 text-white/70" />
-                        </div>
                     </div>
 
                     <div class="flex flex-1 flex-col gap-3 p-5">

@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { ArrowRight, CalendarDays, Clock, Newspaper } from 'lucide-vue-next';
-import { Avatar, Badge, Button, EmptyState, Pagination } from '@/components/ui';
+import { AppImage, Avatar, Badge, Button, EmptyState, Pagination } from '@/components/ui';
 import PageHero from '@/components/site/PageHero.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { formatDate } from '@/lib/utils';
@@ -52,19 +52,12 @@ const readingTime = (post: BlogPost) => `${post.reading_time ?? 1} min read`;
                 class="group grid overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-all hover:border-brand-200 hover:shadow-lift dark:hover:border-brand-800 lg:grid-cols-2"
             >
                 <div class="relative aspect-[16/10] overflow-hidden lg:aspect-auto">
-                    <img
-                        v-if="featured.image_url"
+                    <AppImage
                         :src="featured.image_url"
                         :alt="featured.title"
                         class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                         loading="eager"
                     />
-                    <div
-                        v-else
-                        class="flex size-full items-center justify-center bg-gradient-to-br from-brand-600 to-brand-800"
-                    >
-                        <Newspaper class="size-12 text-white/70" />
-                    </div>
                     <Badge variant="brand" class="absolute left-4 top-4 shadow-soft">Latest</Badge>
                 </div>
 
@@ -114,19 +107,12 @@ const readingTime = (post: BlogPost) => `${post.reading_time ?? 1} min read`;
                     class="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-soft transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-lift dark:hover:border-brand-800"
                 >
                     <div class="relative aspect-[16/9] overflow-hidden">
-                        <img
-                            v-if="post.image_url"
+                        <AppImage
                             :src="post.image_url"
                             :alt="post.title"
                             class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                             loading="lazy"
                         />
-                        <div
-                            v-else
-                            class="flex size-full items-center justify-center bg-gradient-to-br from-brand-600 to-brand-800"
-                        >
-                            <Newspaper class="size-10 text-white/70" />
-                        </div>
                     </div>
 
                     <div class="flex flex-1 flex-col gap-3 p-5">
