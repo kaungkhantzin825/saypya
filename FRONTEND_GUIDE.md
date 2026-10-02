@@ -114,6 +114,7 @@ Import from the barrel: `import { Button, Card, Badge } from '@/components/ui'`.
 | `StarRating` | `rating`, `count`, `size`, `showValue`, `interactive` (emits `update:rating`) |
 | `PriceTag` | `price`, `discountPrice`, `size` — handles discount % and locale formatting |
 | `SectionHeading` | `title`, `subtitle`, `eyebrow`, `align`; `action` slot |
+| `PageHero` | Page-header band with a photographic background: `eyebrow`, `title`, `subtitle`, `image`, `align` (`left`/`center`), `size` (`compact`/`large`), `icon`; `subtitle` slot for rich copy, default slot for extra content. Used by `/courses`, `/categories`, `/blog`, `/about`, `/contact` |
 | `Logo` | `compact`, `variant` (`default`/`light`) |
 | `LocaleSwitcher`, `UserMenu` | already wired into the layouts |
 

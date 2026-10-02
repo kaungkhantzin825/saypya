@@ -56,7 +56,7 @@ withDefaults(
             class="absolute inset-0 -z-10"
             :class="
                 align === 'center'
-                    ? 'bg-[radial-gradient(ellipse_90%_150%_at_50%_45%,hsl(var(--background)/0.93)_0%,hsl(var(--background)/0.8)_55%,hsl(var(--background)/0.5)_100%)]'
+                    ? 'bg-[radial-gradient(ellipse_78%_135%_at_50%_45%,hsl(var(--background)/0.9)_0%,hsl(var(--background)/0.72)_48%,hsl(var(--background)/0.28)_100%)]'
                     : 'bg-[linear-gradient(180deg,hsl(var(--background)/0.92)_0%,hsl(var(--background)/0.8)_62%,hsl(var(--background)/0.45)_100%)] lg:bg-[linear-gradient(90deg,hsl(var(--background)/0.98)_0%,hsl(var(--background)/0.9)_34%,hsl(var(--background)/0.68)_54%,hsl(var(--background)/0.26)_70%,transparent_84%)]'
             "
             aria-hidden="true"

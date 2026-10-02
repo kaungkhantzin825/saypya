@@ -92,6 +92,11 @@ says "it's still Blade", first check which directory `php artisan serve` runs fr
   *and* subtitle are unusable, where `usableText()` counts punctuation-only values (`-`, `—`, `N/A`)
   as empty. A contentless slide must never reach the DOM. `.fade-*` transition classes live in
   `inertia.css`.
+- **Public page headers are one shared component** — `components/site/PageHero.vue` (photo background
+  + direction-aware scrim), used by `/courses`, `/categories`, `/blog`, `/about`, `/contact`. Props:
+  `eyebrow/title/subtitle/image/align/size/icon`, plus `subtitle` and default slots. Backgrounds are
+  WebP in `public/images/page-headers/`, referenced root-relative like `Logo.vue`. Heavy generated
+  PNGs must be converted before committing — PHP GD `imagewebp` at q82 took 8.8 MB of PNG to 356 KB.
 - **`courses` has no `is_published`** — it is `status='published'` (`Course::scopePublished`).
   Exams *do* have `is_published`.
 - **Exam visibility needs ALL of:** exam `is_published`, ≥1 `ExamQuestion`, enrollment
