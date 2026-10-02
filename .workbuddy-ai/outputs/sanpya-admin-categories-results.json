@@ -1,0 +1,104 @@
+{
+  "base": "http://127.0.0.1:8899",
+  "generatedAt": "2026-10-02T04:42:29.047Z",
+  "results": [
+    {
+      "check": "GET /admin/categories renders Inertia component Admin/Categories/Index (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "All 8 seeded categories render",
+      "passed": true,
+      "detail": {
+        "rows": 8
+      }
+    },
+    {
+      "check": "External image URLs are passed through unmodified (no /storage/ prefix)",
+      "passed": true,
+      "detail": {
+        "sample": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=200&h=200&fit=crop"
+      }
+    },
+    {
+      "check": "Screenshot: categories list (desktop)",
+      "passed": true
+    },
+    {
+      "check": "Sidebar/Add-category link opens the form via an Inertia SPA visit",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/categories/create renders Admin/Categories/Form",
+      "passed": true
+    },
+    {
+      "check": "ImageUpload shows a local preview of the picked file",
+      "passed": true
+    },
+    {
+      "check": "Category created",
+      "passed": true,
+      "detail": {
+        "toast": "Success Category created successfully!"
+      }
+    },
+    {
+      "check": "Create persisted slug, upload, checkbox and number fields",
+      "passed": true,
+      "detail": {
+        "slug": "zz-pilot-category-1790916124108",
+        "image": "categories/6e4S9bTz98Il7o5UvXFKBqtuWoujBLopDnFMeUys.png"
+      }
+    },
+    {
+      "check": "Local uploads resolve to /storage/... (both URL shapes handled)",
+      "passed": true,
+      "detail": {
+        "src": "/storage/categories/6e4S9bTz98Il7o5UvXFKBqtuWoujBLopDnFMeUys.png"
+      }
+    },
+    {
+      "check": "Edit form prefills every field, including the existing image",
+      "passed": true
+    },
+    {
+      "check": "Category updated and slug regenerated from the new name",
+      "passed": true,
+      "detail": {
+        "toast": "Success Category updated successfully!",
+        "slug": "zz-pilot-category-1790916124108-renamed"
+      }
+    },
+    {
+      "check": "Delete is blocked in the UI for a category that still has courses",
+      "passed": true
+    },
+    {
+      "check": "Categories page: no horizontal overflow at 390px",
+      "passed": true
+    },
+    {
+      "check": "Delete removed the row and its uploaded image file",
+      "passed": true,
+      "detail": {
+        "toast": "Success Category deleted successfully!"
+      }
+    },
+    {
+      "check": "No uncaught page errors",
+      "passed": true
+    },
+    {
+      "check": "Console errors observed",
+      "passed": true,
+      "detail": [
+        "Failed to load resource: the server responded with a status of 409 (Conflict)"
+      ]
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ]
+}

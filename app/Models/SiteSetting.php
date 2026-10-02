@@ -66,12 +66,12 @@ class SiteSetting extends Model
             return $value;
         }
 
-        $baseUrl = rtrim(config('app.url'), '/');
+        // Request-relative so the asset loads on any host/port.
         $path = ltrim($value, '/');
 
         return str_starts_with($path, 'storage/')
-            ? $baseUrl . '/' . $path
-            : $baseUrl . '/storage/' . $path;
+            ? asset($path)
+            : asset('storage/' . $path);
     }
 
     /**

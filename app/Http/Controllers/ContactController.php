@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ContactMessage;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ContactController extends Controller
 {
@@ -14,6 +15,23 @@ class ContactController extends Controller
         'make money fast', 'work from home', 'earn extra', 'unclaimed funds',
         'wire transfer', 'bank account', 'prince', 'inheritance',
     ];
+
+    public function show()
+    {
+        $num1 = random_int(1, 9);
+        $num2 = random_int(1, 9);
+
+        // Stored in the session so submit() can verify it server-side; also sent
+        // to the Vue page as a prop so the form can show the question.
+        session(['contact_captcha' => $num1 + $num2]);
+
+        return Inertia::render('Pages/Contact', [
+            'captcha' => [
+                'expected' => $num1 + $num2,
+                'question' => "Spam check: what is {$num1} + {$num2}?",
+            ],
+        ]);
+    }
 
     public function submit(Request $request)
     {
@@ -30,14 +48,18 @@ class ContactController extends Controller
             'message' => 'required|string|min:10|max:5000',
         ]);
 
-        // Simple math captcha check
-        $captchaAnswer  = (int) $request->input('captcha_answer');
-        $captchaExpected = (int) $request->input('captcha_expected');
-        if ($captchaAnswer !== $captchaExpected || $captchaExpected === 0) {
+        // Secure session-based math captcha check
+        $captchaAnswer   = (int) $request->input('captcha_answer');
+        $captchaExpected = session('contact_captcha');
+
+        if (!$captchaExpected || $captchaAnswer !== (int) $captchaExpected) {
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['captcha_answer' => 'Incorrect answer. Please solve the math question.']);
         }
+
+        // Invalidate captcha once solved
+        session()->forget('contact_captcha');
 
         // Spam keyword check in subject + message
         $combined = strtolower($request->subject . ' ' . $request->message);

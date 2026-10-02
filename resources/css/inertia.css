@@ -134,6 +134,29 @@
     background-size: 100% 100%, 22px 22px;
   }
 
+  /*
+    Cross-fade for the hero carousel (both the background photo and the copy).
+    These were referenced by `<Transition name="fade">` but never defined, so the
+    carousel was hard-cutting between slides.
+  */
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 600ms ease;
+  }
+
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
+
+  /* Respect users who have asked the OS to reduce motion. */
+  @media (prefers-reduced-motion: reduce) {
+    .fade-enter-active,
+    .fade-leave-active {
+      transition: none;
+    }
+  }
+
   .link-underline {
     @apply relative after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all hover:after:w-full;
   }

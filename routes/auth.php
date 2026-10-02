@@ -10,7 +10,8 @@ Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
                 ->name('register');
 
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    Route::post('register', [RegisteredUserController::class, 'store'])
+                ->middleware('throttle:6,1');
 
     // Email Verification Routes (Link-based)
     Route::get('verify-email-sent', [RegisteredUserController::class, 'showEmailSent'])
@@ -20,12 +21,14 @@ Route::middleware('guest')->group(function () {
                 ->name('verify.email');
     
     Route::post('resend-verification', [RegisteredUserController::class, 'resendVerification'])
-                ->name('resend.verification');
+                ->name('resend.verification')
+                ->middleware('throttle:3,1');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
                 ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])
+                ->middleware('throttle:10,1');
 
     Route::get('forgot-password', function () {
         return Inertia::render('Auth/ForgotPassword', [
@@ -35,7 +38,8 @@ Route::middleware('guest')->group(function () {
     })->name('password.request');
     
     Route::post('forgot-password', [PasswordResetController::class, 'sendOtp'])
-                ->name('password.email');
+                ->name('password.email')
+                ->middleware('throttle:5,1');
     
     Route::get('password-link-sent', [PasswordResetController::class, 'showLinkSent'])
                 ->name('password.link.sent');
@@ -47,7 +51,8 @@ Route::middleware('guest')->group(function () {
                 ->name('password.reset');
     
     Route::post('reset-password', [PasswordResetController::class, 'reset'])
-                ->name('password.update');
+                ->name('password.update')
+                ->middleware('throttle:5,1');
 });
 
 Route::middleware('auth')->group(function () {

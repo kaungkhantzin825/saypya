@@ -1,0 +1,108 @@
+{
+  "base": "http://127.0.0.1:8899",
+  "results": [
+    {
+      "check": "Desktop homepage header",
+      "passed": true,
+      "rendered": {
+        "naturalWidth": 1019,
+        "naturalHeight": 478,
+        "width": 94,
+        "height": 44
+      }
+    },
+    {
+      "check": "Mobile homepage header",
+      "passed": true,
+      "rendered": {
+        "naturalWidth": 1019,
+        "naturalHeight": 478,
+        "width": 85,
+        "height": 40
+      }
+    },
+    {
+      "check": "Mobile login page",
+      "passed": true,
+      "rendered": {
+        "naturalWidth": 1019,
+        "naturalHeight": 478,
+        "width": 85,
+        "height": 40
+      }
+    },
+    {
+      "check": "Desktop login page",
+      "passed": true,
+      "rendered": {
+        "naturalWidth": 1019,
+        "naturalHeight": 478,
+        "width": 94,
+        "height": 44
+      }
+    },
+    {
+      "check": "Contact page captcha renders",
+      "passed": true,
+      "question": "Spam check: what is 8 + 4?*"
+    },
+    {
+      "check": "Student dashboard sidebar",
+      "passed": true,
+      "rendered": {
+        "naturalWidth": 1019,
+        "naturalHeight": 478,
+        "width": 94,
+        "height": 44
+      }
+    },
+    {
+      "check": "Mobile student dashboard header",
+      "passed": true,
+      "rendered": {
+        "naturalWidth": 1019,
+        "naturalHeight": 478,
+        "width": 68,
+        "height": 32
+      }
+    },
+    {
+      "check": "Student /my/courses",
+      "passed": true
+    },
+    {
+      "check": "Student /my/wishlist",
+      "passed": true
+    },
+    {
+      "check": "Student /my/exams",
+      "passed": true
+    },
+    {
+      "check": "Student /profile",
+      "passed": true
+    },
+    {
+      "check": "Student denied access to admin dashboard",
+      "passed": true
+    },
+    {
+      "check": "student logged in via form -> /dashboard",
+      "passed": true
+    },
+    {
+      "check": "lecturer logged in via form -> /instructor/dashboard",
+      "passed": true
+    },
+    {
+      "check": "admin logged in via form -> /admin/dashboard",
+      "passed": true
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ]
+}

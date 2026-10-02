@@ -34,6 +34,14 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    /**
+     * Accessors the Inertia/Vue layer reads. Eloquent does not serialise
+     * accessors by default, so without this every avatar renders empty.
+     */
+    protected $appends = [
+        'avatar_url',
+    ];
+
     protected $casts = [
         'email_verified_at' => 'datetime',
         'date_of_birth' => 'date',
@@ -155,24 +163,15 @@ class User extends Authenticatable
             return $this->avatar;
         }
         
-        // If avatar exists, return full CDN URL
+        // If avatar exists, build a request-relative URL so it works on any host/port.
         if ($this->avatar) {
-            // Get the base URL from config (APP_URL)
-            $baseUrl = rtrim(config('app.url'), '/');
-            
-            // Clean the path - remove leading slashes
             $path = ltrim($this->avatar, '/');
-            
-            // Build the full URL
-            // If path already contains 'storage/', use it as-is
-            // Otherwise, prepend 'storage/'
-            if (str_starts_with($path, 'storage/')) {
-                return $baseUrl . '/' . $path;
-            } else {
-                return $baseUrl . '/storage/' . $path;
-            }
+
+            return str_starts_with($path, 'storage/')
+                ? asset($path)
+                : asset('storage/' . $path);
         }
-        
+
         // Return UI Avatars placeholder
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name ?? 'User') . '&background=0d9488&color=fff&size=200';
     }

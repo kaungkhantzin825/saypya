@@ -32,10 +32,16 @@ class PasswordResetController extends Controller
         session(['password_reset_email' => $request->email]);
 
         // Generate and send verification link
-        Otp::generate($request->email, 'password_reset');
-
-        return redirect()->route('password.link.sent')
-            ->with('success', 'A password reset link has been sent to your email.');
+        try {
+            Otp::generate($request->email, 'password_reset');
+            return redirect()->route('password.link.sent')
+                ->with('success', 'A password reset link has been sent to your email.');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Password reset email delivery failed: ' . $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Unable to send password reset email at this moment. Please check back shortly or contact support.');
+        }
     }
 
     /**

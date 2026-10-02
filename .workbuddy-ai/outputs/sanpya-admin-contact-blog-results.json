@@ -1,0 +1,130 @@
+{
+  "base": "http://127.0.0.1:8899",
+  "generatedAt": "2026-10-02T06:17:09.778Z",
+  "results": [
+    {
+      "check": "Fixtures: three throwaway \"new\" contact messages created",
+      "passed": true,
+      "detail": {
+        "messageIds": []
+      }
+    },
+    {
+      "check": "GET /admin/contact-messages renders Inertia component Admin/ContactMessages/Index (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Contact message totals render (new / read / replied)",
+      "passed": true
+    },
+    {
+      "check": "Sidebar \"Messages\" link now performs an Inertia SPA visit",
+      "passed": true
+    },
+    {
+      "check": "Contact message status filter round-trips to the server",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: contact messages inbox",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/contact-messages/{id} renders Admin/ContactMessages/Show (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Opening a message marks it as read (verified in SQL)",
+      "passed": true
+    },
+    {
+      "check": "Reply persists status/reply/replied_at",
+      "passed": true,
+      "detail": {
+        "toast": "Success Reply sent successfully!"
+      }
+    },
+    {
+      "check": "Screenshot: contact message detail",
+      "passed": true
+    },
+    {
+      "check": "Delete message works (row really removed — no SoftDeletes)",
+      "passed": true
+    },
+    {
+      "check": "Bulk delete removes only the selected rows",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/blog renders Inertia component Admin/Blog/Index (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Sidebar \"Blog\" link now performs an Inertia SPA visit",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/blog/create renders Admin/Blog/Form (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Create post works (slug generated, image uploaded to disk)",
+      "passed": true,
+      "detail": {
+        "postId": "6",
+        "uploadedImageRel": "blog/aVaIpvm4Lq8n0DaWcEc9p2A71jFBFYQGojrR2Fdo.png"
+      }
+    },
+    {
+      "check": "A second post with the same title gets a unique slug (no unique-index crash)",
+      "passed": true,
+      "detail": {
+        "secondSlug": "zz-blog-post-1790921762081-2"
+      }
+    },
+    {
+      "check": "Edit form prefills title, content and status from the DB",
+      "passed": true
+    },
+    {
+      "check": "Edit post works (PUT with _method spoofing, image kept)",
+      "passed": true
+    },
+    {
+      "check": "Editing without picking a new image keeps the stored featured image",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: blog index",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: blog form",
+      "passed": true
+    },
+    {
+      "check": "Delete post removes both the DB row and the featured image file",
+      "passed": true
+    },
+    {
+      "check": "Contact / Blog pages: no horizontal overflow at 390px",
+      "passed": true
+    },
+    {
+      "check": "No uncaught page errors",
+      "passed": true
+    },
+    {
+      "check": "Console errors observed",
+      "passed": true,
+      "detail": [
+        "Failed to load resource: the server responded with a status of 409 (Conflict)"
+      ]
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ]
+}

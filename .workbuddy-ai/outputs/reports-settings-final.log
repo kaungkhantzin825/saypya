@@ -1,0 +1,51 @@
+  ok  [1] Expected report values read from SQL {"users":"22","courses":"9","enrollments":"4","revenue":"449.97","students":"16","lecturers":"5","admins":"1",
+  ok  [2] GET /admin/reports renders Inertia component Admin/Reports (no longer Blade)
+  ok  [3] Sidebar "Reports" link now performs an Inertia SPA visit
+  ok  [4] Reports overview cards match direct SQL counts {"revenue":"449.97 Ks"}
+  ok  [5] Revenue line chart renders 12 points with a valid path and thinned month labels {"first":"Nov 2025","last":"Sep 2026"}
+  ok  [6] User distribution doughnut matches SQL role counts {"legend":"Students 16 73% | Lecturers 5 23% | Admins 1 5%","summary":"Students: 16 (73%), Lecturers: 5 (23%),
+  ok  [7] Top courses table matches SQL (title, instructor, students, revenue) {"firstCourseRow":"1 Complete Web Development Bootcamp Dr. Sarah Johnson 4 159.98 Ks"}
+  ok  [8] Category rollup table matches SQL (courses, students, revenue) {"catRowText":"ဝဘ်ဖွံ့ဖြိုးတိုးတက်မှု 2 2 159.98 Ks 4.2 / 5"}
+  ok  [9] Screenshot: reports page
+  ok  [10] GET /admin/settings renders Inertia component Admin/Settings (no longer Blade)
+  ok  [11] Sidebar "Settings" link now performs an Inertia SPA visit
+  ok  [12] Every site setting renders a control prefilled from the database {"count":6}
+  ok  [13] Screenshot: settings page
+  ok  [14] Saving a text setting persists to the database
+  ok  [15] Reloaded settings page reflects the saved value
+  ok  [16] Original site name restored
+  ok  [17] Temporary image-type setting created {"IMAGE_KEY":"zz_test_banner_1790929451731"}
+  ok  [18] Uploading a non-image is rejected and leaves the stored value untouched
+  ok  [19] Image upload stores the file on the public disk and records its path {"uploadedRel":"settings/YvKZHwdZpCIoA6VIJ5nKmSkvoSZrqQNVjRGDa06M.png"}
+  ok  [20] Stored image resolves to a loadable URL via SiteSetting::imageUrl() {"previewSrc":"/storage/settings/YvKZHwdZpCIoA6VIJ5nKmSkvoSZrqQNVjRGDa06M.png"}
+  ok  [21] Reports and Settings: no horizontal overflow at 390px
+  ok  [22] No uncaught page errors
+
+REPORTS + SETTINGS: 23/23 checks passed
+  PASS  Expected report values read from SQL
+  PASS  GET /admin/reports renders Inertia component Admin/Reports (no longer Blade)
+  PASS  Sidebar "Reports" link now performs an Inertia SPA visit
+  PASS  Reports overview cards match direct SQL counts
+  PASS  Revenue line chart renders 12 points with a valid path and thinned month labels
+  PASS  User distribution doughnut matches SQL role counts
+  PASS  Top courses table matches SQL (title, instructor, students, revenue)
+  PASS  Category rollup table matches SQL (courses, students, revenue)
+  PASS  Screenshot: reports page
+  PASS  GET /admin/settings renders Inertia component Admin/Settings (no longer Blade)
+  PASS  Sidebar "Settings" link now performs an Inertia SPA visit
+  PASS  Every site setting renders a control prefilled from the database
+  PASS  Screenshot: settings page
+  PASS  Saving a text setting persists to the database
+  PASS  Reloaded settings page reflects the saved value
+  PASS  Original site name restored
+  PASS  Temporary image-type setting created
+  PASS  Uploading a non-image is rejected and leaves the stored value untouched
+  PASS  Image upload stores the file on the public disk and records its path
+  PASS  Stored image resolves to a loadable URL via SiteSetting::imageUrl()
+  PASS  Reports and Settings: no horizontal overflow at 390px
+  PASS  No uncaught page errors
+  PASS  Console errors observed
+
+Console errors (1):
+  - Failed to load resource: the server responded with a status of 409 (Conflict)
+[cleanup] temp image setting + uploaded file removed, site_name restored

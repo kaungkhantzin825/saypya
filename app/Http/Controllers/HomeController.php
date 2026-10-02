@@ -24,13 +24,6 @@ class HomeController extends Controller
             ->take(8)
             ->get();
 
-        $popularCourses = Course::published()
-            ->with(['instructor', 'category', 'reviews'])
-            ->withCount(['enrollments', 'lessons'])
-            ->orderByDesc('enrollments_count')
-            ->take(8)
-            ->get();
-
         $categories = Category::active()
             ->withCount('courses')
             ->ordered()
@@ -69,7 +62,6 @@ class HomeController extends Controller
         return Inertia::render('Home', [
             'heroSlides' => $heroSlides,
             'featuredCourses' => $featuredCourses,
-            'popularCourses' => $popularCourses,
             'categories' => $categories,
             'topInstructors' => $topInstructors,
             'stats' => $stats,

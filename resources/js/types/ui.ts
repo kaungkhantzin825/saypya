@@ -60,3 +60,17 @@ export interface Toast {
     variant: ToastVariant;
     duration: number;
 }
+
+/** Column definition for `DataTable.vue`. */
+export interface DataTableColumn {
+    /** Key on the row, or a free-form id when you supply a `cell-<key>` slot. */
+    key: string;
+    label: string;
+    class?: string;
+    headerClass?: string;
+    align?: 'left' | 'center' | 'right';
+    /** Shows a sort affordance. Pair with the `sort` v-model. */
+    sortable?: boolean;
+    /** Hidden on small screens to keep the table readable. */
+    hideOnMobile?: boolean;
+}

@@ -102,8 +102,11 @@
                 @endif
 
                 @php
-                    $num1 = rand(1, 9);
-                    $num2 = rand(1, 9);
+                    if (!isset($num1) || !isset($num2)) {
+                        $num1 = rand(1, 9);
+                        $num2 = rand(1, 9);
+                        session(['contact_captcha' => $num1 + $num2]);
+                    }
                 @endphp
 
                 <form action="{{ route('contact.submit') }}" method="POST" class="space-y-6">
@@ -140,7 +143,7 @@
                         @error('message')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
 
-                    {{-- Math Captcha --}}
+                    {{-- Secure Math Captcha --}}
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             <i class="fas fa-shield-alt text-teal-600 mr-1"></i>
@@ -152,8 +155,6 @@
                                class="w-32 border border-gray-300 rounded-lg px-4 py-2 focus:ring-teal-500 focus:border-teal-500 @error('captcha_answer') border-red-500 @enderror"
                                placeholder="Answer"
                                required>
-                        {{-- Store the expected answer (obfuscated by being server-side) --}}
-                        <input type="hidden" name="captcha_expected" value="{{ $num1 + $num2 }}">
                         @error('captcha_answer')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
 

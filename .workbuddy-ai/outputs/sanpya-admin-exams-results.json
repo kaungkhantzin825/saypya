@@ -1,0 +1,171 @@
+{
+  "base": "http://127.0.0.1:8899",
+  "generatedAt": "2026-10-02T07:10:44.415Z",
+  "results": [
+    {
+      "check": "Fixture prerequisites resolved",
+      "passed": true,
+      "detail": {
+        "courseTitle": "Complete Web Development Bootcamp",
+        "studentId": "7"
+      }
+    },
+    {
+      "check": "GET /admin/exams renders Inertia component Admin/Exams/Index (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Sidebar \"Exams\" link now performs an Inertia SPA visit",
+      "passed": true
+    },
+    {
+      "check": "Exam title column sorts server-side (asc/desc round-trip)",
+      "passed": true,
+      "detail": {
+        "ascFirst": "asd\n\nasd",
+        "descFirst": "tttttttt\n\nttttttttttt"
+      }
+    },
+    {
+      "check": "Exam status filter round-trips to the server",
+      "passed": true
+    },
+    {
+      "check": "Clear resets the exam filters",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: exams index",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/exams/create renders Admin/Exams/Form (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Create exam works (settings persisted, created_by attributed to the admin)",
+      "passed": true,
+      "detail": {
+        "examId": "8",
+        "examRow": "1|45|70|3|0|1|1|admin"
+      }
+    },
+    {
+      "check": "Edit form prefills every field and warns that the exam has no questions",
+      "passed": true
+    },
+    {
+      "check": "Add multiple-choice question works (options stored, correct_answer is the option index as a string)",
+      "passed": true,
+      "detail": {
+        "mcq": "16|multiple_choice|4|1|1|3|The second option"
+      }
+    },
+    {
+      "check": "Add true/false question works (correct_answer is the lowercase string \"true\", options stay NULL)",
+      "passed": true,
+      "detail": {
+        "tf": "17|true_false|2|true|2|null"
+      }
+    },
+    {
+      "check": "Add essay question works with an empty option list (exclude_unless validation rule)",
+      "passed": true
+    },
+    {
+      "check": "Question list and total-points summary render after adding all three types",
+      "passed": true
+    },
+    {
+      "check": "Edit question works (points and text updated, correct answer preserved)",
+      "passed": true,
+      "detail": {
+        "mcqEdited": "6|1|ZZ MCQ 1790924940420: which option is the correct one (edited)?"
+      }
+    },
+    {
+      "check": "Delete question works (row really removed)",
+      "passed": true
+    },
+    {
+      "check": "Update exam settings works (title, passing score and publish flag persisted)",
+      "passed": true,
+      "detail": {
+        "examAfterUpdate": "ZZ Exam 1790924940420 (edited)|80|1"
+      }
+    },
+    {
+      "check": "Attempt fixture seeded (one auto-graded MCQ answer, one essay awaiting a human)",
+      "passed": true,
+      "detail": {
+        "attemptId": "31"
+      }
+    },
+    {
+      "check": "GET /admin/exams/{id}/results renders Admin/Exams/Results (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Results page renders attempt stats and the seeded student",
+      "passed": true
+    },
+    {
+      "check": "Results table links through to the grade page",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/exam-attempts/{id}/grade renders Admin/Exams/Grade (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Grade page shows every answer but only essays get manual fields",
+      "passed": true
+    },
+    {
+      "check": "Saving grades re-sums every answer, marks the attempt graded and sets pass/fail",
+      "passed": true,
+      "detail": {
+        "graded": "9|1|graded"
+      }
+    },
+    {
+      "check": "Results stats refresh after grading (pass rate, average, row status)",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: exam results",
+      "passed": true
+    },
+    {
+      "check": "Results stats aggregate over every attempt, not just the current page",
+      "passed": true,
+      "detail": {
+        "total": 21,
+        "pageRows": 20
+      }
+    },
+    {
+      "check": "Exams cluster: no horizontal overflow at 390px on any of the five pages",
+      "passed": true
+    },
+    {
+      "check": "Delete exam cascades to questions, attempts and answers",
+      "passed": true
+    },
+    {
+      "check": "No uncaught page errors",
+      "passed": true
+    },
+    {
+      "check": "Console errors observed",
+      "passed": true,
+      "detail": [
+        "Failed to load resource: the server responded with a status of 409 (Conflict)"
+      ]
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ]
+}

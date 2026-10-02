@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { CheckboxIndicator, CheckboxRoot } from 'reka-ui';
-import { Check } from 'lucide-vue-next';
+import { Check, Minus } from 'lucide-vue-next';
 import { cn } from '@/lib/utils';
 
 const props = defineProps<{
     modelValue?: boolean;
+    /** Renders the mixed state — used by "select all" headers. */
+    indeterminate?: boolean;
     id?: string;
     name?: string;
     disabled?: boolean;
@@ -20,7 +22,7 @@ const emit = defineEmits<{
     <CheckboxRoot
         :id="id"
         :name="name"
-        :model-value="modelValue ?? false"
+        :model-value="indeterminate ? 'indeterminate' : (modelValue ?? false)"
         :disabled="disabled"
         :class="
             cn(
@@ -28,13 +30,15 @@ const emit = defineEmits<{
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-offset-1',
                 'disabled:cursor-not-allowed disabled:opacity-50',
                 'data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
+                'data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground',
                 props.class,
             )
         "
         @update:model-value="emit('update:modelValue', $event === true)"
     >
         <CheckboxIndicator class="flex items-center justify-center text-current">
-            <Check class="size-3.5" stroke-width="3" />
+            <Minus v-if="indeterminate" class="size-3.5" stroke-width="3" />
+            <Check v-else class="size-3.5" stroke-width="3" />
         </CheckboxIndicator>
     </CheckboxRoot>
 </template>

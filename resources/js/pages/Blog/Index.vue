@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { ArrowRight, CalendarDays, Clock, Newspaper } from 'lucide-vue-next';
 import { Avatar, Badge, Button, EmptyState, Pagination } from '@/components/ui';
+import PageHero from '@/components/site/PageHero.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { formatDate } from '@/lib/utils';
 import { routes } from '@/lib/routes';
@@ -21,22 +22,13 @@ const readingTime = (post: BlogPost) => `${post.reading_time ?? 1} min read`;
 </script>
 
 <template>
-    <!-- ============================================================ Hero -->
-    <section class="relative overflow-hidden border-b border-border">
-        <div class="hero-backdrop pointer-events-none absolute inset-0" />
-        <div class="page-container relative py-14 sm:py-20">
-            <Badge variant="brand" class="mb-5">
-                <Newspaper class="size-3" />
-                Blog
-            </Badge>
-            <h1 class="max-w-3xl text-balance text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
-                Insights, guides and stories from Sanpya
-            </h1>
-            <p class="mt-5 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
-                Study tips, career advice and product updates — written for learners in Myanmar and beyond.
-            </p>
-        </div>
-    </section>
+    <PageHero
+        eyebrow="Blog"
+        :icon="Newspaper"
+        title="Insights, guides and stories from Sanpya"
+        subtitle="Study tips, career advice and product updates — written for learners in Myanmar and beyond."
+        image="/images/page-headers/blog.webp"
+    />
 
     <!-- ========================================================== Empty -->
     <section v-if="isEmpty" class="page-container py-16 sm:py-20">

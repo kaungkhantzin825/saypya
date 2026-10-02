@@ -132,10 +132,15 @@ class Otp extends Model
             ";
         }
         
-        Mail::send([], [], function ($mail) use ($email, $subject, $message) {
-            $mail->to($email)
-                 ->subject($subject)
-                 ->html($message);
-        });
+        try {
+            Mail::send([], [], function ($mail) use ($email, $subject, $message) {
+                $mail->to($email)
+                     ->subject($subject)
+                     ->html($message);
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to send verification email to {$email}: " . $e->getMessage());
+            throw $e;
+        }
     }
 }

@@ -155,22 +155,15 @@ class Course extends Model
             return $this->thumbnail;
         }
         
-        // If thumbnail exists, return full CDN URL
+        // Build the URL relative to the current request, so it works on any
+        // host/port. Using config('app.url') pinned every image to APP_URL and
+        // broke previews served from a different port.
         if ($this->thumbnail) {
-            // Get the base URL from config (APP_URL)
-            $baseUrl = rtrim(config('app.url'), '/');
-            
-            // Clean the path - remove leading slashes
             $path = ltrim($this->thumbnail, '/');
-            
-            // Build the full URL
-            // If path already contains 'storage/', use it as-is
-            // Otherwise, prepend 'storage/'
-            if (str_starts_with($path, 'storage/')) {
-                return $baseUrl . '/' . $path;
-            } else {
-                return $baseUrl . '/storage/' . $path;
-            }
+
+            return str_starts_with($path, 'storage/')
+                ? asset($path)
+                : asset('storage/' . $path);
         }
         
         // Return placeholder image based on course title

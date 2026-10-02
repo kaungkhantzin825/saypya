@@ -1,0 +1,161 @@
+{
+  "base": "http://127.0.0.1:8899",
+  "generatedAt": "2026-10-02T08:20:45.513Z",
+  "results": [
+    {
+      "check": "Admin login reaches /admin/dashboard",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/dashboard renders Inertia component Admin/Dashboard",
+      "passed": true
+    },
+    {
+      "check": "AdminLayout sidebar renders the role-aware nav",
+      "passed": true
+    },
+    {
+      "check": "Still-Blade nav items point at real admin routes (plain <a>, not <Link>)",
+      "passed": true
+    },
+    {
+      "check": "Dashboard receives real KPI + table data",
+      "passed": true,
+      "detail": {
+        "total_users": 22,
+        "total_courses": 9,
+        "total_enrollments": 4,
+        "recent_enrollments": 4,
+        "top_courses": 5
+      }
+    },
+    {
+      "check": "Screenshot: admin dashboard (desktop)",
+      "passed": true
+    },
+    {
+      "check": "Dashboard: no horizontal overflow at 390px",
+      "passed": true
+    },
+    {
+      "check": "Sidebar link performs an Inertia SPA visit (no full reload)",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/users renders Inertia component Admin/Users/Index",
+      "passed": true
+    },
+    {
+      "check": "Users DataTable renders rows",
+      "passed": true,
+      "detail": {
+        "rows": 20,
+        "total": "22 accounts"
+      }
+    },
+    {
+      "check": "Server-side sorting works (name asc)",
+      "passed": true,
+      "detail": {
+        "sort": "name",
+        "direction": "asc",
+        "first": "acanadobe3"
+      }
+    },
+    {
+      "check": "Clicking the active sort header flips asc -> desc",
+      "passed": true
+    },
+    {
+      "check": "Role filter round-trips to the server",
+      "passed": true,
+      "detail": {
+        "role": "lecturer",
+        "rows": 5
+      }
+    },
+    {
+      "check": "Clear filters resets the query string",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: users index (desktop)",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/users/create renders Inertia component Admin/Users/Form",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: user create form (desktop)",
+      "passed": true
+    },
+    {
+      "check": "User created; flash toast shown",
+      "passed": true,
+      "detail": {
+        "toast": "Success User created successfully!"
+      }
+    },
+    {
+      "check": "Newly created user appears in the filtered list",
+      "passed": true,
+      "detail": {
+        "id": "33",
+        "email": "pilot.user.1790929192929@example.com"
+      }
+    },
+    {
+      "check": "GET /admin/users/{id}/edit renders Inertia component Admin/Users/Form",
+      "passed": true
+    },
+    {
+      "check": "Edit form prefills from the existing record",
+      "passed": true
+    },
+    {
+      "check": "User updated via _method=put spoofing",
+      "passed": true,
+      "detail": {
+        "toast": "Success User updated successfully!"
+      }
+    },
+    {
+      "check": "Toggle status works",
+      "passed": true,
+      "detail": {
+        "toast": "Success User account deactivated successfully!"
+      }
+    },
+    {
+      "check": "Delete dialog copy is accurate about the soft delete",
+      "passed": true
+    },
+    {
+      "check": "Delete confirmation dialog + destroy works",
+      "passed": true,
+      "detail": {
+        "toast": "Success User deleted successfully!"
+      }
+    },
+    {
+      "check": "Deleted user is gone from the server (search returns the empty state)",
+      "passed": true
+    },
+    {
+      "check": "No uncaught page errors",
+      "passed": true
+    },
+    {
+      "check": "Console errors observed",
+      "passed": true,
+      "detail": [
+        "Failed to load resource: the server responded with a status of 409 (Conflict)"
+      ]
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ]
+}

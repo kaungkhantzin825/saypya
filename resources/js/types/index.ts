@@ -80,6 +80,9 @@ export interface Course {
     reviews?: Review[];
     discussions?: Discussion[];
     exams?: Exam[];
+    enrollments?: Enrollment[];
+    /** `withCount('enrollments')` alias used by the admin listings. */
+    enrollments_count?: number;
     created_at?: string;
     updated_at?: string;
 }
@@ -89,6 +92,10 @@ export interface Lesson {
     section_id: number;
     title: string;
     description?: string | null;
+    /** `video` | `text` | `quiz` | `assignment`. */
+    type?: string | null;
+    /** Body copy for text lessons. */
+    content?: string | null;
     /** Raw value as stored: a YouTube URL, a full URL, or a relative storage path. */
     video_url?: string | null;
     /** Resolved playable URL (relative paths are prefixed with /storage). */
@@ -110,6 +117,7 @@ export interface Section {
     id: number;
     course_id: number;
     title: string;
+    description?: string | null;
     sort_order: number;
     lessons: Lesson[];
     lessons_count?: number;
@@ -128,6 +136,7 @@ export interface Enrollment {
     id: number;
     user_id: number;
     course_id: number;
+    user?: User;
     course?: Course;
     price_paid: number | string;
     payment_status: PaymentStatus;
@@ -156,6 +165,7 @@ export interface Exam {
     id: number;
     course_id: number;
     course?: Course;
+    creator?: User | null;
     title: string;
     description?: string | null;
     duration_minutes?: number | null;
@@ -165,8 +175,12 @@ export interface Exam {
     show_correct_answers: boolean;
     is_published: boolean;
     questions?: ExamQuestion[];
+    /** `withCount('questions')` alias used by the admin listing. */
     questions_count?: number;
+    /** `withCount('attempts')` alias used by the admin listing. */
+    attempts_count?: number;
     total_points?: number;
+    created_at?: string;
 }
 
 export interface ExamAnswer {
@@ -177,6 +191,7 @@ export interface ExamAnswer {
     answer: string | null;
     is_correct: boolean | null;
     points_earned: number | null;
+    feedback?: string | null;
 }
 
 export type AttemptStatus = 'in_progress' | 'submitted' | 'graded';
@@ -194,6 +209,8 @@ export interface ExamAttempt {
     submitted_at?: string | null;
     answers?: ExamAnswer[];
     user?: User;
+    /** Appended accessor — divide-by-zero guarded server-side. */
+    percentage?: number;
 }
 
 export interface BlogPost {
@@ -225,6 +242,84 @@ export interface Review {
     user?: User | null;
     course?: Course | null;
     created_at?: string;
+}
+
+export type ContactMessageStatus = 'new' | 'read' | 'replied';
+
+export interface ContactMessage {
+    id: number;
+    name: string;
+    email: string;
+    phone?: string | null;
+    subject?: string | null;
+    message: string;
+    status: ContactMessageStatus;
+    admin_reply?: string | null;
+    replied_at?: string | null;
+    created_at?: string;
+}
+
+/** ---- Reports ---------------------------------------------------------- */
+
+export interface ReportStats {
+    total_users: number;
+    total_courses: number;
+    total_enrollments: number;
+    total_revenue: number;
+}
+
+export interface MonthlyRevenue {
+    labels: string[];
+    data: number[];
+}
+
+export interface TopCourse {
+    id: number;
+    title: string;
+    enrollments_count: number;
+    revenue: number;
+    instructor?: { id: number; name: string } | null;
+}
+
+export interface TopInstructor {
+    id: number;
+    name: string;
+    courses_count: number;
+    students_count: number;
+    revenue: number;
+}
+
+export interface CategoryStat {
+    id: number;
+    name: string;
+    courses_count: number;
+    students_count: number;
+    revenue: number;
+    avg_rating: number;
+}
+
+/** ---- Site settings ---------------------------------------------------- */
+
+/** `text` | `textarea` | `number` | `image` — drives which control renders. */
+export type SiteSettingType = 'text' | 'textarea' | 'number' | 'image';
+
+export interface SiteSetting {
+    id: number;
+    key: string;
+    value: string | null;
+    type: SiteSettingType | string;
+    group: string;
+    label: string;
+    description?: string | null;
+    /** Resolved server-side; only set for `image` settings. */
+    image_url?: string | null;
+}
+
+export interface SiteSettingGroup {
+    key: string;
+    /** Group key with underscores replaced by spaces. */
+    label: string;
+    settings: SiteSetting[];
 }
 
 export interface Comment {

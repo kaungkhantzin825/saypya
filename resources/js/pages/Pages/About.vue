@@ -12,8 +12,9 @@ import {
     Target,
     Users,
 } from 'lucide-vue-next';
-import { Badge, Button, Card } from '@/components/ui';
+import { Button, Card } from '@/components/ui';
 import SectionHeading from '@/components/site/SectionHeading.vue';
+import PageHero from '@/components/site/PageHero.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { routes } from '@/lib/routes';
 
@@ -84,29 +85,23 @@ const values = [
 </script>
 
 <template>
-    <!-- ============================================================ Hero -->
-    <section class="relative overflow-hidden border-b border-border">
-        <div class="hero-backdrop pointer-events-none absolute inset-0" />
-        <div class="page-container relative py-16 sm:py-24">
-            <div class="mx-auto max-w-3xl text-center">
-                <Badge variant="brand" class="mb-5">
-                    <Sparkles class="size-3" />
-                    About us
-                </Badge>
-                <h1 class="text-balance text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
-                    Education that moves careers forward
-                </h1>
-                <p class="mx-auto mt-5 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
-                    {{ props.siteName }} is a Myanmar online academy built to help people learn the skills
-                    employers actually ask for — at a price that makes sense locally.
-                </p>
-                <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-                    <Button :href="routes.courses()" size="lg" variant="brand">Explore courses</Button>
-                    <Button :href="routes.contact()" size="lg" variant="outline">Talk to us</Button>
-                </div>
-            </div>
+    <PageHero
+        eyebrow="About us"
+        :icon="Sparkles"
+        title="Education that moves careers forward"
+        align="center"
+        image="/images/page-headers/about.webp"
+    >
+        <template #subtitle>
+            {{ props.siteName }} is a Myanmar online academy built to help people learn the skills
+            employers actually ask for — at a price that makes sense locally.
+        </template>
+
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Button :href="routes.courses()" size="lg" variant="brand">Explore courses</Button>
+            <Button :href="routes.contact()" size="lg" variant="outline">Talk to us</Button>
         </div>
-    </section>
+    </PageHero>
 
     <!-- ================================================= Mission/Vision -->
     <section class="page-container py-16 sm:py-20">

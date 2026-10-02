@@ -2,8 +2,9 @@
 import { computed, reactive, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { BookOpen, RotateCcw, Search, SlidersHorizontal } from 'lucide-vue-next';
-import { Badge, Button, Card, EmptyState, Input, Label, Pagination, Select } from '@/components/ui';
+import { Button, Card, EmptyState, Input, Label, Pagination, Select } from '@/components/ui';
 import CourseCard from '@/components/site/CourseCard.vue';
+import PageHero from '@/components/site/PageHero.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { routes } from '@/lib/routes';
 import type { Category, Course, Paginated } from '@/types';
@@ -88,25 +89,23 @@ function reset() {
 </script>
 
 <template>
-    <!-- ============================================================ Hero -->
-    <section class="border-b border-border bg-muted/40">
-        <div class="page-container py-10 sm:py-14">
-            <Badge variant="brand" class="mb-4">Course catalogue</Badge>
-            <h1 class="text-balance text-3xl font-extrabold tracking-tight sm:text-4xl">
-                Browse all courses
-            </h1>
-            <p class="mt-3 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                <template v-if="total > 0">
-                    <span class="font-semibold text-foreground">{{ total }}</span>
-                    {{ total === 1 ? 'course' : 'courses' }} ready to explore. Filter by category, level or
-                    price to find your next step.
-                </template>
-                <template v-else>
-                    New courses are added regularly — check back soon or browse every category.
-                </template>
-            </p>
-        </div>
-    </section>
+    <PageHero
+        eyebrow="Course catalogue"
+        title="Browse all courses"
+        size="compact"
+        image="/images/page-headers/courses.webp"
+    >
+        <template #subtitle>
+            <template v-if="total > 0">
+                <span class="font-semibold text-foreground">{{ total }}</span>
+                {{ total === 1 ? 'course' : 'courses' }} ready to explore. Filter by category, level or
+                price to find your next step.
+            </template>
+            <template v-else>
+                New courses are added regularly — check back soon or browse every category.
+            </template>
+        </template>
+    </PageHero>
 
     <div class="page-container py-10 sm:py-14">
         <div class="grid gap-8 lg:grid-cols-[18rem_1fr]">

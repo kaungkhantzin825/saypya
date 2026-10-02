@@ -2,7 +2,8 @@
 import { watch } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { Clock, Mail, MapPin, MessageSquare, Phone, Send, ShieldCheck, Sparkles } from 'lucide-vue-next';
-import { Alert, Badge, Button, Card, Input, Label, Textarea } from '@/components/ui';
+import { Alert, Button, Card, Input, Label, Textarea } from '@/components/ui';
+import PageHero from '@/components/site/PageHero.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { routes } from '@/lib/routes';
 
@@ -68,25 +69,14 @@ const responseTime = [
 </script>
 
 <template>
-    <!-- ============================================================ Hero -->
-    <section class="relative overflow-hidden border-b border-border">
-        <div class="hero-backdrop pointer-events-none absolute inset-0" />
-        <div class="page-container relative py-14 sm:py-20">
-            <div class="mx-auto max-w-3xl text-center">
-                <Badge variant="brand" class="mb-5">
-                    <Sparkles class="size-3" />
-                    Contact
-                </Badge>
-                <h1 class="text-balance text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
-                    We would love to hear from you
-                </h1>
-                <p class="mx-auto mt-5 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
-                    Questions about a course, payments or partnerships? Send us a message and our team will
-                    get back to you.
-                </p>
-            </div>
-        </div>
-    </section>
+    <PageHero
+        eyebrow="Contact"
+        :icon="Sparkles"
+        title="We would love to hear from you"
+        subtitle="Questions about a course, payments or partnerships? Send us a message and our team will get back to you."
+        align="center"
+        image="/images/page-headers/contact.webp"
+    />
 
     <!-- ========================================================== Body -->
     <section class="page-container py-16 sm:py-20">

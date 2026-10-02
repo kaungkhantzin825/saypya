@@ -1,0 +1,98 @@
+{
+  "results": [
+    {
+      "check": "Hero renders a background photo",
+      "passed": true,
+      "detail": {
+        "src": "KM0xns6pJr9nysIgLhOiz2DkYe1lknB0CcUDv0N3.webp"
+      }
+    },
+    {
+      "check": "Background photo covers the full band edge to edge",
+      "passed": true,
+      "detail": {
+        "viewport": 1440,
+        "section": 1440,
+        "image": 1440
+      }
+    },
+    {
+      "check": "Hero headline and subtitle present on every sample over ~18s",
+      "passed": true,
+      "detail": {
+        "samples": 9
+      }
+    },
+    {
+      "check": "Both slides rotate through the carousel",
+      "passed": true,
+      "detail": {
+        "slides": [
+          "Learn Anytime, Anywhere",
+          "Learn Skills That Move Your Career Forward"
+        ]
+      }
+    },
+    {
+      "check": "Inserted a contentless slide fixture",
+      "passed": true,
+      "detail": {
+        "id": 7,
+        "title": "-"
+      }
+    },
+    {
+      "check": "Contentless slide is dropped from the carousel",
+      "passed": true,
+      "detail": {
+        "dots": 2
+      }
+    },
+    {
+      "check": "No placeholder headline reaches the DOM",
+      "passed": true,
+      "detail": {
+        "headings": 1
+      }
+    },
+    {
+      "check": "Hero stays populated while rotating with a junk slide in the table",
+      "passed": true
+    },
+    {
+      "check": "Guard fixture removed",
+      "passed": true,
+      "detail": {
+        "id": null
+      }
+    },
+    {
+      "check": "No horizontal overflow at 390 / 768 / 1440px",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: full-bleed hero",
+      "passed": true
+    },
+    {
+      "check": "No uncaught page errors",
+      "passed": true
+    }
+  ],
+  "slides": [
+    [
+      "Learn Anytime, Anywhere",
+      {
+        "subtitle": "Join thousands of learners and start bui",
+        "height": 120
+      }
+    ],
+    [
+      "Learn Skills That Move Your Career Forward",
+      {
+        "subtitle": "Expert-led courses in English and Myanma",
+        "height": 120
+      }
+    ]
+  ]
+}

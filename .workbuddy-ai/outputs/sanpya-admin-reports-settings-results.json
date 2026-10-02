@@ -1,0 +1,144 @@
+{
+  "base": "http://127.0.0.1:8899",
+  "generatedAt": "2026-10-02T08:28:43.994Z",
+  "results": [
+    {
+      "check": "Expected report values read from SQL",
+      "passed": true,
+      "detail": {
+        "users": "22",
+        "courses": "9",
+        "enrollments": "4",
+        "revenue": "449.97",
+        "students": "16",
+        "lecturers": "5",
+        "admins": "1",
+        "categories": "8"
+      }
+    },
+    {
+      "check": "GET /admin/reports renders Inertia component Admin/Reports (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Sidebar \"Reports\" link now performs an Inertia SPA visit",
+      "passed": true
+    },
+    {
+      "check": "Reports overview cards match direct SQL counts",
+      "passed": true,
+      "detail": {
+        "revenue": "449.97 Ks"
+      }
+    },
+    {
+      "check": "Revenue line chart renders 12 points with a valid path and thinned month labels",
+      "passed": true,
+      "detail": {
+        "first": "Nov 2025",
+        "last": "Sep 2026"
+      }
+    },
+    {
+      "check": "User distribution doughnut matches SQL role counts",
+      "passed": true,
+      "detail": {
+        "legend": "Students 16 73% | Lecturers 5 23% | Admins 1 5%",
+        "summary": "Students: 16 (73%), Lecturers: 5 (23%), Admins: 1 (5%)"
+      }
+    },
+    {
+      "check": "Top courses table matches SQL (title, instructor, students, revenue)",
+      "passed": true,
+      "detail": {
+        "firstCourseRow": "1 Complete Web Development Bootcamp Dr. Sarah Johnson 4 159.98 Ks"
+      }
+    },
+    {
+      "check": "Category rollup table matches SQL (courses, students, revenue)",
+      "passed": true,
+      "detail": {
+        "catRowText": "ဝဘ်ဖွံ့ဖြိုးတိုးတက်မှု 2 2 159.98 Ks 4.2 / 5"
+      }
+    },
+    {
+      "check": "Screenshot: reports page",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/settings renders Inertia component Admin/Settings (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Sidebar \"Settings\" link now performs an Inertia SPA visit",
+      "passed": true
+    },
+    {
+      "check": "Every site setting renders a control prefilled from the database",
+      "passed": true,
+      "detail": {
+        "count": 6
+      }
+    },
+    {
+      "check": "Screenshot: settings page",
+      "passed": true
+    },
+    {
+      "check": "Saving a text setting persists to the database",
+      "passed": true
+    },
+    {
+      "check": "Reloaded settings page reflects the saved value",
+      "passed": true
+    },
+    {
+      "check": "Original site name restored",
+      "passed": true
+    },
+    {
+      "check": "Temporary image-type setting created",
+      "passed": true,
+      "detail": {
+        "IMAGE_KEY": "zz_test_banner_1790929672755"
+      }
+    },
+    {
+      "check": "Uploading a non-image is rejected and leaves the stored value untouched",
+      "passed": true
+    },
+    {
+      "check": "Image upload stores the file on the public disk and records its path",
+      "passed": true,
+      "detail": {
+        "uploadedRel": "settings/l6Zr3KxzWodp4owDTvFG1zrh3upo2qX1jHj3Z7xR.png"
+      }
+    },
+    {
+      "check": "Stored image resolves to a loadable URL via SiteSetting::imageUrl()",
+      "passed": true,
+      "detail": {
+        "previewSrc": "/storage/settings/l6Zr3KxzWodp4owDTvFG1zrh3upo2qX1jHj3Z7xR.png"
+      }
+    },
+    {
+      "check": "Reports and Settings: no horizontal overflow at 390px",
+      "passed": true
+    },
+    {
+      "check": "No uncaught page errors",
+      "passed": true
+    },
+    {
+      "check": "Console errors observed",
+      "passed": true,
+      "detail": [
+        "Failed to load resource: the server responded with a status of 409 (Conflict)"
+      ]
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ]
+}

@@ -14,7 +14,8 @@ import {
     TrendingUp,
     type LucideIcon,
 } from 'lucide-vue-next';
-import { Badge, Button, EmptyState } from '@/components/ui';
+import { Button, EmptyState } from '@/components/ui';
+import PageHero from '@/components/site/PageHero.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 import { routes } from '@/lib/routes';
 import type { Category } from '@/types';
@@ -44,17 +45,13 @@ function iconFor(index: number): LucideIcon {
 </script>
 
 <template>
-    <!-- ============================================================ Hero -->
-    <section class="border-b border-border bg-muted/40">
-        <div class="page-container py-10 sm:py-14">
-            <Badge variant="brand" class="mb-4">Explore</Badge>
-            <h1 class="text-balance text-3xl font-extrabold tracking-tight sm:text-4xl">Browse by category</h1>
-            <p class="mt-3 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Find the right course for where you are right now — from programming and design to business and
-                languages.
-            </p>
-        </div>
-    </section>
+    <PageHero
+        eyebrow="Explore"
+        title="Browse by category"
+        subtitle="Find the right course for where you are right now — from programming and design to business and languages."
+        size="compact"
+        image="/images/page-headers/categories.webp"
+    />
 
     <div class="page-container py-10 sm:py-14">
         <div v-if="categories.length" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

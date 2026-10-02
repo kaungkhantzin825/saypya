@@ -1,0 +1,126 @@
+{
+  "base": "http://127.0.0.1:8899",
+  "generatedAt": "2026-10-02T06:04:51.989Z",
+  "results": [
+    {
+      "check": "Fixtures: throwaway pending review + pending enrollment created",
+      "passed": true,
+      "detail": {
+        "reviewId": "19",
+        "enrollmentId": "10",
+        "reviewStudentName": "Anna Davis",
+        "enrollmentPair": "7|6"
+      }
+    },
+    {
+      "check": "GET /admin/enrollments renders Inertia component Admin/Enrollments/Index (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Enrollment totals render (completed/pending/failed/refunded + revenue)",
+      "passed": true
+    },
+    {
+      "check": "Sidebar \"Enrollments\" link now performs an Inertia SPA visit",
+      "passed": true
+    },
+    {
+      "check": "Enrollment status filter round-trips to the server",
+      "passed": true
+    },
+    {
+      "check": "Date range filter isolates the fixture row",
+      "passed": true
+    },
+    {
+      "check": "Approve enrollment works (pending -> completed, verified in SQL)",
+      "passed": true,
+      "detail": {
+        "toast": "Success Enrollment approved successfully! Student can now access the course."
+      }
+    },
+    {
+      "check": "Refund enrollment works (completed -> refunded, verified in SQL)",
+      "passed": true,
+      "detail": {
+        "toast": "Success Enrollment refunded successfully!"
+      }
+    },
+    {
+      "check": "Screenshot: enrollments list",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/reviews renders Inertia component Admin/Reviews/Index (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Review search round-trips to the server and finds the fixture",
+      "passed": true
+    },
+    {
+      "check": "Approve review works (verified in SQL)",
+      "passed": true,
+      "detail": {
+        "toast": "Success Review approved!"
+      }
+    },
+    {
+      "check": "Approved review hides the approve action",
+      "passed": true
+    },
+    {
+      "check": "Rating filter ANDs with search (grouped whereHas — regression guard)",
+      "passed": true
+    },
+    {
+      "check": "Clear filters resets the query string",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/reviews/{id}/edit renders Admin/Reviews/Form (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Review edit form prefills rating, comment and approval state",
+      "passed": true
+    },
+    {
+      "check": "Edit review works (PUT persists rating + comment)",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: review edit form",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: reviews list",
+      "passed": true
+    },
+    {
+      "check": "Delete review works (row really removed — no SoftDeletes)",
+      "passed": true
+    },
+    {
+      "check": "Reviews / Enrollments pages: no horizontal overflow at 390px",
+      "passed": true
+    },
+    {
+      "check": "No uncaught page errors",
+      "passed": true
+    },
+    {
+      "check": "Console errors observed",
+      "passed": true,
+      "detail": [
+        "Failed to load resource: the server responded with a status of 409 (Conflict)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ]
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+}

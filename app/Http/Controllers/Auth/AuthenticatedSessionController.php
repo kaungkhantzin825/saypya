@@ -28,7 +28,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request): \Symfony\Component\HttpFoundation\Response
     {
         $request->authenticate();
 
@@ -53,6 +53,19 @@ class AuthenticatedSessionController extends Controller
 
         // Update last login time
         $user->update(['last_login_at' => now()]);
+
+        // Students land on the Inertia dashboard. Lecturers and admins have their own
+        // panels, which are still Blade — Inertia cannot render a Blade response, so
+        // send them there with a full page load. Redirecting via /dashboard instead
+        // left them stranded on the login screen, because that route bounces them on
+        // a second redirect the Inertia client does not follow.
+        if ($user->role !== 'student') {
+            return Inertia::location(
+                $user->role === 'admin'
+                    ? route('admin.dashboard')
+                    : route('instructor.dashboard')
+            );
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

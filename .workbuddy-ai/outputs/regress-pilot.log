@@ -1,0 +1,33 @@
+
+ADMIN PILOT: 28/28 checks passed
+  PASS  Admin login reaches /admin/dashboard
+  PASS  GET /admin/dashboard renders Inertia component Admin/Dashboard
+  PASS  AdminLayout sidebar renders the role-aware nav
+  PASS  Still-Blade nav items point at real admin routes (plain <a>, not <Link>)
+  PASS  Dashboard receives real KPI + table data
+  PASS  Screenshot: admin dashboard (desktop)
+  PASS  Dashboard: no horizontal overflow at 390px
+  PASS  Sidebar link performs an Inertia SPA visit (no full reload)
+  PASS  GET /admin/users renders Inertia component Admin/Users/Index
+  PASS  Users DataTable renders rows
+  PASS  Server-side sorting works (name asc)
+  PASS  Clicking the active sort header flips asc -> desc
+  PASS  Role filter round-trips to the server
+  PASS  Clear filters resets the query string
+  PASS  Screenshot: users index (desktop)
+  PASS  GET /admin/users/create renders Inertia component Admin/Users/Form
+  PASS  Screenshot: user create form (desktop)
+  PASS  User created; flash toast shown
+  PASS  Newly created user appears in the filtered list
+  PASS  GET /admin/users/{id}/edit renders Inertia component Admin/Users/Form
+  PASS  Edit form prefills from the existing record
+  PASS  User updated via _method=put spoofing
+  PASS  Toggle status works
+  PASS  Delete dialog copy is accurate about the soft delete
+  PASS  Delete confirmation dialog + destroy works
+  PASS  Deleted user is gone from the server (search returns the empty state)
+  PASS  No uncaught page errors
+  PASS  Console errors observed
+
+Console errors (1):
+  - Failed to load resource: the server responded with a status of 409 (Conflict)

@@ -41,11 +41,11 @@ class HeroSlide extends Model
             return $this->image;
         }
 
-        $baseUrl = rtrim(config('app.url'), '/');
+        // Request-relative so the slide loads on any host/port.
         $path = ltrim($this->image, '/');
 
         return str_starts_with($path, 'storage/')
-            ? $baseUrl . '/' . $path
-            : $baseUrl . '/storage/' . $path;
+            ? asset($path)
+            : asset('storage/' . $path);
     }
 }

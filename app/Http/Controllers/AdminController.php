@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Artisan;
+use Inertia\Inertia;
 
 class AdminController extends Controller
 {
@@ -38,13 +39,23 @@ class AdminController extends Controller
             ->take(10)
             ->get();
 
+        // `enrollments` is eager-loaded because Course::getTotalStudentsAttribute
+        // falls back to a COUNT query per row otherwise (N+1); `enrollments_count`
+        // is only used to rank the list.
         $topCourses = Course::published()
+            ->with(['instructor', 'enrollments:id,course_id,payment_status'])
             ->withCount('enrollments')
             ->orderBy('enrollments_count', 'desc')
             ->take(5)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'recentEnrollments', 'topCourses'));
+        return Inertia::render('Admin/Dashboard', [
+            'stats' => $stats,
+            'recentEnrollments' => $recentEnrollments,
+            'topCourses' => $topCourses,
+            'pendingUsers' => User::where('status', 'pending')->count(),
+            'title' => 'Dashboard',
+        ]);
     }
 
     // ==================== USER MANAGEMENT ====================
@@ -66,14 +77,37 @@ class AdminController extends Controller
             });
         }
 
-        $users = $query->latest()->paginate(20);
+        // Whitelist the sort column — it is interpolated into orderBy().
+        $sortable = ['id', 'name', 'email', 'role', 'status', 'created_at'];
+        $sort = in_array($request->sort, $sortable, true) ? $request->sort : 'created_at';
+        $direction = $request->direction === 'asc' ? 'asc' : 'desc';
+
+        $users = $query->orderBy($sort, $direction)->paginate(20)->withQueryString();
         $registrationEnabled = \App\Models\Setting::get('registration_enabled', '1') === '1';
-        return view('admin.users.index', compact('users', 'registrationEnabled'));
+
+        return Inertia::render('Admin/Users/Index', [
+            'users' => $users,
+            'registrationEnabled' => $registrationEnabled,
+            // Echo the active filters back so the form stays populated.
+            'filters' => [
+                'role' => $request->role,
+                'status' => $request->status,
+                'search' => $request->search,
+                'sort' => $sort,
+                'direction' => $direction,
+            ],
+            'title' => 'Users',
+            'description' => 'Manage students, lecturers and administrators.',
+        ]);
     }
 
     public function usersCreate()
     {
-        return view('admin.users.create');
+        return Inertia::render('Admin/Users/Form', [
+            'user' => null,
+            'title' => 'Add user',
+            'description' => 'Create a new account. It is activated immediately.',
+        ]);
     }
 
     public function usersStore(Request $request)
@@ -111,7 +145,11 @@ class AdminController extends Controller
 
     public function usersEdit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        return Inertia::render('Admin/Users/Form', [
+            'user' => $user->only(['id', 'name', 'email', 'role', 'phone', 'country', 'bio', 'status', 'is_active', 'avatar_url']),
+            'title' => 'Edit user',
+            'description' => 'Update ' . $user->name . '’s details. Leave the password blank to keep it unchanged.',
+        ]);
     }
 
     public function usersUpdate(Request $request, User $user)
@@ -159,7 +197,8 @@ class AdminController extends Controller
         }
         $newStatus = $user->status === 'active' ? 'inactive' : 'active';
         $user->update(['status' => $newStatus, 'is_active' => $newStatus === 'active']);
-        return redirect()->back()->with('success', "User account {$newStatus}d successfully!");
+        $label = $newStatus === 'active' ? 'activated' : 'deactivated';
+        return redirect()->back()->with('success', "User account {$label} successfully!");
     }
 
     public function usersDestroy(User $user)
@@ -170,6 +209,8 @@ class AdminController extends Controller
         if ($user->id === auth()->id()) {
             return redirect()->back()->with('error', 'You cannot delete yourself!');
         }
+        // User uses SoftDeletes: this sets deleted_at and keeps the row (and its
+        // enrollments/history) recoverable. It is NOT a hard delete.
         $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'User deleted successfully!');
     }
@@ -190,13 +231,26 @@ class AdminController extends Controller
 
     public function categoriesIndex()
     {
-        $categories = Category::withCount('courses')->ordered()->get();
-        return view('admin.categories.index', compact('categories'));
+        // The filtered count keeps Category::getCoursesCountAttribute() from
+        // issuing a query per row once `courses_count` is appended.
+        $categories = Category::withCount(['courses as courses_count' => fn ($query) => $query->published()])
+            ->ordered()
+            ->get();
+
+        return Inertia::render('Admin/Categories/Index', [
+            'categories' => $categories,
+            'title' => 'Categories Management',
+            'description' => 'Organise courses into the categories shown across the site.',
+        ]);
     }
 
     public function categoriesCreate()
     {
-        return view('admin.categories.create');
+        return Inertia::render('Admin/Categories/Form', [
+            'category' => null,
+            'title' => 'Add category',
+            'description' => 'Create a category to group courses under.',
+        ]);
     }
 
     public function categoriesStore(Request $request)
@@ -223,7 +277,13 @@ class AdminController extends Controller
 
     public function categoriesEdit(Category $category)
     {
-        return view('admin.categories.edit', compact('category'));
+        return Inertia::render('Admin/Categories/Form', [
+            'category' => $category->only([
+                'id', 'name', 'description', 'icon', 'sort_order', 'is_active', 'image_url',
+            ]),
+            'title' => 'Edit category',
+            'description' => 'Update ' . $category->name . '.',
+        ]);
     }
 
     public function categoriesUpdate(Request $request, Category $category)
@@ -241,7 +301,7 @@ class AdminController extends Controller
         $data['is_active'] = $request->boolean('is_active');
 
         if ($request->hasFile('image')) {
-            if ($category->image) {
+            if ($category->hasLocalImage()) {
                 Storage::disk('public')->delete($category->image);
             }
             $data['image'] = $request->file('image')->store('categories', 'public');
@@ -256,7 +316,7 @@ class AdminController extends Controller
         if ($category->courses()->count() > 0) {
             return redirect()->back()->with('error', 'Cannot delete category with courses!');
         }
-        if ($category->image) {
+        if ($category->hasLocalImage()) {
             Storage::disk('public')->delete($category->image);
         }
         $category->delete();
@@ -282,17 +342,40 @@ class AdminController extends Controller
             $query->where('title', 'like', "%{$request->search}%");
         }
 
-        $courses = $query->latest()->paginate(20);
+        // Whitelist the sort column — it is interpolated into orderBy().
+        $sortable = ['id', 'title', 'price', 'status', 'is_featured', 'enrollments_count', 'created_at'];
+        $sort = in_array($request->sort, $sortable, true) ? $request->sort : 'created_at';
+        $direction = $request->direction === 'asc' ? 'asc' : 'desc';
+
+        $courses = $query->orderBy($sort, $direction)->paginate(20)->withQueryString();
         $categories = Category::active()->ordered()->get();
 
-        return view('admin.courses.index', compact('courses', 'categories'));
+        return Inertia::render('Admin/Courses/Index', [
+            'courses' => $courses,
+            'categories' => $categories,
+            // Echo the active filters back so the form stays populated.
+            'filters' => [
+                'status' => $request->status,
+                'category' => $request->category,
+                'featured' => $request->featured,
+                'search' => $request->search,
+                'sort' => $sort,
+                'direction' => $direction,
+            ],
+            'title' => 'Courses Management',
+            'description' => 'Review, publish and feature courses across the academy.',
+        ]);
     }
 
     public function coursesCreate()
     {
-        $categories = Category::active()->ordered()->get();
-        $instructors = User::lecturers()->active()->get();
-        return view('admin.courses.create', compact('categories', 'instructors'));
+        return Inertia::render('Admin/Courses/Form', [
+            'course' => null,
+            'categories' => Category::active()->ordered()->get(),
+            'instructors' => User::lecturers()->active()->get(),
+            'title' => 'Create course',
+            'description' => 'Add a new course to the catalogue, then build its curriculum.',
+        ]);
     }
 
     public function coursesStore(Request $request)
@@ -344,9 +427,16 @@ class AdminController extends Controller
 
     public function coursesEdit(Course $course)
     {
-        $categories = Category::active()->ordered()->get();
-        $instructors = User::lecturers()->active()->get();
-        return view('admin.courses.edit', compact('course', 'categories', 'instructors'));
+        // Eager-load the two relations the form's <Select>s need to preselect.
+        $course->load(['category', 'instructor']);
+
+        return Inertia::render('Admin/Courses/Form', [
+            'course' => $course,
+            'categories' => Category::active()->ordered()->get(),
+            'instructors' => User::lecturers()->active()->get(),
+            'title' => 'Edit course',
+            'description' => $course->title,
+        ]);
     }
 
     public function coursesUpdate(Request $request, Course $course)
@@ -397,8 +487,13 @@ class AdminController extends Controller
 
     public function coursesContent(Course $course)
     {
-        $course->load(['sections.lessons']);
-        return view('admin.courses.content', compact('course'));
+        $course->load(['sections.lessons', 'instructor', 'category']);
+
+        return Inertia::render('Admin/Courses/Content', [
+            'course' => $course,
+            'title' => 'Course content',
+            'description' => $course->title,
+        ]);
     }
 
     public function coursesStoreSection(Request $request, Course $course)
@@ -414,7 +509,7 @@ class AdminController extends Controller
             'sort_order' => $course->sections()->count() + 1,
         ]);
 
-        if ($request->ajax()) {
+        if ($request->ajax() && ! $request->header('X-Inertia')) {
             return response()->json(['success' => true, 'section' => $section]);
         }
         return redirect()->back()->with('success', 'Section created!');
@@ -429,7 +524,7 @@ class AdminController extends Controller
 
         $section->update($request->only(['title', 'description']));
 
-        if ($request->ajax()) {
+        if ($request->ajax() && ! $request->header('X-Inertia')) {
             return response()->json(['success' => true, 'section' => $section]);
         }
         return redirect()->back()->with('success', 'Section updated!');
@@ -439,7 +534,7 @@ class AdminController extends Controller
     {
         $section->delete();
         
-        if (request()->ajax()) {
+        if (request()->ajax() && ! request()->header('X-Inertia')) {
             return response()->json(['success' => true]);
         }
         return redirect()->back()->with('success', 'Section deleted!');
@@ -468,7 +563,7 @@ class AdminController extends Controller
             'sort_order' => $section->lessons()->count() + 1,
         ]);
 
-        if ($request->ajax()) {
+        if ($request->ajax() && ! $request->header('X-Inertia')) {
             return response()->json(['success' => true, 'lesson' => $lesson]);
         }
         return redirect()->back()->with('success', 'Lesson created!');
@@ -496,7 +591,7 @@ class AdminController extends Controller
             'is_preview' => $request->boolean('is_preview'),
         ]);
 
-        if ($request->ajax()) {
+        if ($request->ajax() && ! $request->header('X-Inertia')) {
             return response()->json(['success' => true, 'lesson' => $lesson]);
         }
         return redirect()->back()->with('success', 'Lesson updated!');
@@ -506,7 +601,7 @@ class AdminController extends Controller
     {
         $lesson->delete();
         
-        if (request()->ajax()) {
+        if (request()->ajax() && ! request()->header('X-Inertia')) {
             return response()->json(['success' => true]);
         }
         return redirect()->back()->with('success', 'Lesson deleted!');
@@ -515,7 +610,12 @@ class AdminController extends Controller
     public function coursesShow(Course $course)
     {
         $course->load(['instructor', 'category', 'sections.lessons', 'enrollments.user', 'reviews.user']);
-        return view('admin.courses.show', compact('course'));
+
+        return Inertia::render('Admin/Courses/Show', [
+            'course' => $course,
+            'title' => $course->title ?: 'Course details',
+            'description' => 'Overview, curriculum and reviews.',
+        ]);
     }
 
     public function coursesApprove(Course $course)
@@ -562,17 +662,42 @@ class AdminController extends Controller
             $query->whereDate('enrolled_at', '<=', $request->to_date);
         }
 
-        $enrollments = $query->latest('enrolled_at')->paginate(20);
+        // Whitelist the sort column — it is interpolated into orderBy().
+        $sortable = ['id', 'price_paid', 'payment_status', 'progress_percentage', 'enrolled_at'];
+        $sort = in_array($request->sort, $sortable, true) ? $request->sort : 'enrolled_at';
+        $direction = $request->direction === 'asc' ? 'asc' : 'desc';
+
+        $enrollments = $query->orderBy($sort, $direction)->paginate(20)->withQueryString();
+
+        // One grouped query instead of five COUNT/SUM round-trips.
+        $totals = Enrollment::query()
+            ->selectRaw('payment_status, COUNT(*) as aggregate, SUM(price_paid) as revenue')
+            ->groupBy('payment_status')
+            ->get()
+            ->keyBy('payment_status');
 
         $stats = [
-            'completed' => Enrollment::where('payment_status', 'completed')->count(),
-            'pending' => Enrollment::where('payment_status', 'pending')->count(),
-            'failed' => Enrollment::where('payment_status', 'failed')->count(),
-            'refunded' => Enrollment::where('payment_status', 'refunded')->count(),
-            'revenue' => Enrollment::where('payment_status', 'completed')->sum('price_paid'),
+            'completed' => (int) ($totals['completed']->aggregate ?? 0),
+            'pending' => (int) ($totals['pending']->aggregate ?? 0),
+            'failed' => (int) ($totals['failed']->aggregate ?? 0),
+            'refunded' => (int) ($totals['refunded']->aggregate ?? 0),
+            'revenue' => (float) ($totals['completed']->revenue ?? 0),
         ];
 
-        return view('admin.enrollments.index', compact('enrollments', 'stats'));
+        return Inertia::render('Admin/Enrollments/Index', [
+            'enrollments' => $enrollments,
+            'stats' => $stats,
+            // Echo the active filters back so the form stays populated.
+            'filters' => [
+                'status' => $request->status,
+                'from_date' => $request->from_date,
+                'to_date' => $request->to_date,
+                'sort' => $sort,
+                'direction' => $direction,
+            ],
+            'title' => 'Enrollments',
+            'description' => 'Approve payments, issue refunds and track student progress.',
+        ]);
     }
 
     public function enrollmentsRefund(Enrollment $enrollment)
@@ -606,15 +731,34 @@ class AdminController extends Controller
             $query->where('is_approved', $request->approved);
         }
         if ($request->search) {
-            $query->whereHas('user', function($q) use ($request) {
-                $q->where('name', 'like', "%{$request->search}%");
-            })->orWhereHas('course', function($q) use ($request) {
-                $q->where('title', 'like', "%{$request->search}%");
+            $search = $request->search;
+            // The match must be grouped, otherwise the OR escapes the rating /
+            // approval filters and returns rows that should have been excluded.
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', fn ($user) => $user->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('course', fn ($course) => $course->where('title', 'like', "%{$search}%"));
             });
         }
 
-        $reviews = $query->latest()->paginate(20);
-        return view('admin.reviews.index', compact('reviews'));
+        // Whitelist the sort column — it is interpolated into orderBy().
+        $sortable = ['id', 'rating', 'is_approved', 'created_at'];
+        $sort = in_array($request->sort, $sortable, true) ? $request->sort : 'created_at';
+        $direction = $request->direction === 'asc' ? 'asc' : 'desc';
+
+        $reviews = $query->orderBy($sort, $direction)->paginate(20)->withQueryString();
+
+        return Inertia::render('Admin/Reviews/Index', [
+            'reviews' => $reviews,
+            'filters' => [
+                'search' => $request->search,
+                'rating' => $request->rating,
+                'approved' => $request->approved,
+                'sort' => $sort,
+                'direction' => $direction,
+            ],
+            'title' => 'Reviews',
+            'description' => 'Moderate student feedback before it appears on the public site.',
+        ]);
     }
 
     public function reviewsApprove(Review $review)
@@ -625,8 +769,13 @@ class AdminController extends Controller
 
     public function reviewsEdit(Review $review)
     {
-        $review->load(['user', 'course']);
-        return view('admin.reviews.edit', compact('review'));
+        $review->load(['user', 'course.instructor']);
+
+        return Inertia::render('Admin/Reviews/Form', [
+            'review' => $review,
+            'title' => 'Edit review',
+            'description' => 'Adjust the rating or hide the review from the public course page.',
+        ]);
     }
 
     public function reviewsUpdate(Request $request, Review $review)
@@ -660,7 +809,7 @@ class AdminController extends Controller
             'total_users' => User::count(),
             'total_courses' => Course::count(),
             'total_enrollments' => Enrollment::where('payment_status', 'completed')->count(),
-            'total_revenue' => Enrollment::where('payment_status', 'completed')->sum('price_paid'),
+            'total_revenue' => (float) Enrollment::where('payment_status', 'completed')->sum('price_paid'),
         ];
 
         $userDistribution = [
@@ -669,49 +818,106 @@ class AdminController extends Controller
             'admins' => User::admins()->count(),
         ];
 
-        // Monthly revenue for last 12 months
+        // Last 12 months of revenue in ONE grouped query — the blade ran twelve
+        // sequential SUM() calls, one per month.
+        $revenueByMonth = Enrollment::where('payment_status', 'completed')
+            ->where('enrolled_at', '>=', now()->subMonths(11)->startOfMonth())
+            ->selectRaw("DATE_FORMAT(enrolled_at, '%Y-%m') as ym, SUM(price_paid) as revenue")
+            ->groupBy('ym')
+            ->get()
+            ->pluck('revenue', 'ym');
+
         $monthlyRevenue = ['labels' => [], 'data' => []];
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $monthlyRevenue['labels'][] = $date->format('M Y');
-            $monthlyRevenue['data'][] = Enrollment::where('payment_status', 'completed')
-                ->whereYear('enrolled_at', $date->year)
-                ->whereMonth('enrolled_at', $date->month)
-                ->sum('price_paid');
+            $monthlyRevenue['data'][] = (float) ($revenueByMonth[$date->format('Y-m')] ?? 0);
         }
 
-        $topCourses = Course::withCount('enrollments')
-            ->with('instructor')
-            ->orderBy('enrollments_count', 'desc')
+        // Revenue per course via a correlated subquery instead of one query per row.
+        $topCourses = Course::query()
+            ->select('courses.*')
+            ->with('instructor:id,name')
+            ->withCount('enrollments')
+            ->selectSub(function ($query) {
+                $query->from('enrollments')
+                    ->whereColumn('enrollments.course_id', 'courses.id')
+                    ->where('payment_status', 'completed')
+                    ->selectRaw('COALESCE(SUM(price_paid), 0)');
+            }, 'revenue')
+            ->orderByDesc('enrollments_count')
+            // Tie-break on id so the "top" ordering is stable between requests.
+            ->orderBy('courses.id')
             ->take(10)
             ->get()
-            ->map(function($course) {
-                $course->revenue = $course->enrollments()->where('payment_status', 'completed')->sum('price_paid');
+            ->map(function ($course) {
+                $course->revenue = (float) $course->revenue;
                 return $course;
             });
+
+        // Per-instructor totals in a single pass, keyed by instructor id.
+        $instructorTotals = Enrollment::query()
+            ->join('courses', 'courses.id', '=', 'enrollments.course_id')
+            ->where('enrollments.payment_status', 'completed')
+            ->selectRaw('courses.instructor_id as instructor_id, COUNT(*) as students_count, SUM(enrollments.price_paid) as revenue')
+            ->groupBy('courses.instructor_id')
+            ->get()
+            ->keyBy('instructor_id');
 
         $topInstructors = User::lecturers()
             ->withCount('courses')
             ->get()
-            ->map(function($instructor) {
-                $instructor->students_count = Enrollment::whereIn('course_id', $instructor->courses->pluck('id'))
-                    ->where('payment_status', 'completed')->count();
-                $instructor->revenue = Enrollment::whereIn('course_id', $instructor->courses->pluck('id'))
-                    ->where('payment_status', 'completed')->sum('price_paid');
+            ->map(function ($instructor) use ($instructorTotals) {
+                $totals = $instructorTotals->get($instructor->id);
+                $instructor->students_count = (int) ($totals->students_count ?? 0);
+                $instructor->revenue = (float) ($totals->revenue ?? 0);
                 return $instructor;
             })
             ->sortByDesc('revenue')
-            ->take(10);
+            ->take(10)
+            // `values()` is load-bearing: without it the JSON payload is an object
+            // keyed by the original collection offsets, not an array.
+            ->values();
 
-        $categoryStats = Category::withCount('courses')->get()->map(function($category) {
-            $courseIds = $category->courses->pluck('id');
-            $category->students_count = Enrollment::whereIn('course_id', $courseIds)->where('payment_status', 'completed')->count();
-            $category->revenue = Enrollment::whereIn('course_id', $courseIds)->where('payment_status', 'completed')->sum('price_paid');
-            $category->avg_rating = Review::whereIn('course_id', $courseIds)->avg('rating');
-            return $category;
-        });
+        // Category rollups — two grouped queries instead of three per category.
+        $enrollmentTotals = Enrollment::query()
+            ->join('courses', 'courses.id', '=', 'enrollments.course_id')
+            ->where('enrollments.payment_status', 'completed')
+            ->selectRaw('courses.category_id as category_id, COUNT(*) as students_count, SUM(enrollments.price_paid) as revenue')
+            ->groupBy('courses.category_id')
+            ->get()
+            ->keyBy('category_id');
 
-        return view('admin.reports', compact('stats', 'userDistribution', 'monthlyRevenue', 'topCourses', 'topInstructors', 'categoryStats'));
+        $ratingAverages = Review::query()
+            ->join('courses', 'courses.id', '=', 'reviews.course_id')
+            ->selectRaw('courses.category_id as category_id, AVG(reviews.rating) as avg_rating')
+            ->groupBy('courses.category_id')
+            ->get()
+            ->keyBy('category_id');
+
+        $categoryStats = Category::withCount('courses')
+            ->orderBy('id')
+            ->get()
+            ->map(function ($category) use ($enrollmentTotals, $ratingAverages) {
+                $totals = $enrollmentTotals->get($category->id);
+                $ratings = $ratingAverages->get($category->id);
+                $category->students_count = (int) ($totals->students_count ?? 0);
+                $category->revenue = (float) ($totals->revenue ?? 0);
+                $category->avg_rating = $ratings ? round((float) $ratings->avg_rating, 1) : 0;
+                return $category;
+            })
+            ->values();
+
+        return Inertia::render('Admin/Reports', [
+            'stats' => $stats,
+            'userDistribution' => $userDistribution,
+            'monthlyRevenue' => $monthlyRevenue,
+            'topCourses' => $topCourses,
+            'topInstructors' => $topInstructors,
+            'categoryStats' => $categoryStats,
+            'title' => 'Reports',
+            'description' => 'Platform activity, revenue and course performance.',
+        ]);
     }
 
     // ==================== SETTINGS ====================
@@ -730,7 +936,10 @@ class AdminController extends Controller
 
     public function examsIndex(Request $request)
     {
-        $query = \App\Models\Exam::with(['course', 'creator'])->withCount('attempts');
+        // `withCount` replaces the blade's `$exam->questions->count()`, which
+        // lazy-loaded the whole question set once per row.
+        $query = \App\Models\Exam::with(['course', 'creator'])
+            ->withCount(['questions', 'attempts']);
 
         if ($request->course_id) {
             $query->where('course_id', $request->course_id);
@@ -738,24 +947,53 @@ class AdminController extends Controller
         if ($request->is_published !== null && $request->is_published !== '') {
             $query->where('is_published', $request->is_published);
         }
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
 
-        $exams = $query->latest()->paginate(20);
-        $courses = Course::published()->get();
+        // Whitelist — only these column names may reach orderBy().
+        $sortable = ['title', 'duration_minutes', 'is_published', 'created_at'];
+        $sort = in_array($request->sort, $sortable, true) ? $request->sort : 'created_at';
+        $direction = $request->direction === 'asc' ? 'asc' : 'desc';
+        $query->orderBy($sort, $direction);
 
-        return view('admin.exams.index', compact('exams', 'courses'));
+        $exams = $query->paginate(20)->withQueryString();
+        $courses = Course::published()->orderBy('title')->get();
+
+        return Inertia::render('Admin/Exams/Index', [
+            'exams' => $exams,
+            'courses' => $courses,
+            'filters' => [
+                'search' => $request->search,
+                'course_id' => $request->course_id,
+                'is_published' => $request->is_published,
+                'sort' => $sort,
+                'direction' => $direction,
+            ],
+            'title' => 'Exam management',
+            'description' => 'Create exams, add questions and review student attempts.',
+        ]);
     }
 
     public function examsCreate()
     {
-        $courses = Course::published()->get();
-        return view('admin.exams.create', compact('courses'));
+        $courses = Course::published()->orderBy('title')->get();
+
+        return Inertia::render('Admin/Exams/Form', [
+            'exam' => null,
+            'courses' => $courses,
+            'title' => 'Create exam',
+            'description' => 'Set up the exam settings first — questions are added on the next screen.',
+        ]);
     }
 
     public function examsStore(Request $request)
     {
+        // `title` is NOT NULL in the schema, so `nullable` here meant an empty
+        // title reached the INSERT and blew up with a 1048 integrity error.
         $request->validate([
             'course_id' => 'required|exists:courses,id',
-            'title' => 'nullable|string|max:255',
+            'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'duration_minutes' => 'nullable|integer|min:1',
             'passing_score' => 'required|integer|min:0|max:100',
@@ -782,15 +1020,31 @@ class AdminController extends Controller
     public function examsEdit(\App\Models\Exam $exam)
     {
         $exam->load('questions');
-        $courses = Course::published()->get();
-        return view('admin.exams.edit', compact('exam', 'courses'));
+
+        $courses = Course::published()->orderBy('title')->get();
+
+        // The course picker only lists published courses, but an exam can be
+        // attached to one that was later archived. Without this the select would
+        // render empty and saving would silently reassign the exam.
+        $current = $exam->course;
+        if ($current && ! $courses->contains('id', $current->id)) {
+            $courses->push($current);
+        }
+
+        return Inertia::render('Admin/Exams/Form', [
+            'exam' => $exam,
+            'courses' => $courses,
+            'title' => 'Edit exam',
+            'description' => $exam->title,
+        ]);
     }
 
     public function examsUpdate(Request $request, \App\Models\Exam $exam)
     {
+        // See examsStore() — `title` is NOT NULL in the schema.
         $request->validate([
             'course_id' => 'required|exists:courses,id',
-            'title' => 'nullable|string|max:255',
+            'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'duration_minutes' => 'nullable|integer|min:1',
             'passing_score' => 'required|integer|min:0|max:100',
@@ -818,7 +1072,10 @@ class AdminController extends Controller
             'question' => 'required|string',
             'type' => 'required|in:multiple_choice,essay,true_false',
             'points' => 'required|integer|min:1',
-            'options' => 'required_if:type,multiple_choice|array|min:2',
+            // `exclude_unless` rather than `required_if`: the latter still runs
+            // `array|min:2` on an empty list, so a true/false or essay question
+            // only passed because the old blade leaked two blank option inputs.
+            'options' => 'exclude_unless:type,multiple_choice|required|array|min:2',
             'correct_answer' => 'required_if:type,multiple_choice,true_false',
         ]);
 
@@ -831,7 +1088,7 @@ class AdminController extends Controller
             'order' => $exam->questions()->count() + 1,
         ]);
 
-        if ($request->ajax()) {
+        if ($request->ajax() && ! $request->header('X-Inertia')) {
             return response()->json(['success' => true, 'question' => $question]);
         }
 
@@ -844,7 +1101,9 @@ class AdminController extends Controller
             'question' => 'required|string',
             'type' => 'required|in:multiple_choice,essay,true_false',
             'points' => 'required|integer|min:1',
-            'options' => 'required_if:type,multiple_choice|array|min:2',
+            // See examsAddQuestion() — `exclude_unless` keeps `min:2` off
+            // non-multiple-choice questions.
+            'options' => 'exclude_unless:type,multiple_choice|required|array|min:2',
             'correct_answer' => 'required_if:type,multiple_choice,true_false',
         ]);
 
@@ -856,7 +1115,7 @@ class AdminController extends Controller
             'correct_answer' => $request->correct_answer,
         ]);
 
-        if ($request->ajax()) {
+        if ($request->ajax() && ! $request->header('X-Inertia')) {
             return response()->json(['success' => true, 'question' => $question]);
         }
 
@@ -867,7 +1126,7 @@ class AdminController extends Controller
     {
         $question->delete();
 
-        if (request()->ajax()) {
+        if (request()->ajax() && ! request()->header('X-Inertia')) {
             return response()->json(['success' => true]);
         }
 
@@ -876,14 +1135,53 @@ class AdminController extends Controller
 
     public function examsResults(\App\Models\Exam $exam)
     {
-        $attempts = $exam->attempts()->with(['user', 'answers.question'])->latest()->paginate(20);
-        return view('admin.exams.results', compact('exam', 'attempts'));
+        $exam->load('course');
+
+        $attempts = $exam->attempts()
+            ->with('user')
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        // `percentage` is an accessor and Eloquent does not serialise accessors by
+        // default. Appending it here also uses the accessor's divide-by-zero guard,
+        // which the blade lacked when it did `score / total_points` inline.
+        $attempts->getCollection()->each->append('percentage');
+
+        // Stats over ALL attempts. The blade derived these from the paginator, so
+        // every number was wrong once an exam passed 20 attempts.
+        // Aliases deliberately avoid `passed`/`total_points` — those are in
+        // ExamAttempt::$casts and would be coerced to booleans.
+        $stats = $exam->attempts()
+            ->selectRaw('COUNT(*) as total_count')
+            ->selectRaw('SUM(CASE WHEN passed = 1 THEN 1 ELSE 0 END) as passed_count')
+            ->selectRaw('SUM(CASE WHEN passed = 0 THEN 1 ELSE 0 END) as failed_count')
+            ->selectRaw('AVG(CASE WHEN total_points > 0 THEN (score / total_points) * 100 ELSE 0 END) as average_score')
+            ->first();
+
+        return Inertia::render('Admin/Exams/Results', [
+            'exam' => $exam,
+            'attempts' => $attempts,
+            'stats' => [
+                'total' => (int) ($stats->total_count ?? 0),
+                'passed' => (int) ($stats->passed_count ?? 0),
+                'failed' => (int) ($stats->failed_count ?? 0),
+                'average' => (int) round((float) ($stats->average_score ?? 0)),
+            ],
+            'title' => 'Exam results',
+            'description' => $exam->title . ($exam->course ? ' · ' . $exam->course->title : ''),
+        ]);
     }
 
     public function examsGrade(\App\Models\ExamAttempt $attempt)
     {
-        $attempt->load(['exam', 'user', 'answers.question']);
-        return view('admin.exams.grade', compact('attempt'));
+        $attempt->load(['exam.course', 'user', 'answers.question']);
+
+        return Inertia::render('Admin/Exams/Grade', [
+            'attempt' => $attempt,
+            'title' => 'Grade exam attempt',
+            'description' => $attempt->exam->title . ' · ' . $attempt->user->name,
+        ]);
     }
 
     public function examsSubmitGrade(Request $request, \App\Models\ExamAttempt $attempt)
@@ -934,15 +1232,36 @@ class AdminController extends Controller
             $query->where('status', $request->status);
         }
 
-        $messages = $query->latest()->paginate(20);
+        // Whitelist the sort column — it is interpolated into orderBy().
+        $sortable = ['id', 'name', 'status', 'created_at'];
+        $sort = in_array($request->sort, $sortable, true) ? $request->sort : 'created_at';
+        $direction = $request->direction === 'asc' ? 'asc' : 'desc';
+
+        $messages = $query->orderBy($sort, $direction)->paginate(20)->withQueryString();
+
+        // One grouped query instead of three COUNT round-trips.
+        $totals = \App\Models\ContactMessage::query()
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
 
         $stats = [
-            'new' => \App\Models\ContactMessage::where('status', 'new')->count(),
-            'read' => \App\Models\ContactMessage::where('status', 'read')->count(),
-            'replied' => \App\Models\ContactMessage::where('status', 'replied')->count(),
+            'new' => (int) ($totals['new'] ?? 0),
+            'read' => (int) ($totals['read'] ?? 0),
+            'replied' => (int) ($totals['replied'] ?? 0),
         ];
 
-        return view('admin.contact-messages.index', compact('messages', 'stats'));
+        return Inertia::render('Admin/ContactMessages/Index', [
+            'messages' => $messages,
+            'stats' => $stats,
+            'filters' => [
+                'status' => $request->status,
+                'sort' => $sort,
+                'direction' => $direction,
+            ],
+            'title' => 'Messages',
+            'description' => 'Enquiries submitted through the public contact form.',
+        ]);
     }
 
     public function contactMessageShow(\App\Models\ContactMessage $message)
@@ -952,7 +1271,11 @@ class AdminController extends Controller
             $message->update(['status' => 'read']);
         }
 
-        return view('admin.contact-messages.show', compact('message'));
+        return Inertia::render('Admin/ContactMessages/Show', [
+            'message' => $message,
+            'title' => 'Message',
+            'description' => $message->subject ?: 'Contact form enquiry',
+        ]);
     }
 
     public function contactMessageReply(Request $request, \App\Models\ContactMessage $message)
@@ -994,13 +1317,34 @@ class AdminController extends Controller
 
     public function settings()
     {
-        $settings = \App\Models\SiteSetting::orderBy('group')->orderBy('label')->get()->groupBy('group');
-        return view('admin.settings', compact('settings'));
+        $groups = \App\Models\SiteSetting::orderBy('group')->orderBy('label')->get()
+            ->map(function ($setting) {
+                // Resolved server-side so the Vue layer never has to build a
+                // storage URL — SiteSetting::imageUrl() handles both uploads and
+                // full external URLs.
+                $setting->image_url = $setting->type === 'image'
+                    ? \App\Models\SiteSetting::imageUrl($setting->key)
+                    : null;
+                return $setting;
+            })
+            ->groupBy('group')
+            ->map(fn ($items, $group) => [
+                'key' => $group,
+                'label' => str_replace('_', ' ', $group),
+                'settings' => $items->values(),
+            ])
+            ->values();
+
+        return Inertia::render('Admin/Settings', [
+            'groups' => $groups,
+            'title' => 'Site settings',
+            'description' => 'Editable content and statistics used across the public site.',
+        ]);
     }
 
     public function updateSettings(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'settings' => 'nullable|array',
             'settings.*' => 'nullable',
             'images' => 'nullable|array',
@@ -1034,12 +1378,21 @@ class AdminController extends Controller
     public function heroSlidesIndex()
     {
         $slides = HeroSlide::ordered()->get();
-        return view('admin.hero-slides.index', compact('slides'));
+
+        return Inertia::render('Admin/HeroSlides/Index', [
+            'slides' => $slides,
+            'title' => 'Hero slides',
+            'description' => 'The carousel shown at the top of the public homepage.',
+        ]);
     }
 
     public function heroSlidesCreate()
     {
-        return view('admin.hero-slides.create');
+        return Inertia::render('Admin/HeroSlides/Form', [
+            'slide' => null,
+            'title' => 'Add slide',
+            'description' => 'Upload an image or point at an external URL.',
+        ]);
     }
 
     public function heroSlidesStore(Request $request)
@@ -1070,7 +1423,18 @@ class AdminController extends Controller
 
     public function heroSlidesEdit(HeroSlide $heroSlide)
     {
-        return view('admin.hero-slides.edit', ['slide' => $heroSlide]);
+        return Inertia::render('Admin/HeroSlides/Form', [
+            'slide' => $heroSlide->only([
+                'id', 'title', 'subtitle', 'button_text', 'button_link', 'sort_order', 'is_active', 'image_url',
+            ]) + [
+                // The form needs to know whether `image` is a local file or an
+                // external URL, so it can show the right hint and not pre-fill
+                // the URL box with a storage path.
+                'is_external' => str_starts_with((string) $heroSlide->image, 'http'),
+            ],
+            'title' => 'Edit slide',
+            'description' => $heroSlide->title ?: 'Image-only slide',
+        ]);
     }
 
     public function heroSlidesUpdate(Request $request, HeroSlide $heroSlide)
@@ -1124,12 +1488,21 @@ class AdminController extends Controller
     public function blogPosts()
     {
         $posts = \App\Models\BlogPost::with('author')->latest()->paginate(20);
-        return view('admin.blog.index', compact('posts'));
+
+        return Inertia::render('Admin/Blog/Index', [
+            'posts' => $posts,
+            'title' => 'Blog',
+            'description' => 'Write and publish articles for the public blog.',
+        ]);
     }
 
     public function createBlogPost()
     {
-        return view('admin.blog.create');
+        return Inertia::render('Admin/Blog/Form', [
+            'post' => null,
+            'title' => 'New post',
+            'description' => 'Draft a new article for the public blog.',
+        ]);
     }
 
     public function storeBlogPost(Request $request)
@@ -1143,7 +1516,7 @@ class AdminController extends Controller
         ]);
 
         $validated['author_id'] = auth()->id();
-        $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']);
+        $validated['slug'] = $this->uniqueBlogSlug($validated['title']);
 
         if ($request->hasFile('featured_image')) {
             $validated['featured_image'] = $request->file('featured_image')->store('blog', 'public');
@@ -1160,7 +1533,13 @@ class AdminController extends Controller
 
     public function editBlogPost(\App\Models\BlogPost $post)
     {
-        return view('admin.blog.edit', compact('post'));
+        $post->load('author');
+
+        return Inertia::render('Admin/Blog/Form', [
+            'post' => $post,
+            'title' => 'Edit post',
+            'description' => $post->title,
+        ]);
     }
 
     public function updateBlogPost(Request $request, \App\Models\BlogPost $post)
@@ -1173,7 +1552,14 @@ class AdminController extends Controller
             'status' => 'required|in:draft,published',
         ]);
 
-        $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']);
+        $validated['slug'] = $this->uniqueBlogSlug($validated['title'], $post->id);
+
+        // Inertia serialises a `null` field to an empty string, and
+        // ConvertEmptyStringsToNull turns that into null — so `featured_image`
+        // would arrive as null whenever no new file was picked and silently
+        // wipe the stored path. Keep it out of the update array and only touch
+        // it when a real file is present.
+        unset($validated['featured_image']);
 
         if ($request->hasFile('featured_image')) {
             // Delete old image
@@ -1190,6 +1576,28 @@ class AdminController extends Controller
         $post->update($validated);
 
         return redirect()->route('admin.blog.index')->with('success', 'Blog post updated successfully!');
+    }
+
+    /**
+     * Build a slug that is unique across `blog_posts`.
+     *
+     * The previous code used `Str::slug($title)` verbatim, so a second post with
+     * the same title (or a second untitled draft) collided on the unique slug
+     * index and the save died with a QueryException.
+     */
+    private function uniqueBlogSlug(?string $title, ?int $ignoreId = null): string
+    {
+        $base = Str::slug((string) $title) ?: 'post-' . uniqid();
+        $slug = $base;
+        $suffix = 1;
+
+        while (\App\Models\BlogPost::where('slug', $slug)
+            ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
+            ->exists()) {
+            $slug = $base . '-' . (++$suffix);
+        }
+
+        return $slug;
     }
 
     public function destroyBlogPost(\App\Models\BlogPost $post)

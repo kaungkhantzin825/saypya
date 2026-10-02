@@ -76,13 +76,19 @@ class BlogPost extends Model
 
     /**
      * Get the featured image URL
+     *
+     * Returns null when there is no image. It used to fall back to
+     * `https://via.placeholder.com/...`, which no longer resolves — every blog
+     * page then logged a failed request. All consumers already guard with
+     * `v-if="post.image_url"`, so null renders the neutral empty state instead.
      */
     public function getFeaturedImageUrlAttribute()
     {
         if ($this->featured_image) {
             return asset('storage/' . $this->featured_image);
         }
-        return 'https://via.placeholder.com/800x400?text=Blog+Post';
+
+        return null;
     }
 
     /**

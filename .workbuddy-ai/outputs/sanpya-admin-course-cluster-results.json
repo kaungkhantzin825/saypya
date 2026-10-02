@@ -1,0 +1,140 @@
+{
+  "base": "http://127.0.0.1:8899",
+  "generatedAt": "2026-10-02T05:55:43.836Z",
+  "courseId": 15,
+  "results": [
+    {
+      "check": "Fixture: local PNG ready for the multipart upload",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/courses/create renders Inertia component Admin/Courses/Form (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Create form: fields filled and a real image file attached",
+      "passed": true,
+      "detail": {
+        "title": "ZZ Cluster Course 1790920483080",
+        "category": "ဝဘ်ဖွံ့ဖြိုးတိုးတက်မှု",
+        "instructor": "Dr. Sarah Johnson",
+        "description": "Throwaway course created by the automated cluster check.",
+        "price": "25000",
+        "level": "Beginner",
+        "status": "Draft",
+        "outcomes": 1
+      }
+    },
+    {
+      "check": "Create posts a multipart form and persists the course (status/price/level/thumbnail)",
+      "passed": true,
+      "detail": {
+        "id": 15,
+        "thumbnail": "courses/thumbnails/dOQr5CAHPWXPDKdXlsGjfZee3s2va0pKpGLJBXeF.png"
+      }
+    },
+    {
+      "check": "Repeatable \"what you'll learn\" / \"requirements\" rows persist as JSON",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/courses/{id}/content renders Admin/Courses/Content (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Add section works (dialog -> DB, Inertia request not swallowed by the JSON branch)",
+      "passed": true,
+      "detail": {
+        "toast": "Success Section created!",
+        "sectionId": 10
+      }
+    },
+    {
+      "check": "Add lesson works (type/duration/preview persisted)",
+      "passed": true,
+      "detail": {
+        "toast": "Success Lesson created!",
+        "lessonId": 6
+      }
+    },
+    {
+      "check": "Lesson duration renders as m:ss (10:15)",
+      "passed": true
+    },
+    {
+      "check": "Edit lesson works",
+      "passed": true
+    },
+    {
+      "check": "Edit section works",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/courses/{id} renders Admin/Courses/Show (no longer Blade)",
+      "passed": true
+    },
+    {
+      "check": "Show page renders the curriculum from the DB",
+      "passed": true
+    },
+    {
+      "check": "Show -> \"Manage content\" is an Inertia visit (link no longer marked external)",
+      "passed": true
+    },
+    {
+      "check": "GET /admin/courses/{id}/edit renders Admin/Courses/Form prefilled from the DB",
+      "passed": true
+    },
+    {
+      "check": "Edit form prefills price and the repeatable list rows",
+      "passed": true
+    },
+    {
+      "check": "Edit course works (PUT with _method spoofing, no new thumbnail required)",
+      "passed": true
+    },
+    {
+      "check": "Editing without picking a new file keeps the stored thumbnail",
+      "passed": true
+    },
+    {
+      "check": "Delete lesson works",
+      "passed": true
+    },
+    {
+      "check": "Delete section works (warns it also removes its lessons)",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: course content page",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: course detail page",
+      "passed": true
+    },
+    {
+      "check": "Screenshot: course edit form",
+      "passed": true
+    },
+    {
+      "check": "Show / Content / Form pages: no horizontal overflow at 390px",
+      "passed": true
+    },
+    {
+      "check": "No uncaught page errors",
+      "passed": true
+    },
+    {
+      "check": "Console errors observed",
+      "passed": true,
+      "detail": [
+        "Failed to load resource: the server responded with a status of 409 (Conflict)"
+      ]
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ]
+}

@@ -103,19 +103,7 @@ Route::get('/partners', function () {
     ]);
 })->name('partners');
 
-Route::get('/contact', function () {
-    // Simple server-side maths captcha; the expected sum is posted back and
-    // re-checked in ContactController::submit().
-    $num1 = random_int(1, 9);
-    $num2 = random_int(1, 9);
-
-    return Inertia::render('Pages/Contact', [
-        'captcha' => [
-            'expected' => $num1 + $num2,
-            'question' => "Spam check: what is {$num1} + {$num2}?",
-        ],
-    ]);
-})->name('contact');
+Route::get('/contact', [App\Http\Controllers\ContactController::class, 'show'])->name('contact');
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'submit'])->name('contact.submit')->middleware('throttle:3,10');
 Route::get('/help', function () {
     return Inertia::render('Pages/Help');

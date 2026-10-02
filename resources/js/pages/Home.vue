@@ -27,7 +27,6 @@ defineOptions({ layout: PublicLayout });
 const props = defineProps<{
     heroSlides: HeroSlide[];
     featuredCourses: Course[];
-    popularCourses: Course[];
     categories: Category[];
     topInstructors: (InstructorSummary & { courses_count?: number })[];
     stats: {
@@ -45,10 +44,40 @@ const { app } = useShared();
 const activeSlide = ref(0);
 let timer: number | undefined;
 
-const slides = computed(() => props.heroSlides ?? []);
+/**
+ * A slide with no real copy renders an empty hero panel, and the carousel then
+ * blanks out every time it rotates onto it. Punctuation-only placeholders like
+ * "-", "—" or "N/A" count as no copy — a stray hyphen is not a headline.
+ */
+function usableText(value: string | null | undefined): string {
+    const text = (value ?? '').trim();
+
+    return text.replace(/[\s\-–—_.·•|/\\]+/g, '').length > 0 ? text : '';
+}
+
+/** Slides without usable copy are dropped from the carousel entirely. */
+const slides = computed(() =>
+    (props.heroSlides ?? []).filter(
+        (slide) => usableText(slide.title) !== '' || usableText(slide.subtitle) !== '',
+    ),
+);
+
 const hasSlides = computed(() => slides.value.length > 0);
 
+/** Modulo-clamped so a shrinking slide list can never index out of range. */
+const activeIndex = computed(() =>
+    slides.value.length === 0 ? 0 : activeSlide.value % slides.value.length,
+);
+
+const current = computed(() => slides.value[activeIndex.value] ?? null);
+
+const currentTitle = computed(() => usableText(current.value?.title) || app.value.name);
+const currentSubtitle = computed(() => usableText(current.value?.subtitle));
+const currentImage = computed(() => current.value?.image_url ?? '');
+
 function goTo(index: number) {
+    if (slides.value.length === 0) return;
+
     activeSlide.value = (index + slides.value.length) % slides.value.length;
 }
 
@@ -103,72 +132,93 @@ const features = [
 
 <template>
     <!-- ============================================================ Hero -->
-    <section class="relative overflow-hidden border-b border-border">
-        <div class="hero-backdrop pointer-events-none absolute inset-0" />
+    <!--
+        Full-bleed: the active slide's photo covers the whole band and the copy sits
+        on a scrim over it, instead of the image being boxed into a right-hand card.
+    -->
+    <section class="relative isolate overflow-hidden border-b border-border">
+        <!-- Cross-fading background photo of the active slide -->
+        <Transition name="fade">
+            <img
+                v-if="currentImage"
+                :key="currentImage"
+                :src="currentImage"
+                alt=""
+                aria-hidden="true"
+                class="absolute inset-0 -z-10 size-full object-cover"
+            />
+        </Transition>
 
-        <div class="page-container relative py-16 sm:py-24">
-            <div v-if="hasSlides" class="grid items-center gap-12 lg:grid-cols-2">
-                <div>
-                    <Badge variant="brand" class="mb-5">
-                        <Sparkles class="size-3" />
-                        Sanpya Online Academy
-                    </Badge>
+        <!--
+            Scrim. Deliberately weak: it only has to lift the copy off the photo, not
+            wash the whole band white.
 
-                    <Transition mode="out-in" name="fade">
-                        <div :key="activeSlide">
-                            <h1 class="text-balance text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
-                                {{ slides[activeSlide]?.title ?? app.name }}
-                            </h1>
-                            <p
-                                v-if="slides[activeSlide]?.subtitle"
-                                class="mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
-                            >
-                                {{ slides[activeSlide]?.subtitle }}
-                            </p>
-                        </div>
-                    </Transition>
+            Direction is responsive because the copy is: below `lg` the text spans the
+            full width, so a left-to-right fade would leave the right half of the
+            subtitle sitting on bare photo. Below `lg` it therefore runs top-to-bottom;
+            from `lg` up the copy is confined to the left column, so the fade can run
+            left-to-right and reach full transparency by ~62% — leaving the right of
+            the image untouched.
+        -->
+        <div
+            class="absolute inset-0 -z-10 bg-[linear-gradient(180deg,hsl(var(--background)/0.94)_0%,hsl(var(--background)/0.86)_52%,hsl(var(--background)/0.32)_100%)] lg:bg-[linear-gradient(90deg,hsl(var(--background))_0%,hsl(var(--background)/0.92)_26%,hsl(var(--background)/0.62)_44%,hsl(var(--background)/0.18)_55%,transparent_62%)]"
+            aria-hidden="true"
+        />
 
-                    <div class="mt-8 flex flex-wrap items-center gap-3">
-                        <Button
-                            v-if="slides[activeSlide]?.button_text && slides[activeSlide]?.button_link"
-                            :href="slides[activeSlide]?.button_link ?? routes.courses()"
-                            size="lg"
-                            variant="brand"
+        <!-- Dotted texture only when there is no photo behind it. -->
+        <div v-if="!currentImage" class="hero-backdrop pointer-events-none absolute inset-0 -z-10" />
+
+        <div class="page-container relative py-20 sm:py-28 lg:py-32">
+            <div v-if="hasSlides" class="max-w-2xl">
+                <Badge variant="brand" class="mb-5">
+                    <Sparkles class="size-3" />
+                    Sanpya Online Academy
+                </Badge>
+
+                <Transition mode="out-in" name="fade">
+                    <div :key="activeIndex">
+                        <h1 class="text-balance text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
+                            {{ currentTitle }}
+                        </h1>
+                        <p
+                            v-if="currentSubtitle"
+                            class="mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
                         >
-                            {{ slides[activeSlide]?.button_text }}
-                            <ArrowRight />
-                        </Button>
-                        <Button v-else :href="routes.courses()" size="lg" variant="brand">
-                            Browse courses
-                            <ArrowRight />
-                        </Button>
-                        <Button :href="routes.about()" size="lg" variant="outline">Learn more</Button>
+                            {{ currentSubtitle }}
+                        </p>
                     </div>
+                </Transition>
 
-                    <!-- Slide dots -->
-                    <div v-if="slides.length > 1" class="mt-8 flex items-center gap-2">
-                        <button
-                            v-for="(slide, index) in slides"
-                            :key="slide.id"
-                            type="button"
-                            :aria-label="`Go to slide ${index + 1}`"
-                            :class="[
-                                'h-1.5 rounded-full transition-all',
-                                index === activeSlide ? 'w-8 bg-brand-600' : 'w-4 bg-border hover:bg-brand-300',
-                            ]"
-                            @click="goTo(index)"
-                        />
-                    </div>
+                <div class="mt-8 flex flex-wrap items-center gap-3">
+                    <Button
+                        v-if="current?.button_text && current?.button_link"
+                        :href="current.button_link"
+                        size="lg"
+                        variant="brand"
+                    >
+                        {{ current.button_text }}
+                        <ArrowRight />
+                    </Button>
+                    <Button v-else :href="routes.courses()" size="lg" variant="brand">
+                        Browse courses
+                        <ArrowRight />
+                    </Button>
+                    <Button :href="routes.about()" size="lg" variant="outline">Learn more</Button>
                 </div>
 
-                <div class="relative hidden lg:block">
-                    <div class="overflow-hidden rounded-2xl border border-border shadow-lift">
-                        <img
-                            :src="slides[activeSlide]?.image_url"
-                            :alt="slides[activeSlide]?.title ?? 'Featured'"
-                            class="aspect-[4/3] w-full object-cover"
-                        />
-                    </div>
+                <!-- Slide dots -->
+                <div v-if="slides.length > 1" class="mt-8 flex items-center gap-2">
+                    <button
+                        v-for="(slide, index) in slides"
+                        :key="slide.id"
+                        type="button"
+                        :aria-label="`Go to slide ${index + 1}`"
+                        :class="[
+                            'h-1.5 rounded-full transition-all',
+                            index === activeIndex ? 'w-8 bg-brand-600' : 'w-4 bg-border hover:bg-brand-300',
+                        ]"
+                        @click="goTo(index)"
+                    />
                 </div>
             </div>
 
@@ -277,27 +327,14 @@ const features = [
         </div>
     </section>
 
-    <!-- ========================================================= Popular -->
-    <section v-if="popularCourses?.length" class="page-container py-16 sm:py-20">
-        <SectionHeading
-            eyebrow="Trending"
-            title="Most popular right now"
-            subtitle="What other learners are enrolling in this month."
-        >
-            <template #action>
-                <Button :href="routes.courses({ sort: 'popular' })" variant="outline">
-                    See more
-                    <ArrowRight />
-                </Button>
-            </template>
-        </SectionHeading>
-
-        <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <CourseCard v-for="course in popularCourses" :key="course.id" :course="course" />
-        </div>
-    </section>
-
     <!-- ========================================================= Why us -->
+    <!--
+        HIDDEN ON REQUEST (2026-10-02). The "Everything you need to actually finish"
+        section is kept here, commented out, so it can be restored by uncommenting.
+        The `features` array in the script is intentionally left in place for that.
+        Vue strips template comments from production builds, so none of this ships.
+    -->
+    <!--
     <section class="border-y border-border bg-muted/40 py-16 sm:py-20">
         <div class="page-container">
             <SectionHeading
@@ -320,6 +357,7 @@ const features = [
             </div>
         </div>
     </section>
+    -->
 
     <!-- ==================================================== Instructors -->
     <section v-if="topInstructors?.length" class="page-container py-16 sm:py-20">

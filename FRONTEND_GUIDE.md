@@ -1,8 +1,15 @@
-# Frontend Guide — Inertia + Vue 3 (public site & student area)
+# Frontend Guide — Inertia + Vue 3 (public site, student area & admin/instructor panels)
 
-This document describes the **new** frontend. The **admin** (`resources/views/admin`) and
-**instructor** (`resources/views/instructor`) panels are still Blade/AdminLTE and are **not**
-part of this system yet.
+Two surfaces coexist, and **migration of the admin/instructor panels is in progress**:
+
+| Surface | Status | Where |
+|---|---|---|
+| Public site + student area | **Fully migrated** | `resources/js/pages` (34 pages) |
+| Admin panel | **Partially migrated** — dashboard, users, courses | `resources/js/pages/Admin` |
+| Instructor panel | **Not started** — still Blade | `resources/views/instructor` |
+
+Everything not yet listed as migrated is still Blade/AdminLTE. See
+[Admin & instructor panels](#admin--instructor-panels-in-progress) for the pattern to follow.
 
 ## Stack
 
@@ -137,6 +144,147 @@ Dark mode is class-based (`darkMode: ['class']`) — the token set is already de
 The legacy `primary-50 … primary-900` blue scale is still present **only** because the
 un-migrated Blade views use it. Don't use `primary-<number>` in new Vue code.
 
+## Admin & instructor panels (in progress)
+
+The panels are being migrated off AdminLTE onto the same Inertia/Vue stack. The admin panel is
+**fully migrated except** `users/show` and `users/create-lecturer`; the instructor panel is still
+untouched and follows the same pattern when its turn comes.
+
+### What exists
+
+| File | Role |
+|---|---|
+| `resources/js/layouts/AdminLayout.vue` | Shared, **role-aware** layout for both panels |
+| `resources/js/components/ui/DataTable.vue` | Generic table: sorting, selection, loading, slots |
+| `resources/js/components/ui/ImageUpload.vue` | Drag/drop, preview, renders an `error` prop |
+| `resources/js/components/charts/LineChart.vue` | Dependency-free SVG line/area chart |
+| `resources/js/components/charts/DoughnutChart.vue` | Dependency-free SVG doughnut + legend |
+| `resources/js/pages/Admin/**` | Dashboard, Users, Courses, Categories, HeroSlides, Enrollments, Reviews, ContactMessages, Blog, Exams, Reports, Settings |
+| `resources/js/pages/Admin/Users/Form.vue` | **One component for create *and* edit** — the pattern every `Form.vue` follows |
+
+Charts are hand-rolled SVG rather than Chart.js: this project deliberately avoids runtime
+dependencies (`resources/js/lib/routes.ts` is hand-written rather than Ziggy, for the same reason).
+The admin panel uses `AdminController` for all of it; there are no per-resource controllers.
+
+`AdminLayout` picks its nav from `isAdmin`, so `InstructorController` can reuse it as-is.
+
+### Partial migrations: mixed links
+
+A page can be Inertia while the pages it links to are still Blade. Those links **must** be
+plain anchors — `Button` renders a `<Link>` unless you pass `external`:
+
+```vue
+<Button :href="routes.admin.courseEdit(row.id)" external>Edit</Button>
+```
+
+`routes.ts` groups the admin URLs and marks which ones are still Blade. When you migrate a
+page, remove `external: true` from its `AdminLayout` nav entry and from every link that
+targets it — otherwise you get a needless full page reload (harmless) or, for a `<Link>`
+pointing at a Blade route, a thrown error.
+
+### Hard delete vs soft delete — get the copy right
+
+`User` uses `SoftDeletes`; `Course` does **not**. So `usersDestroy` only sets `deleted_at`
+(recoverable, and the old Blade panel wrongly said "Permanently delete"), while
+`coursesDestroy` really does delete the row **and unlinks the thumbnail from disk**. Each
+confirmation dialog must match its own model's behaviour.
+
+### The rules that bite
+
+**1. `DataTable`'s generic is `T extends object`, not `Record<string, unknown>`.**
+A `Record<…>` constraint demands an index signature, which real interfaces
+(`User`, `Enrollment`) do not have — every call site fails to type-check. Dynamic column
+access goes through a single `valueOf()` cast inside the component instead.
+
+**2. `min-w-0` is load-bearing on any ancestor of a `DataTable`.**
+The table has `min-w-[42rem]`. Grid and flex items default to `min-width: auto`, so that
+42rem minimum propagates up through the `Card` and stretches the **whole page** to ~740px
+on a 390px viewport. Put `min-w-0` on the grid item / card wrapper. Symptom: a horizontal
+scrollbar on mobile and `document.documentElement.scrollWidth > innerWidth`.
+
+**3. `Button` with an `href` renders a `<Link>`, so its ARIA role is `link`.**
+`getByRole('button', …)` will not find row actions that navigate. Only `@click`-driven
+buttons ("Disable account", "Delete permanently") are real `<button>`s.
+
+**4. A debounced search input swallows clicks.**
+`Index.vue` debounces search by 350 ms and then issues an Inertia visit with
+`preserveState`. Clicking a row action before that visit settles gets the click discarded.
+Wait for the `search` query param *and* network idle before interacting.
+
+**5. A `DataTable` needs ≥ 42rem of container, so don't split two of them across a grid.**
+`min-w-0` stops the 42rem minimum stretching the *page*, but the table still overflows its own
+card: the trailing columns disappear behind an `overflow-x-auto` scrollbar that has no visible
+affordance on desktop, so a revenue column silently vanishes. Two tables side by side need
+~1368px of content *plus* the sidebar — that is beyond `xl:` and `2xl:`. Keep wide tables
+full-width and stacked (see `Reports.vue`'s leaderboards). Check with
+`el.scrollWidth > el.clientWidth + 1` on every `.overflow-x-auto`, at 1440px.
+
+**6. Budget width for a legend, not just the graphic, inside a narrow card.**
+`DoughnutChart` in a `lg:col-span-1` card has ~300px of inner width. Placing the legend beside
+the 144px ring leaves ~40px for the label while "Students" needs ~59px, so every label ellipsises
+even though the DOM text is complete (asserting on text content will not catch it — measure
+`scrollWidth` vs `clientWidth`). Stack the legend under the ring instead.
+
+### Forms: one component, `_method` spoofing
+
+`Users/Form.vue` serves both create and edit — the controller passes `user: null` or the
+record. A file upload cannot be sent as a real `PUT`, so edit submits via
+`form.transform((d) => ({ ...d, _method: 'put' })).post(...)`.
+
+### Controller conventions
+
+Follow the existing house style in `AdminController`: add methods to that one class rather
+than creating per-resource controllers, and return `Inertia::render()` with `title` /
+`description` props for the layout header.
+
+**Whitelist anything interpolated into `orderBy()`.** `usersIndex()` accepts `sort` +
+`direction` and validates `sort` against an explicit array:
+
+```php
+$sortable = ['id', 'name', 'email', 'role', 'status', 'created_at'];
+$sort = in_array($request->sort, $sortable, true) ? $request->sort : 'created_at';
+$direction = $request->direction === 'asc' ? 'asc' : 'desc';
+$users = $query->orderBy($sort, $direction)->paginate(20)->withQueryString();
+```
+
+### Verification
+
+`.workbuddy-ai/admin-pilot-check.cjs` (28 checks) drives the dashboard + users pages end to
+end — component identity, SPA nav, server-side sort, filters, create → edit → toggle →
+delete, plus mobile overflow and a page-error budget. It creates and deletes its own user;
+aborted runs may leave rows, cleaned with
+`DELETE FROM users WHERE email LIKE 'pilot.user.%@example.com';`.
+
+`.workbuddy-ai/courses-check.cjs` (18 checks) covers the courses list: filters, sort,
+approve, feature toggle (both directions) and delete. It inserts one throwaway draft course
+plus a throwaway thumbnail file, then removes both — **no real course is touched**. The
+fixture is cleaned up in a `finally` block even if the run fails.
+
+```bash
+SANPYA_SEED_PASSWORD=password node .workbuddy-ai/admin-pilot-check.cjs
+SANPYA_SEED_PASSWORD=password node .workbuddy-ai/courses-check.cjs
+```
+
+`.workbuddy-ai/logo-check.cjs` (15 checks) covers the public site and all three role logins —
+run it after any change to shared UI primitives.
+
+### Deleting a migrated Blade view
+
+A Blade view is safe to delete only once no `view('admin.…')` call references it. Verify,
+back it up, then remove:
+
+```bash
+grep -rhoE "view\('admin\.[a-z0-9._-]+'" app/ | sort -u   # the live list
+cp resources/views/admin/x.blade.php .workbuddy-ai/backup/blade-views-<date>/…
+rm resources/views/admin/x.blade.php
+```
+
+Note that `route('admin.x.index')` references in *other* Blade files are fine and should stay —
+they generate a URL, which now resolves to the Inertia page via a normal full page load.
+
+**Never delete Blade wholesale.** `resources/views/app.blade.php` is the Inertia root — without
+it every Vue page 404s. The instructor panel and ~27 admin pages still render Blade.
+
 ## Adding a page
 
 1. Create `resources/js/pages/Path/Name.vue` with `defineOptions({ layout: … })`.
@@ -212,14 +360,31 @@ migrate these methods and implement their pages before linking to them with Iner
 `InstructorController` also references pre-existing missing `instructor.exams.grade`
 and `instructor.exams.results` templates; these remain separate follow-up work.
 
-`AdminController` and `InstructorController` (the AdminLTE panels) are intentionally left
-on Blade. `app.css`, `adminlte.min.css` and `app.js` stay in the Vite `input` array for them.
+`InstructorController` (the AdminLTE panel) is intentionally still fully on Blade, as are
+`AdminController`'s `users/show` and `users/create-lecturer` (see below).
+`app.css`, `adminlte.min.css` and `app.js` stay in the Vite `input` array for them.
 
 On 2026-10-01, 42 unused Blade templates were removed after backup to
-`.workbuddy-ai/backup/blade-views-2026-10-01/` (with `MANIFEST.sha256`).
-48 referenced templates remain: 32 admin, 12 instructor, 3 panel layouts, and
-`resources/views/app.blade.php`. Keep this Inertia root; it mounts the Vue application
+`.workbuddy-ai/backup/blade-views-2026-10-01/` (with `MANIFEST.sha256`); the admin panel's
+migrated pages followed on 2026-10-02 into `blade-views-2026-10-02/`.
+**18 referenced templates remain: 2 admin, 12 instructor, 3 panel layouts, and
+`resources/views/app.blade.php`.** Keep this Inertia root; it mounts the Vue application
 and is not the old public UI.
+
+### Never let an Inertia request land on a Blade route
+
+The Inertia client cannot render a Blade response, and it does not follow a *second*
+redirect. `AuthenticatedSessionController::store()` therefore sends lecturers and admins
+to their panel with `Inertia::location(route('admin.dashboard'))` rather than
+`redirect()->intended(route('dashboard'))` — the latter bounces them via `/dashboard`,
+which is a redirect the client silently drops, leaving them stuck on the login screen.
+Use `Inertia::location()` for any redirect that ends at a still-Blade route.
+
+### Build asset URLs with `asset()`
+
+`Course`, `HeroSlide`, `SiteSetting` and `User` used to build storage URLs from
+`config('app.url')`, which pinned every image to `APP_URL` and broke previews served on any
+other port. They now use `asset()`, which is request-relative. Do the same in new code.
 
 ### Verifying a change
 
@@ -233,6 +398,12 @@ php -l app/Http/Controllers/X.php   # cheap syntax check
 
 Server-side props can be inspected without a browser by grepping the HTML-escaped
 `data-page` attribute: `grep -o '&quot;component&quot;:&quot;[^&]*' page.html`.
+
+> **`data-page` is a cold-load snapshot only.** `@inertiajs/core` *reads*
+> `el.dataset.page` at boot and **never writes it back**, so after any SPA visit the
+> attribute still describes the *first* page of the session. Assert component identity
+> only after a full `page.goto`; for SPA navigation, assert on rendered DOM instead.
+> (Verified against `@inertiajs/core` — the only `data-page` reads are in its boot path.)
 
 To confirm the client actually mounts, render in headless Chrome (installed at
 `C:\Program Files\Google\Chrome\Application\chrome.exe`):

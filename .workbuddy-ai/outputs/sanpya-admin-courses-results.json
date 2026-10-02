@@ -1,0 +1,24 @@
+{
+  "base": "http://127.0.0.1:8899",
+  "results": [
+    {
+      "check": "Fixture: throwaway draft course + thumbnail created",
+      "passed": true,
+      "detail": {
+        "id": "11"
+      }
+    },
+    {
+      "check": "RUN",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 60000ms exceeded.",
+      "lastGood": "Fixture: throwaway draft course + thumbnail created",
+      "where": "http://127.0.0.1:8899/home"
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+}
