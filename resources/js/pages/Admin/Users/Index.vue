@@ -115,7 +115,8 @@ const roleVariant = (value: string) =>
     value === 'admin' ? 'destructive' : value === 'lecturer' ? 'info' : 'success';
 
 const isSelf = (row: User) => row.id === currentUser.value?.id;
-const canDelete = (row: User) => !!currentUser.value?.is_super_admin && !isSelf(row);
+/** Any admin can delete; only your own row is protected. Mirrors AdminController::usersDestroy. */
+const canDelete = (row: User) => !isSelf(row);
 
 /** Only your own row is protected; super admins can still be disabled by other admins. */
 const canToggle = (row: User) => !isSelf(row);
