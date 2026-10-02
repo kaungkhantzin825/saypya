@@ -11,6 +11,7 @@ use App\Models\LessonProgress;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
 use App\Models\ExamAnswer;
+use App\Support\BrandImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -568,7 +569,8 @@ class StudentApiController extends Controller
                 }
             }
         } else {
-            $thumbnailUrl = 'https://placehold.co/400x300/3498db/ffffff?text=Course';
+            // Local brand mark rather than an external placeholder service.
+            $thumbnailUrl = 'https://sanpyalearning.com/' . BrandImage::PATH;
         }
         
         // Ensure full URL for avatar - HARDCODED FIX
@@ -585,8 +587,8 @@ class StudentApiController extends Controller
                 }
             }
         } else {
-            $instructorName = $course->instructor?->name ?? 'User';
-            $avatarUrl = 'https://ui-avatars.com/api/?name=' . urlencode($instructorName) . '&background=0d9488&color=fff&size=200';
+            // Local brand mark rather than an external placeholder service.
+            $avatarUrl = 'https://sanpyalearning.com/' . BrandImage::PATH;
         }
         
         return [

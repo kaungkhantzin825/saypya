@@ -96,7 +96,8 @@ Import from the barrel: `import { Button, Card, Badge } from '@/components/ui'`.
 | `DropdownMenu` | `items: MenuItem[]`, `align`, `side` |
 | `Tabs` | `v-model` (string), `tabs: TabItem[]`, `variant` (`default`/`underline`); one slot per tab value |
 | `Accordion` | `items: AccordionEntry[]`, `type`, `defaultValue`; scoped slots `title`/`content` with `{ item }` |
-| `Avatar` | `src`, `name`, `size` (`xs`…`2xl`) |
+| `Avatar` | `src`, `name`, `size` (`xs`…`2xl`) — falls back to initials when `src` is missing or fails |
+| `AppImage` | `src`, `alt`, `fallback`, `loading`, `decoding`. Use instead of a bare `<img>` for any user-supplied or nullable media |
 | `Progress` | `value`, `autoTone`, `size` |
 | `Alert` | `variant` (`info`/`success`/`warning`/`destructive`), `title` |
 | `Pagination` | `links` (Laravel paginator links), `from`, `to`, `total` |
@@ -185,10 +186,12 @@ pointing at a Blade route, a thrown error.
 
 ### Hard delete vs soft delete — get the copy right
 
-`User` uses `SoftDeletes`; `Course` does **not**. So `usersDestroy` only sets `deleted_at`
-(recoverable, and the old Blade panel wrongly said "Permanently delete"), while
-`coursesDestroy` really does delete the row **and unlinks the thumbnail from disk**. Each
-confirmation dialog must match its own model's behaviour.
+`User` uses `SoftDeletes`, but `usersDestroy` deliberately calls `forceDelete()` so admin
+deletion really removes the row (requested behaviour: "delete from the database"). It also
+unlinks the avatar and refuses up front when the user still owns courses, because
+`courses.instructor_id` is `onDelete('restrict')`. `coursesDestroy` likewise deletes the row
+**and unlinks the thumbnail from disk**. Both confirmation dialogs say "permanently", which
+is now accurate; the `SoftDeletes` trait stays on the model for programmatic use.
 
 ### The rules that bite
 
@@ -226,6 +229,30 @@ the 144px ring leaves ~40px for the label while "Students" needs ~59px, so every
 even though the DOM text is complete (asserting on text content will not catch it — measure
 `scrollWidth` vs `clientWidth`). Stack the legend under the ring instead.
 
+**8. A named `text-*` utility carries a line-height, and `sm:`/`lg:` beats `leading-*`.**
+`text-base`, `text-5xl` … each set **font-size *and* line-height**. Responsive variants are
+emitted after the base utilities, so `sm:text-base` overrides a sibling `leading-7` at ≥640px,
+and `lg:text-5xl` overrides `leading-[1.55]` at ≥1024px — silently, with no class-order fix,
+because CSS order decides, not the order in the `class` attribute. This pinned the Myanmar blog
+body to 16px/24px (ratio 1.5) and its `h1` to 48px/48px (ratio 1.0), colliding every stacked
+diacritic. **Use arbitrary sizes** (`text-[16px]`, `sm:text-[36px]`) — they set font-size only —
+or the slash syntax (`text-base/8`). Arbitrary sizes are what the blog typography uses.
+
+**9. Myanmar script needs its own font *and* ~1.9 leading.**
+Font selection falls back **per character**, so `sans: ['Inter', 'Noto Sans Myanmar', …]` renders
+Latin in Inter and Myanmar in Noto Sans Myanmar with no per-element class — and because the
+webfont is served with a Myanmar-only `unicode-range`, English pages download nothing extra.
+Line-height *cannot* be per character, so a block has to be detected with `hasMyanmar()`
+(`lib/utils.ts`) and opted into `leading-[1.95]`; the 1.5 that suits Latin makes the marks of
+adjacent lines collide. Headings need ≥1.5 and must **not** carry negative `tracking-*`.
+`Pyidaungsu` is *not* bundled here despite an older comment claiming so — never list it first.
+
+**10. Blog bodies are plain text, not HTML.**
+Editors write one line per paragraph with no markup at all. `v-html` collapses those newlines, so
+a 65-line article arrived as one solid wall. Render `post.content_html` (see
+`BlogPost::getContentHtmlAttribute()`) — never `post.content`, which is the raw source the admin
+editor edits.
+
 ### Forms: one component, `_method` spoofing
 
 `Users/Form.vue` serves both create and edit — the controller passes `user: null` or the
@@ -260,6 +287,12 @@ aborted runs may leave rows, cleaned with
 approve, feature toggle (both directions) and delete. It inserts one throwaway draft course
 plus a throwaway thumbnail file, then removes both — **no real course is touched**. The
 fixture is cleaned up in a `finally` block even if the run fails.
+
+`.workbuddy-ai/image-fallback-check.cjs` (17 public checks) asserts no page renders a broken
+image: it scrolls each public page to settle lazy images, then flags any `<img>` with
+`complete && naturalWidth === 0` or an empty/`"null"` `src`. It also forces a live thumbnail to a
+404 at runtime to exercise `AppImage`'s `@error` branch. Its admin section needs a running server
+(login → `/admin/courses`, `/admin/users`).
 
 ```bash
 SANPYA_SEED_PASSWORD=password node .workbuddy-ai/admin-pilot-check.cjs

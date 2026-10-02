@@ -20,9 +20,26 @@ export default {
     },
     extend: {
       fontFamily: {
-        // `sans` is kept Inter-first so the un-migrated Blade views are unchanged.
-        sans: ['Inter', ...defaultTheme.fontFamily.sans],
-        myanmar: ['Pyidaungsu', 'Noto Sans Myanmar', 'Padauk', 'sans-serif'],
+        /**
+         * Inter first for Latin, then the Myanmar faces.
+         *
+         * Font fallback is **per character**, not per element: Inter draws the
+         * Latin text and every codepoint it cannot draw — i.e. all Myanmar —
+         * drops through to Noto Sans Myanmar. Without these fallbacks a Myanmar
+         * glyph resolved to whatever the OS happened to offer (`Myanmar Text` on
+         * Windows, something else elsewhere), so the same post shaped differently
+         * on every machine.
+         *
+         * Noto Sans Myanmar is served by Google Fonts with a Myanmar-only
+         * `unicode-range`, so a page containing no Myanmar text downloads nothing
+         * extra — this is free for the English-only pages and the Blade panels.
+         *
+         * `Pyidaungsu` is NOT bundled, despite what an older comment claimed; it
+         * sits after the webfonts so a machine that has it installed can still be
+         * reached for anything the webfonts lack.
+         */
+        sans: ['Inter', 'Noto Sans Myanmar', 'Padauk', 'Pyidaungsu', ...defaultTheme.fontFamily.sans],
+        myanmar: ['Noto Sans Myanmar', 'Padauk', 'Pyidaungsu', 'sans-serif'],
       },
       colors: {
         /**

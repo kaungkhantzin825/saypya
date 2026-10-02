@@ -156,13 +156,22 @@ class User extends Authenticatable
         return $this->enrollments()->where('course_id', $courseId)->exists();
     }
 
+    /**
+     * Absolute URL of the avatar, or `null` when the user has not uploaded one.
+     *
+     * This used to return a `https://ui-avatars.com/...` URL. That made every
+     * avatar an external request that leaked the user's name to a third party,
+     * and rendered as a broken image whenever the host was unreachable. `null`
+     * lets `Avatar.vue` show its initials fallback, which is the app's existing
+     * treatment for a missing avatar everywhere else.
+     */
     public function getAvatarUrlAttribute()
     {
         // If already a full URL (starts with http/https)
         if ($this->avatar && str_starts_with($this->avatar, 'http')) {
             return $this->avatar;
         }
-        
+
         // If avatar exists, build a request-relative URL so it works on any host/port.
         if ($this->avatar) {
             $path = ltrim($this->avatar, '/');
@@ -172,7 +181,6 @@ class User extends Authenticatable
                 : asset('storage/' . $path);
         }
 
-        // Return UI Avatars placeholder
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name ?? 'User') . '&background=0d9488&color=fff&size=200';
+        return null;
     }
 }

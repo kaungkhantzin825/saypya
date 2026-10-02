@@ -5,7 +5,7 @@ import { ArrowRight, CalendarDays, Clock, Newspaper } from 'lucide-vue-next';
 import { AppImage, Avatar, Badge, Button, EmptyState, Pagination } from '@/components/ui';
 import PageHero from '@/components/site/PageHero.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
-import { formatDate } from '@/lib/utils';
+import { cn, formatDate, hasMyanmar } from '@/lib/utils';
 import { routes } from '@/lib/routes';
 import type { BlogPost, Paginated } from '@/types';
 
@@ -16,6 +16,14 @@ const props = defineProps<{ posts: Paginated<BlogPost> }>();
 const featured = computed<BlogPost | null>(() => props.posts.data[0] ?? null);
 const rest = computed<BlogPost[]>(() => props.posts.data.slice(1));
 const isEmpty = computed(() => props.posts.data.length === 0);
+
+/**
+ * Myanmar stacks diacritics above *and* below the base character, so a card title
+ * needs far more leading than the `leading-snug`/`leading-tight` that suits Latin.
+ * Line-height can't be set per character, so each post is tested individually.
+ */
+const isMyanmarPost = (post: BlogPost | null) =>
+    !!post && (hasMyanmar(post.title) || hasMyanmar(post.excerpt));
 
 const authorName = (post: BlogPost) => post.author?.name ?? 'Sanpya Academy';
 const readingTime = (post: BlogPost) => `${post.reading_time ?? 1} min read`;
@@ -75,12 +83,31 @@ const readingTime = (post: BlogPost) => `${post.reading_time ?? 1} min read`;
                     </div>
 
                     <h2
-                        class="text-balance text-2xl font-extrabold leading-tight tracking-tight transition-colors group-hover:text-brand-700 dark:group-hover:text-brand-400 sm:text-3xl"
+                        :class="
+                            cn(
+                                'text-balance font-extrabold transition-colors group-hover:text-brand-700 dark:group-hover:text-brand-400',
+                                // Arbitrary sizes so `sm:` cannot smuggle in a
+                                // line-height and clobber the `leading-*` below.
+                                'text-[24px] sm:text-[30px]',
+                                isMyanmarPost(featured)
+                                    ? 'leading-[1.6] tracking-normal'
+                                    : 'leading-[1.15] tracking-tight',
+                            )
+                        "
                     >
                         {{ featured.title }}
                     </h2>
 
-                    <p v-if="featured.excerpt" class="line-clamp-3 text-pretty text-sm leading-relaxed text-muted-foreground">
+                    <p
+                        v-if="featured.excerpt"
+                        :class="
+                            cn(
+                                'line-clamp-3 text-pretty text-muted-foreground',
+                                'text-[14px]',
+                                isMyanmarPost(featured) ? 'leading-[1.85]' : 'leading-[1.65]',
+                            )
+                        "
+                    >
                         {{ featured.excerpt }}
                     </p>
 
@@ -122,12 +149,27 @@ const readingTime = (post: BlogPost) => `${post.reading_time ?? 1} min read`;
                         </div>
 
                         <h3
-                            class="line-clamp-2 text-lg font-bold leading-snug transition-colors group-hover:text-brand-700 dark:group-hover:text-brand-400"
+                            :class="
+                                cn(
+                                    'line-clamp-2 font-bold transition-colors group-hover:text-brand-700 dark:group-hover:text-brand-400',
+                                    'text-[18px]',
+                                    isMyanmarPost(post) ? 'leading-[1.6]' : 'leading-[1.375]',
+                                )
+                            "
                         >
                             {{ post.title }}
                         </h3>
 
-                        <p v-if="post.excerpt" class="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                        <p
+                            v-if="post.excerpt"
+                            :class="
+                                cn(
+                                    'line-clamp-3 text-muted-foreground',
+                                    'text-[14px]',
+                                    isMyanmarPost(post) ? 'leading-[1.85]' : 'leading-[1.65]',
+                                )
+                            "
+                        >
                             {{ post.excerpt }}
                         </p>
 

@@ -9,7 +9,8 @@
 
     <link rel="icon" href="/favicon.ico" sizes="any">
 
-    {{-- Latin + Myanmar type. Pyidaungsu is bundled first for Myanmar script. --}}
+    {{-- Latin + Myanmar type. Inter is first (Latin); the Myanmar faces are reached
+         by per-character fallback, so they cost nothing on pages without Myanmar text. --}}
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />

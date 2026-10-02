@@ -16,6 +16,8 @@ import { computed, ref, watch } from 'vue';
 import { cn } from '@/lib/utils';
 
 const FALLBACK_SRC = '/images/SanPya-Logo.png';
+/** Filename only, so an absolute URL from the API still matches. */
+const FALLBACK_FILE = FALLBACK_SRC.split('/').pop() as string;
 
 const props = withDefaults(
     defineProps<{
@@ -42,13 +44,20 @@ watch(
 const usableSrc = computed(() => (props.src ?? '').trim());
 const usingFallback = computed(() => failed.value || usableSrc.value === '');
 const resolvedSrc = computed(() => (usingFallback.value ? props.fallback : usableSrc.value));
+
+/**
+ * True whenever the brand mark is on screen rather than a real photo — either
+ * because we substituted it, or because the caller passed it (the API sends an
+ * absolute logo URL for courses that have no thumbnail).
+ */
+const showingLogo = computed(() => usingFallback.value || resolvedSrc.value.includes(FALLBACK_FILE));
 </script>
 
 <template>
     <img
         :src="resolvedSrc"
-        :alt="usingFallback ? '' : (alt ?? '')"
-        :aria-hidden="usingFallback ? 'true' : undefined"
+        :alt="showingLogo ? '' : (alt ?? '')"
+        :aria-hidden="showingLogo ? 'true' : undefined"
         :loading="loading"
         :decoding="decoding"
         :class="
@@ -56,7 +65,11 @@ const resolvedSrc = computed(() => (usingFallback.value ? props.fallback : usabl
                 props.class,
                 // Merged *after* `class` so `object-contain` beats an
                 // `object-cover` the caller passed for the real photo.
-                usingFallback && 'bg-white object-contain p-4 ring-1 ring-inset ring-black/5',
+                //
+                // `max-h-72` caps the plate so a full-bleed 16:9 hero does not turn
+                // the logo into a 600px-tall slab. It only binds on boxes taller
+                // than 288px, so card thumbnails are unaffected.
+                showingLogo && 'max-h-72 bg-white object-contain p-4 ring-1 ring-inset ring-black/5',
             )
         "
         @error="failed = true"

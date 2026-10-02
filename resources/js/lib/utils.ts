@@ -37,9 +37,23 @@ export function formatMMKMyanmar(amount: number | string | null | undefined, fre
     return `${formatted.replace(/[0-9]/g, (d) => MYANMAR_NUMERALS[d])} ကျပ်`;
 }
 
+/**
+ * True when the string contains Myanmar script.
+ *
+ * Myanmar lives at U+1000–U+109F, with extensions at U+AA60–U+AA7F (Tai Laing,
+ * used by some Shan writers) and U+A9E0–U+A9FF.
+ *
+ * Used to opt text into taller leading. Myanmar stacks diacritics above *and*
+ * below the base character, so it needs roughly 1.9–2.0 line-height; the 1.5 that
+ * suits Latin makes the marks of adjacent lines collide. Line-height cannot be
+ * set per character the way font-family can, so the block has to be detected.
+ */
+export function hasMyanmar(text: string | null | undefined): boolean {
+    return /[\u1000-\u109F\uAA60-\uAA7F\uA9E0-\uA9FF]/.test(text ?? '');
+}
+
 /** Human-readable duration from a number of minutes. */
-export function formatDuration(minutes: number | null | undefined): string {
-    const total = Number(minutes ?? 0);
+export function formatDuration(minutes: number | null | undefined): string {    const total = Number(minutes ?? 0);
     if (!total) return '—';
     const hours = Math.floor(total / 60);
     const mins = Math.round(total % 60);

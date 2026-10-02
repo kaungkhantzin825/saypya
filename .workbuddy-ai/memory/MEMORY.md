@@ -103,6 +103,21 @@ says "it's still Blade", first check which directory `php artisan serve` runs fr
   the fallback when `src` is empty *and* on `@error`). Never emit a bare `<img :src>` for
   user-supplied or nullable media — an empty src renders a broken-image icon. Public cards use
   `AppImage`; admin tables keep `v-if` guards.
+- **A named Tailwind `text-*` sets a line-height, and `sm:`/`lg:` beats `leading-*`.** Responsive
+  variants are emitted after base utilities, so `sm:text-base` silently overrode a sibling
+  `leading-7`, and `lg:text-5xl` overrode `leading-[1.55]` — CSS order decides, so class order in the
+  attribute cannot fix it. **Use arbitrary sizes (`text-[16px]`, `sm:text-[36px]`), which set
+  font-size only**, or the `text-base/8` slash syntax. This is why the Myanmar blog body rendered at
+  16px/24px and its h1 at 48px/48px (ratio 1.0).
+- **Myanmar typography.** `tailwind.config.js`'s `sans` stack is `['Inter', 'Noto Sans Myanmar',
+  'Padauk', 'Pyidaungsu', …]` — fallback is **per character**, so Latin stays Inter and Myanmar drops
+  through to the webfont, which Google serves with a Myanmar-only `unicode-range` (free on English
+  pages). Line-height cannot be per character, so blocks are detected with `hasMyanmar()` and opted
+  into `leading-[1.95]`; headings need ≥1.5 and **no negative tracking**. **`Pyidaungsu` is NOT
+  bundled** — an old comment claimed it was.
+- **Blog bodies are plain text, not HTML** — one line per paragraph, no markup. `v-html` collapses
+  those newlines, so render `post.content_html` (`BlogPost::getContentHtmlAttribute()`, appended only
+  in `BlogController::show` to avoid doubling list payloads), never `post.content`.
 - **`courses` has no `is_published`** — it is `status='published'` (`Course::scopePublished`).
   Exams *do* have `is_published`.
 - **Exam visibility needs ALL of:** exam `is_published`, ≥1 `ExamQuestion`, enrollment

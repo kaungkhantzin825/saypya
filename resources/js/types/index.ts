@@ -219,6 +219,8 @@ export interface BlogPost {
     slug: string;
     excerpt?: string | null;
     content: string;
+    /** Display HTML built from `content` — plain-text bodies get wrapped in <p>. */
+    content_html?: string;
     /** Accessor alias of `featured_image_url`. */
     image_url?: string | null;
     featured_image_url?: string | null;

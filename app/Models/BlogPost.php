@@ -110,6 +110,50 @@ class BlogPost extends Model
     }
 
     /**
+     * Body HTML for display.
+     *
+     * Posts are written as **plain text, one line per paragraph, with no markup at
+     * all**. Piping that straight into `v-html` collapses every newline, so a
+     * 65-line article reached the page as one solid wall of text with no paragraph
+     * breaks — the author's structure was silently thrown away.
+     *
+     * Bare lines are wrapped in `<p>` and escaped. If the body already contains
+     * block markup (someone used a rich editor), it is returned untouched so the
+     * existing HTML keeps working.
+     *
+     * Read `content_html` for display; `content` stays the raw source for the editor.
+     *
+     * Deliberately **not** in `$appends`: the list endpoints already ship the full
+     * raw `content` for every row, and appending the rendered HTML too would double
+     * that payload on the blog index and the admin list for no benefit. The show
+     * action appends it explicitly instead.
+     */
+    public function getContentHtmlAttribute(): string
+    {
+        $content = trim((string) ($this->content ?? ''));
+
+        if ($content === '') {
+            return '';
+        }
+
+        if (preg_match('#<(p|div|section|h[1-6]|ul|ol|li|blockquote|pre|table|figure|img|br)\b#i', $content)) {
+            return $content;
+        }
+
+        $lines = preg_split('/\R/u', $content) ?: [];
+
+        $paragraphs = [];
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line !== '') {
+                $paragraphs[] = '<p>' . e($line) . '</p>';
+            }
+        }
+
+        return implode("\n", $paragraphs);
+    }
+
+    /**
      * Get the excerpt or generate from content
      */
     public function getExcerptAttribute($value)

@@ -10,6 +10,7 @@ use App\Models\Lesson;
 use App\Models\Enrollment;
 use App\Models\Review;
 use App\Models\HeroSlide;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -209,10 +210,27 @@ class AdminController extends Controller
         if ($user->id === auth()->id()) {
             return redirect()->back()->with('error', 'You cannot delete yourself!');
         }
-        // User uses SoftDeletes: this sets deleted_at and keeps the row (and its
-        // enrollments/history) recoverable. It is NOT a hard delete.
-        $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully!');
+        // courses.instructor_id is onDelete('restrict') (see CASCADE_DELETE_FIX.md), so a
+        // lecturer who still owns courses would fail with an FK error — stop here and say why.
+        $ownedCourses = $user->courses()->count();
+        if ($ownedCourses > 0) {
+            return redirect()->back()->with('error', "Cannot delete {$user->name}: they still own {$ownedCourses} course(s). Reassign or delete those courses first.");
+        }
+
+        // Hard delete — the row is removed from the users table, not just stamped with
+        // deleted_at. Everything keyed to the user cascades away with it: enrollments,
+        // lesson progress, reviews, wishlists, discussions + replies, comments, exam
+        // attempts, blog posts and exams they created. This is not recoverable.
+        try {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $user->forceDelete();
+        } catch (QueryException $e) {
+            return redirect()->back()->with('error', 'Cannot delete this user: other records still reference their account.');
+        }
+
+        return redirect()->route('admin.users.index')->with('success', 'User permanently deleted from the database.');
     }
 
     public function usersApprove(User $user)

@@ -91,9 +91,24 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // courses.instructor_id is onDelete('restrict'), so a lecturer who still owns
+        // courses cannot be removed — bail out before logging them out.
+        if ($user->courses()->count() > 0) {
+            return Redirect::route('profile.edit')->withErrors(
+                ['password' => 'Your account still owns published courses. Contact an administrator to have them transferred first.'],
+                'userDeletion'
+            );
+        }
+
         Auth::logout();
 
-        $user->delete();
+        // Hard delete, matching the admin panel: the row leaves the users table rather
+        // than lingering with deleted_at set, which would keep the email address taken
+        // and block the person from registering again.
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+        $user->forceDelete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

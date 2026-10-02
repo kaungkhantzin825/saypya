@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { Check, Pencil, Plus, Search, Star, Trash2, Eye } from 'lucide-vue-next';
 import {
+    AppImage,
     Badge,
     Button,
     Card,
@@ -215,7 +216,7 @@ function destroy() {
                 @update:sort="onSort"
             >
                 <template #cell-thumbnail="{ row }">
-                    <img
+                    <AppImage
                         :src="row.thumbnail_url"
                         :alt="row.title"
                         class="h-12 w-20 shrink-0 rounded-md object-cover ring-1 ring-border"

@@ -14,7 +14,7 @@ import {
     UserX,
     Check,
 } from 'lucide-vue-next';
-import { Badge, Button, Card, DataTable, Dialog, Input, Label, Pagination, Select } from '@/components/ui';
+import { Avatar, Badge, Button, Card, DataTable, Dialog, Input, Label, Pagination, Select } from '@/components/ui';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { useAuth } from '@/composables/useApp';
 import { routes } from '@/lib/routes';
@@ -266,12 +266,7 @@ const registrationCopy = computed(() =>
 
                 <template #cell-name="{ row }">
                     <div class="flex items-center gap-3">
-                        <img
-                            :src="row.avatar_url"
-                            :alt="row.name"
-                            class="size-8 shrink-0 rounded-full object-cover ring-1 ring-border"
-                            loading="lazy"
-                        />
+                        <Avatar :src="row.avatar_url" :name="row.name" size="sm" />
                         <div class="min-w-0">
                             <p class="truncate font-medium">{{ row.name }}</p>
                             <p class="truncate text-xs text-muted-foreground md:hidden">{{ row.email }}</p>
@@ -334,7 +329,7 @@ const registrationCopy = computed(() =>
                         variant="ghost"
                         size="icon-sm"
                         class="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        aria-label="Delete user"
+                        aria-label="Delete user permanently"
                         @click="confirmDelete(row)"
                     >
                         <Trash2 />
@@ -355,21 +350,21 @@ const registrationCopy = computed(() =>
 
     <!-- Delete confirmation -->
     <!--
-        User uses SoftDeletes, so this sets `deleted_at` — the row is retained and
-        can be restored. The copy must not claim the action is permanent.
+        This is a hard delete: the controller calls forceDelete(), so the row leaves the
+        users table and everything keyed to it cascades away. Keep the copy explicit.
     -->
     <Dialog
         :open="deleteTarget !== null"
         size="sm"
-        title="Delete user"
-        :description="`Remove ${deleteTarget?.name ?? ''} from the platform? They will no longer be able to sign in. Their record and history are kept and can be restored.`"
+        title="Delete user permanently"
+        :description="`Permanently delete ${deleteTarget?.name ?? ''} from the database? Their enrollments, progress, reviews, discussions and exam attempts are deleted with them. This cannot be undone.`"
         @update:open="(value: boolean) => !value && (deleteTarget = null)"
     >
         <template #footer>
             <Button variant="outline" :disabled="deleting" @click="deleteTarget = null">Cancel</Button>
             <Button variant="destructive" :loading="deleting" @click="destroy">
                 <Trash2 />
-                Delete user
+                Delete permanently
             </Button>
         </template>
     </Dialog>

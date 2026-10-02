@@ -23,7 +23,10 @@
             @forelse($courses as $course)
             <div class="col-md-6 col-lg-4">
                 <div class="card card-outline card-{{ $course->status == 'published' ? 'success' : ($course->status == 'draft' ? 'warning' : 'secondary') }}">
-                    <div class="card-img-top" style="height: 150px; background: url('{{ $course->thumbnail ? Storage::url($course->thumbnail) : 'https://via.placeholder.com/300x150' }}') center/cover;"></div>
+                    {{-- Use the accessor, which handles external URLs and local paths alike.
+                         `via.placeholder.com` no longer resolves, so fall back to the local brand mark. --}}
+                    @php($thumb = $course->thumbnail_url ?: '/images/SanPya-Logo.png')
+                    <div class="card-img-top" style="height: 150px; background: #fff url('{{ $thumb }}') center/{{ $course->thumbnail_url ? 'cover' : 'contain' }} no-repeat;"></div>
                     <div class="card-body">
                         <h5 class="card-title">{{ Str::limit($course->title, 40) }}</h5>
                         <p class="card-text text-muted small">{{ Str::limit($course->short_description, 60) }}</p>

@@ -34,6 +34,10 @@ class BlogController extends Controller
 
         $post->incrementViews();
 
+        // Rendered body HTML for the article page. Not in `BlogPost::$appends`
+        // because the list endpoints would then ship it for every row too.
+        $post->append('content_html');
+
         $relatedPosts = BlogPost::published()
             ->where('id', '!=', $post->id)
             ->latest('published_at')

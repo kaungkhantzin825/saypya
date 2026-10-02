@@ -46,6 +46,29 @@ project. Environment traps and domain rules stay in `MEMORY.md`.
   on the same auto-filename and one silently overwrote the other (4 files, not 5).
 - **After a scrim/style edit, rebuild before re-screenshotting** — with `public/hot` absent the
   browser serves built assets, so identical screenshots mean the build never ran.
+- **Assert "no broken image" as `complete && naturalWidth === 0`**, and scroll the page first so lazy
+  images are actually requested — otherwise unloaded images read as fine. Also assert no `<img>` has
+  an empty/`"null"`/`"undefined"` `src`.
+- **When a component's fallback is the same asset as a permanent brand element, select on the
+  fallback-specific styling, never on the filename.** A probe for `SanPya-Logo` matched the navbar
+  `Logo.vue` (same file, earlier in the DOM) and reported its classes; the real discriminator was
+  `bg-white` on the `<img>` itself, which only `AppImage`'s fallback paints.
+- **The local `php artisan serve` can die mid-suite.** A 60s `waitForFunction` timeout right after a
+  login step usually means the server is gone, not that the app is broken — re-check the port before
+  debugging the page.
+- **Dark mode is class-based here (`darkMode: ['class']`), so `page.emulateMedia({ colorScheme:
+  'dark' })` does nothing.** Use `document.documentElement.classList.add('dark')`, wait ~400ms, and
+  assert it took — a dark screenshot that comes back byte-identical to the light one means the toggle
+  never applied.
+- **`document.fonts.check('16px "Family"')` is the only real proof a webfont is applied.** It returns
+  `false` for a declared-but-unloaded webfont — the "named in CSS but never actually used" failure.
+  A width probe measured synchronously just reports the fallback; `await document.fonts.load(...)`
+  first. Use a `data-` hook to select a specific block — "the div with the most text" matched a
+  wrapper that included the sidebar and returned a nonsense paragraph count.
+- **When a Playwright run dies at *launch* with `Failed to create cache directory … There is not
+  enough space on the disk`, check the disk, not the test.** A full C: also kills Bash with `ENOSPC`
+  and makes the Edit tool fail on its backup step (while `Write` of new files still works); retrying
+  a minute later often succeeds because space fluctuates.
 
 ## Suites (`.workbuddy-ai/`)
 
@@ -54,7 +77,8 @@ email LIKE 'pilot.user.%@example.com'`) · `courses-check` (18) · `categories-c
 `hero-slides-check` (14) · `course-cluster-check` (26) · `reviews-enrollments-check` (24) ·
 `contact-blog-check` (26) · `exams-check` (31) · `reports-settings-check` (23) ·
 `homepage-sections-check` (8) · `hero-slider-check` (12) · `page-headers-check` (10) ·
-`image-fallback-check`.
+`image-fallback-check` (17 public; its admin section is still unverified) ·
+`myanmar-render-check` (10; needs the fixture post — see `fixture-myanmar-post.php`).
 
 Also: `smoke-reports-settings` (login + both pages serve after the Blade deletion), `shots.cjs`
 (screenshots), `diag-*.cjs` (redirect chains / broken images / overflow / SPA traces),

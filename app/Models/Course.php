@@ -148,13 +148,22 @@ class Course extends Model
     }
 
     // Accessors
+    /**
+     * Absolute URL of the course thumbnail, or `null` when the course has none.
+     *
+     * This used to return a `https://placehold.co/...` URL, which meant a course
+     * without a thumbnail depended on a third-party host. Returning `null` keeps
+     * "no thumbnail" honest in the data layer — the admin form can then tell an
+     * empty thumbnail apart from a real one — and the views render the brand mark
+     * via `AppImage.vue`.
+     */
     public function getThumbnailUrlAttribute()
     {
         // If already a full URL (starts with http/https)
         if ($this->thumbnail && str_starts_with($this->thumbnail, 'http')) {
             return $this->thumbnail;
         }
-        
+
         // Build the URL relative to the current request, so it works on any
         // host/port. Using config('app.url') pinned every image to APP_URL and
         // broke previews served from a different port.
@@ -165,12 +174,8 @@ class Course extends Model
                 ? asset($path)
                 : asset('storage/' . $path);
         }
-        
-        // Return placeholder image based on course title
-        $colors = ['3498db', 'e74c3c', '2ecc71', '9b59b6', 'f39c12', '1abc9c', 'e67e22', '34495e'];
-        $colorIndex = crc32($this->title ?? 'course') % count($colors);
-        $color = $colors[$colorIndex];
-        return "https://placehold.co/400x300/{$color}/ffffff?text=" . urlencode(substr($this->title ?? 'Course', 0, 20));
+
+        return null;
     }
 
     public function getPreviewVideoUrlAttribute()
